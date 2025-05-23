@@ -1,5 +1,4 @@
 import { createClient } from '@supabase/supabase-js';
-
 import type { Database } from './database.types';
 
 // Vérification des variables d'environnement
@@ -19,14 +18,12 @@ export const supabase = createClient<Database>(
       autoRefreshToken: true,
       persistSession: true,
       detectSessionInUrl: true,
-      storage: localStorage
+      storage: window.localStorage,
+      flowType: 'pkce'
     },
     global: {
-      fetch: (...args) => {
-        return fetch(...args).catch(err => {
-          console.error('Erreur de connexion Supabase:', err);
-          throw new Error('Erreur de connexion à la base de données. Veuillez réessayer.');
-        });
+      headers: {
+        'X-Client-Info': 'supabase-js-v2'
       }
     }
   }
