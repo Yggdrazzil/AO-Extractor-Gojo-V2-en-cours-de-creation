@@ -45,10 +45,22 @@ export async function fetchRFPs(): Promise<RFP[]> {
       throw new Error('Authentication required');
     }
 
-    // Simplifier la requête pour éviter les problèmes de cache
+    // Utiliser une requête plus robuste avec gestion d'erreur pour is_read
     const { data, error } = await supabase
       .from('rfps')
-      .select('*')
+      .select(`
+        id,
+        client,
+        mission,
+        location,
+        max_rate,
+        created_at,
+        start_date,
+        status,
+        assigned_to,
+        raw_content,
+        is_read
+      `)
       .order('created_at', { ascending: false });
 
     if (error) {
@@ -78,7 +90,7 @@ export async function fetchRFPs(): Promise<RFP[]> {
       status: rfp.status,
       assignedTo: rfp.assigned_to,
       content: rfp.raw_content || '',
-      isRead: !!rfp.is_read
+      isRead: rfp.is_read !== null ? rfp.is_read : false
     }));
   } catch (error) {
     console.error('Failed to fetch RFPs:', error);
@@ -131,7 +143,7 @@ export async function createRFP(rfp: Omit<RFP, 'id'>): Promise<RFP> {
     status: data.status,
     assignedTo: data.assigned_to,
     content: data.raw_content,
-    isRead: data.is_read || false
+    isRead: data.is_read !== null ? data.is_read : false
   };
 }
 
