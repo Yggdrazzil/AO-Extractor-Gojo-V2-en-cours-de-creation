@@ -55,7 +55,9 @@ export function LinkedInModal({ isOpen, onClose, rfpId, onUrlCountChange }: Link
       setError(null);
       
       if (rfpId) {
+        console.log('Loading links for RFP ID:', rfpId);
         const data = await fetchLinkedInLinks(rfpId);
+        console.log('Loaded links:', data);
         
         // Ajouter l'état visité à chaque lien
         const storedVisitedLinks = new Set(JSON.parse(localStorage.getItem('visitedLinkedInLinks') || '[]'));
@@ -72,7 +74,9 @@ export function LinkedInModal({ isOpen, onClose, rfpId, onUrlCountChange }: Link
       }
     } catch (error) {
       console.error('Error loading LinkedIn links:', error);
-      setError('Erreur lors du chargement des liens LinkedIn: ' + (error instanceof Error ? error.message : 'Erreur inconnue'));
+      const errorMessage = error instanceof Error ? error.message : 'Erreur inconnue';
+      console.error('Detailed error:', errorMessage);
+      setError(`Erreur lors du chargement des liens LinkedIn: ${errorMessage}`);
     } finally {
       setIsLoading(false);
     }
@@ -112,7 +116,9 @@ export function LinkedInModal({ isOpen, onClose, rfpId, onUrlCountChange }: Link
       setIsLoading(true);
       setError(null);
       
+      console.log('Submitting URLs for RFP:', rfpId, 'URLs:', validUrls);
       const newLinksData = await addLinkedInLinks(rfpId, validUrls);
+      console.log('Added links:', newLinksData);
       
       const newLinks = [...links, ...newLinksData];
       setLinks(newLinks);
@@ -120,7 +126,9 @@ export function LinkedInModal({ isOpen, onClose, rfpId, onUrlCountChange }: Link
       updateUrlCount(newLinks);
     } catch (error) {
       console.error('Error adding LinkedIn links:', error);
-      setError('Erreur lors de l\'ajout des liens LinkedIn: ' + (error instanceof Error ? error.message : 'Erreur inconnue'));
+      const errorMessage = error instanceof Error ? error.message : 'Erreur inconnue';
+      console.error('Detailed error:', errorMessage);
+      setError(`Erreur lors de l'ajout des liens LinkedIn: ${errorMessage}`);
     } finally {
       setIsLoading(false);
     }
