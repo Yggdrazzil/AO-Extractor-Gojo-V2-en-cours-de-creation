@@ -637,24 +637,6 @@ export function ProspectsTable({
                     >
                       <Eye className="w-5 h-5" />
                     </button>
-                    {prospect.fileUrl && (
-                      <button
-                        onClick={() => {
-                          // Créer un lien temporaire pour forcer le téléchargement
-                          const link = document.createElement('a');
-                          link.href = prospect.fileUrl;
-                          link.download = prospect.fileName || 'cv.pdf';
-                          link.target = '_blank';
-                          document.body.appendChild(link);
-                          link.click();
-                          document.body.removeChild(link);
-                        }}
-                        className="p-1 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
-                        title="Télécharger le CV"
-                      >
-                        <Download className="w-5 h-5" />
-                      </button>
-                    )}
                     <button
                       onClick={() => onDelete(prospect.id)}
                       title="Supprimer"
