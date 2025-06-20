@@ -21,7 +21,7 @@ async function extractTextFromWord(file: File): Promise<string> {
 }
 
 // Fonction pour extraire le contenu textuel d'un fichier
-async function extractFileContent(file: File): Promise<string> {
+export async function extractFileContent(file: File): Promise<string> {
   const fileType = file.type;
   
   try {
