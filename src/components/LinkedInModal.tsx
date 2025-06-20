@@ -47,12 +47,19 @@ export function LinkedInModal({ isOpen, onClose, rfpId, onUrlCountChange }: Link
   const loadLinks = async () => {
     if (!rfpId) {
       console.warn('No RFP ID provided');
+      setError('Aucun ID d\'AO fourni');
       return;
     }
 
     try {
       setError(null);
       console.log('Loading links for RFP:', rfpId);
+      
+      // Vérifier la session d'abord
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        throw new Error('Session expirée. Veuillez vous reconnecter.');
+      }
       
       const { data, error } = await supabase
         .from('linkedin_links')
@@ -61,6 +68,20 @@ export function LinkedInModal({ isOpen, onClose, rfpId, onUrlCountChange }: Link
         .order('created_at', { ascending: true });
 
       if (error) {
+        console.error('Supabase error details:', {
+          code: error.code,
+          message: error.message,
+          details: error.details,
+          hint: error.hint
+        });
+        
+        // Gérer les erreurs spécifiques
+        if (error.code === 'PGRST116') {
+          throw new Error('La table linkedin_links n\'existe pas encore. Veuillez contacter l\'administrateur.');
+        }
+        if (error.code === 'PGRST301' || error.code === '42501') {
+          throw new Error('Permissions insuffisantes. Vérifiez vos droits d\'accès.');
+        }
         throw error;
       }
 
@@ -76,7 +97,7 @@ export function LinkedInModal({ isOpen, onClose, rfpId, onUrlCountChange }: Link
       setError(null);
     } catch (error) {
       console.error('Error loading LinkedIn links:', error);
-      setError('Une erreur est survenue lors du chargement des liens');
+      setError(error instanceof Error ? error.message : 'Une erreur est survenue lors du chargement des liens');
     }
   };
 
