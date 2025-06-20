@@ -5,6 +5,7 @@ import { SettingsModal } from './components/SettingsModal';
 import { analyzeRFP, analyzeProspect } from './services/openai';
 import { createRFP, fetchRFPs, updateRFPStatus, updateRFPAssignee, updateRFPClient, updateRFPMission, updateRFPLocation, updateRFPMaxRate, updateRFPStartDate, updateRFPCreatedAt, deleteRFP } from './services/rfp';
 import { markRFPAsRead } from './services/rfp';
+import { extractFileContent } from './services/fileUpload';
 import { createProspect, fetchProspects, updateProspectStatus, updateProspectAssignee, updateProspectDateUpdate, updateProspectAvailability, updateProspectDailyRate, updateProspectResidence, updateProspectMobility, updateProspectPhone, updateProspectEmail, deleteProspect, markProspectAsRead } from './services/prospects';
 import { updateProspectTargetAccount } from './services/prospects';
 import { ThemeProvider } from './context/ThemeContext';
@@ -408,30 +409,53 @@ function App() {
         throw new Error("Veuillez sélectionner un commercial valide");
       }
 
-      // Analyser le contenu textuel avec l'IA si disponible
-      let analysisResult = {};
-      if (textContent.trim()) {
+      // Extraire le contenu du fichier si présent
+      let cvContent = undefined;
+      if (file) {
         try {
-          // Si on a un fichier, on va d'abord l'uploader pour extraire son contenu
-          let cvContent = undefined;
-          if (file) {
-            // L'upload et l'extraction du contenu se feront dans createProspect
-            // Pour l'instant on analyse juste le texte
-          }
-          
-          analysisResult = await analyzeProspect(textContent, cvContent);
+          cvContent = await extractFileContent(file);
+          console.log('File content extracted:', cvContent ? 'Success' : 'Failed');
+        } catch (fileError) {
+          console.error('Error extracting file content:', fileError);
+          // Continuer sans le contenu du fichier
+        }
+      }
+
+      // Analyser le contenu avec l'IA si on a du contenu à analyser
+      let analysisResult = {};
+      if (textContent.trim() || cvContent) {
+        try {
+          analysisResult = await analyzeProspect(textContent.trim(), cvContent);
           console.log('Prospect analysis result:', analysisResult);
         } catch (analysisError) {
           console.error('Error analyzing prospect:', analysisError);
           // Continuer avec des valeurs par défaut si l'analyse échoue
+          analysisResult = {
+            availability: 'À définir',
+            dailyRate: null,
+            residence: 'À définir',
+            mobility: 'À définir',
+            phone: 'À définir',
+            email: 'À définir'
+          };
         }
+      } else {
+        // Valeurs par défaut si pas de contenu à analyser
+        analysisResult = {
+          availability: 'À définir',
+          dailyRate: null,
+          residence: 'À définir',
+          mobility: 'À définir',
+          phone: 'À définir',
+          email: 'À définir'
+        };
       }
 
       const newProspect = await createProspect({
         textContent: textContent || '',
         fileName: file?.name || null,
         fileUrl: null, // TODO: Upload du fichier
-        fileContent: null,
+        fileContent: cvContent || null,
         targetAccount: targetAccount || '',
         availability: analysisResult.availability || 'À définir',
         dailyRate: analysisResult.dailyRate || null,
