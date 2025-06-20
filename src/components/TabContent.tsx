@@ -2,7 +2,9 @@ import React from 'react';
 import { RFPForm } from './RFPForm';
 import { RFPTable } from './RFPTable';
 import { ProspectsForm } from './ProspectsForm';
+import { ProspectsTable } from './ProspectsTable';
 import type { RFP, SalesRep } from '../types';
+import type { Prospect } from '../types';
 
 interface TabContentProps {
   activeTab: string;
@@ -21,6 +23,22 @@ interface TabContentProps {
   onCreatedAtChange?: (id: string, createdAt: string) => Promise<void>;
   onView?: (rfp: RFP) => Promise<void>;
   onDelete?: (id: string) => Promise<void>;
+  
+  // Props pour les prospects
+  prospects?: Prospect[];
+  onAnalyzeProspect?: (textContent: string, file: File | null, assignedTo: string) => Promise<void>;
+  isAnalyzingProspect?: boolean;
+  onProspectStatusChange?: (id: string, status: Prospect['status']) => Promise<void>;
+  onProspectAssigneeChange?: (id: string, assignedTo: string) => Promise<void>;
+  onProspectDateUpdateChange?: (id: string, dateUpdate: string) => Promise<void>;
+  onProspectAvailabilityChange?: (id: string, availability: string) => Promise<void>;
+  onProspectDailyRateChange?: (id: string, dailyRate: string) => Promise<void>;
+  onProspectResidenceChange?: (id: string, residence: string) => Promise<void>;
+  onProspectMobilityChange?: (id: string, mobility: string) => Promise<void>;
+  onProspectPhoneChange?: (id: string, phone: string) => Promise<void>;
+  onProspectEmailChange?: (id: string, email: string) => Promise<void>;
+  onProspectView?: (prospect: Prospect) => Promise<void>;
+  onProspectDelete?: (id: string) => Promise<void>;
 }
 
 function PlaceholderTab({ title, description }: { title: string; description: string }) {
@@ -44,6 +62,7 @@ function PlaceholderTab({ title, description }: { title: string; description: st
 export function TabContent({ 
   activeTab, 
   rfps = [], 
+  prospects = [],
   salesReps = [], 
   onAnalyzeRFP,
   isAnalyzing = false,
@@ -56,7 +75,20 @@ export function TabContent({
   onStartDateChange,
   onCreatedAtChange,
   onView,
-  onDelete
+  onDelete,
+  onAnalyzeProspect,
+  isAnalyzingProspect = false,
+  onProspectStatusChange,
+  onProspectAssigneeChange,
+  onProspectDateUpdateChange,
+  onProspectAvailabilityChange,
+  onProspectDailyRateChange,
+  onProspectResidenceChange,
+  onProspectMobilityChange,
+  onProspectPhoneChange,
+  onProspectEmailChange,
+  onProspectView,
+  onProspectDelete
 }: TabContentProps) {
   switch (activeTab) {
     case 'rfp-extractor':
@@ -93,30 +125,33 @@ export function TabContent({
     case 'prospects':
       return (
         <div className="space-y-6">
-          <ProspectsForm
-            salesReps={salesReps}
-            onSubmit={async (textContent: string, file: File | null, assignedTo: string) => {
-              console.log('Analyzing prospects:', { textContent, file: file?.name, assignedTo });
-              // TODO: Implémenter l'analyse des profils
-              alert('Fonctionnalité d\'analyse des profils en cours de développement');
-            }}
-            isLoading={false}
-          />
-          
-          {/* Placeholder pour le tableau des profils */}
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-8">
-            <div className="text-center">
-              <div className="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-2xl">📋</span>
-              </div>
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
-                Tableau des Profils
-              </h3>
-              <p className="text-gray-600 dark:text-gray-400">
-                Le tableau d'affichage des profils analysés sera disponible prochainement.
-              </p>
-            </div>
-          </div>
+          {onAnalyzeProspect && (
+            <ProspectsForm
+              salesReps={salesReps}
+              onSubmit={onAnalyzeProspect}
+              isLoading={isAnalyzingProspect}
+            />
+          )}
+          {onProspectStatusChange && onProspectAssigneeChange && onProspectDateUpdateChange && 
+           onProspectAvailabilityChange && onProspectDailyRateChange && onProspectResidenceChange && 
+           onProspectMobilityChange && onProspectPhoneChange && onProspectEmailChange && 
+           onProspectView && onProspectDelete && (
+            <ProspectsTable
+              prospects={prospects}
+              salesReps={salesReps}
+              onStatusChange={onProspectStatusChange}
+              onAssigneeChange={onProspectAssigneeChange}
+              onDateUpdateChange={onProspectDateUpdateChange}
+              onAvailabilityChange={onProspectAvailabilityChange}
+              onDailyRateChange={onProspectDailyRateChange}
+              onResidenceChange={onProspectResidenceChange}
+              onMobilityChange={onProspectMobilityChange}
+              onPhoneChange={onProspectPhoneChange}
+              onEmailChange={onProspectEmailChange}
+              onView={onProspectView}
+              onDelete={onProspectDelete}
+            />
+          )}
         </div>
       );
 

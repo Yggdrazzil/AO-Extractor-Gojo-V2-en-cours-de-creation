@@ -19,6 +19,23 @@ export interface SalesRep {
   created_at: string;
 }
 
+export interface Prospect {
+  id: string;
+  textContent?: string;
+  fileName?: string;
+  fileUrl?: string;
+  dateUpdate: string;
+  availability: string;
+  dailyRate: number | null;
+  residence: string;
+  mobility: string;
+  phone: string;
+  email: string;
+  status: 'À traiter' | 'Traité';
+  assignedTo: string;
+  isRead: boolean;
+}
+
 export interface RFPFormData {
   content: string;
   assignedTo: string;
