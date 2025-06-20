@@ -6,6 +6,7 @@ import { analyzeRFP } from './services/openai';
 import { createRFP, fetchRFPs, updateRFPStatus, updateRFPAssignee, updateRFPClient, updateRFPMission, updateRFPLocation, updateRFPMaxRate, updateRFPStartDate, updateRFPCreatedAt, deleteRFP } from './services/rfp';
 import { markRFPAsRead } from './services/rfp';
 import { createProspect, fetchProspects, updateProspectStatus, updateProspectAssignee, updateProspectDateUpdate, updateProspectAvailability, updateProspectDailyRate, updateProspectResidence, updateProspectMobility, updateProspectPhone, updateProspectEmail, deleteProspect, markProspectAsRead } from './services/prospects';
+import { updateProspectTargetAccount } from './services/prospects';
 import { ThemeProvider } from './context/ThemeContext';
 import { supabase, checkSupabaseConnection } from './lib/supabase';
 import { LoginForm } from './components/LoginForm';
@@ -413,7 +414,7 @@ function App() {
         textContent: textContent || '',
         fileName: file?.name || null,
         fileUrl: null, // TODO: Upload du fichier
-        dateUpdate: new Date().toISOString(),
+        targetAccount: '',
         availability: 'À définir',
         dailyRate: null,
         residence: 'À définir',
@@ -456,12 +457,12 @@ function App() {
     }
   };
 
-  const handleProspectDateUpdateChange = async (id: string, dateUpdate: string) => {
+  const handleProspectTargetAccountChange = async (id: string, targetAccount: string) => {
     try {
-      await updateProspectDateUpdate(id, dateUpdate);
-      setProspects(prev => prev.map(prospect => prospect.id === id ? { ...prospect, dateUpdate } : prospect));
+      await updateProspectTargetAccount(id, targetAccount);
+      setProspects(prev => prev.map(prospect => prospect.id === id ? { ...prospect, targetAccount } : prospect));
     } catch (error) {
-      console.error('Failed to update prospect date update:', error);
+      console.error('Failed to update prospect target account:', error);
     }
   };
 
@@ -598,7 +599,7 @@ function App() {
               onView={handleViewRFP}
               onProspectStatusChange={handleProspectStatusChange}
               onProspectAssigneeChange={handleProspectAssigneeChange}
-              onProspectDateUpdateChange={handleProspectDateUpdateChange}
+              onProspectTargetAccountChange={handleProspectTargetAccountChange}
               onProspectAvailabilityChange={handleProspectAvailabilityChange}
               onProspectDailyRateChange={handleProspectDailyRateChange}
               onProspectResidenceChange={handleProspectResidenceChange}

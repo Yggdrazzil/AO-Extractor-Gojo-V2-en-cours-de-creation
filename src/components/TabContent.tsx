@@ -30,7 +30,7 @@ interface TabContentProps {
   isAnalyzingProspect?: boolean;
   onProspectStatusChange?: (id: string, status: Prospect['status']) => Promise<void>;
   onProspectAssigneeChange?: (id: string, assignedTo: string) => Promise<void>;
-  onProspectDateUpdateChange?: (id: string, dateUpdate: string) => Promise<void>;
+  onProspectTargetAccountChange?: (id: string, targetAccount: string) => Promise<void>;
   onProspectAvailabilityChange?: (id: string, availability: string) => Promise<void>;
   onProspectDailyRateChange?: (id: string, dailyRate: string) => Promise<void>;
   onProspectResidenceChange?: (id: string, residence: string) => Promise<void>;
@@ -80,7 +80,7 @@ export function TabContent({
   isAnalyzingProspect = false,
   onProspectStatusChange,
   onProspectAssigneeChange,
-  onProspectDateUpdateChange,
+  onProspectTargetAccountChange,
   onProspectAvailabilityChange,
   onProspectDailyRateChange,
   onProspectResidenceChange,
@@ -133,7 +133,7 @@ export function TabContent({
             salesReps={salesReps}
             onStatusChange={onProspectStatusChange || (() => Promise.resolve())}
             onAssigneeChange={onProspectAssigneeChange || (() => Promise.resolve())}
-            onDateUpdateChange={onProspectDateUpdateChange || (() => Promise.resolve())}
+            onTargetAccountChange={onProspectTargetAccountChange || (() => Promise.resolve())}
             onAvailabilityChange={onProspectAvailabilityChange || (() => Promise.resolve())}
             onDailyRateChange={onProspectDailyRateChange || (() => Promise.resolve())}
             onResidenceChange={onProspectResidenceChange || (() => Promise.resolve())}

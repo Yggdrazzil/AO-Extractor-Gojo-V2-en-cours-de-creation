@@ -6,10 +6,10 @@ import { ProspectContentModal } from './ProspectContentModal';
 interface EditingField {
   id: string;
   value: string;
-  field: 'dateUpdate' | 'availability' | 'dailyRate' | 'residence' | 'mobility' | 'phone' | 'email';
+  field: 'targetAccount' | 'availability' | 'dailyRate' | 'residence' | 'mobility' | 'phone' | 'email';
 }
 
-type SortField = 'dateUpdate' | 'availability' | 'dailyRate' | 'residence' | 'mobility' | 'phone' | 'email';
+type SortField = 'targetAccount' | 'availability' | 'dailyRate' | 'residence' | 'mobility' | 'phone' | 'email';
 type SortDirection = 'asc' | 'desc' | null;
 
 interface SortState {
@@ -45,7 +45,7 @@ interface ProspectsTableProps {
   salesReps: SalesRep[];
   onStatusChange: (id: string, status: Prospect['status']) => Promise<void>;
   onAssigneeChange: (id: string, assignedTo: string) => Promise<void>;
-  onDateUpdateChange: (id: string, dateUpdate: string) => Promise<void>;
+  onTargetAccountChange: (id: string, targetAccount: string) => Promise<void>;
   onAvailabilityChange: (id: string, availability: string) => Promise<void>;
   onDailyRateChange: (id: string, dailyRate: string) => Promise<void>;
   onResidenceChange: (id: string, residence: string) => Promise<void>;
@@ -61,7 +61,7 @@ export function ProspectsTable({
   salesReps,
   onStatusChange,
   onAssigneeChange,
-  onDateUpdateChange,
+  onTargetAccountChange,
   onAvailabilityChange,
   onDailyRateChange,
   onResidenceChange,
@@ -176,11 +176,6 @@ export function ProspectsTable({
           const rateB = b.dailyRate || 0;
           return (rateA - rateB) * direction;
 
-        case 'dateUpdate':
-          const dateA = a[sort.field] ? new Date(a[sort.field]!).getTime() : 0;
-          const dateB = b[sort.field] ? new Date(b[sort.field]!).getTime() : 0;
-          return (dateA - dateB) * direction;
-
         default:
           const valA = (a[sort.field] || '').toLowerCase();
           const valB = (b[sort.field] || '').toLowerCase();
@@ -194,12 +189,6 @@ export function ProspectsTable({
     switch (field) {
       case 'dailyRate':
         value = prospect.dailyRate?.toString() || '';
-        break;
-      case 'dateUpdate':
-        if (prospect[field]) {
-          const date = new Date(prospect[field]!);
-          value = `${date.getDate().toString().padStart(2, '0')}/${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getFullYear()}`;
-        }
         break;
       default:
         value = prospect[field];
@@ -217,8 +206,8 @@ export function ProspectsTable({
         }
 
         switch (editingField.field) {
-          case 'dateUpdate':
-            await onDateUpdateChange(id, value);
+          case 'targetAccount':
+            await onTargetAccountChange(id, value);
             break;
           case 'availability':
             await onAvailabilityChange(id, value);
@@ -339,11 +328,11 @@ export function ProspectsTable({
               <th className="p-4 w-16" />
               <th 
                 className="p-4 font-medium text-gray-600 dark:text-gray-200 cursor-pointer select-none"
-                onClick={() => handleSort('dateUpdate')}
+                onClick={() => handleSort('targetAccount')}
               >
                 <div className="flex items-center gap-2">
-                  Date Mise à Jour
-                  {getSortIcon('dateUpdate')}
+                  Compte Ciblé
+                  {getSortIcon('targetAccount')}
                 </div>
               </th>
               <th 
@@ -423,9 +412,9 @@ export function ProspectsTable({
                   </span>
                 </td>
                 
-                {/* Date Mise à Jour */}
+                {/* Compte Ciblé */}
                 <td className="p-4 text-gray-900 dark:text-gray-100">
-                  {editingField?.id === prospect.id && editingField.field === 'dateUpdate' ? (
+                  {editingField?.id === prospect.id && editingField.field === 'targetAccount' ? (
                     <div className="flex items-center space-x-2">
                       <input
                         type="text"
@@ -433,7 +422,7 @@ export function ProspectsTable({
                         onChange={(e) => setEditingField({ ...editingField, value: e.target.value })}
                         onKeyDown={handleKeyPress}
                         className="flex-1 px-2 py-1 border border-blue-500 dark:border-blue-400 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700"
-                        placeholder="JJ/MM/AAAA"
+                        placeholder="Nom du compte ciblé"
                         autoFocus
                       />
                       <button onClick={handleSave} className="p-1 text-green-600 hover:text-green-700 dark:text-green-400" title="Sauvegarder">
@@ -444,8 +433,8 @@ export function ProspectsTable({
                       </button>
                     </div>
                   ) : (
-                    <div onClick={() => handleEdit(prospect, 'dateUpdate')} className="cursor-pointer hover:text-blue-600 dark:hover:text-blue-400" title="Cliquer pour modifier">
-                      {formatTableDate(prospect.dateUpdate)}
+                    <div onClick={() => handleEdit(prospect, 'targetAccount')} className="cursor-pointer hover:text-blue-600 dark:hover:text-blue-400" title="Cliquer pour modifier">
+                      {prospect.targetAccount || 'Non spécifié'}
                     </div>
                   )}
                 </td>

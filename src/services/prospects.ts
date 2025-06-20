@@ -52,7 +52,7 @@ export async function fetchProspects(): Promise<Prospect[]> {
         text_content,
         file_name,
         file_url,
-        date_update,
+        target_account,
         availability,
         daily_rate,
         residence,
@@ -90,7 +90,7 @@ export async function fetchProspects(): Promise<Prospect[]> {
       textContent: prospect.text_content || '',
       fileName: prospect.file_name,
       fileUrl: prospect.file_url,
-      dateUpdate: prospect.date_update,
+      targetAccount: prospect.target_account || '',
       availability: prospect.availability || '',
       dailyRate: prospect.daily_rate,
       residence: prospect.residence || '',
@@ -129,7 +129,7 @@ export async function createProspect(prospect: Omit<Prospect, 'id'>): Promise<Pr
       text_content: prospect.textContent,
       file_name: prospect.fileName,
       file_url: prospect.fileUrl,
-      date_update: convertFrenchDateToISO(prospect.dateUpdate) || new Date().toISOString(),
+      target_account: prospect.targetAccount,
       availability: prospect.availability,
       daily_rate: prospect.dailyRate,
       residence: prospect.residence,
@@ -165,7 +165,7 @@ export async function createProspect(prospect: Omit<Prospect, 'id'>): Promise<Pr
       textContent: data.text_content,
       fileName: data.file_name,
       fileUrl: data.file_url,
-      dateUpdate: data.date_update,
+      targetAccount: data.target_account,
       availability: data.availability,
       dailyRate: data.daily_rate,
       residence: data.residence,
@@ -200,20 +200,19 @@ export async function updateProspectAssignee(id: string, assignedTo: string): Pr
   if (error) throw error;
 }
 
-export async function updateProspectDateUpdate(id: string, dateUpdate: string | null): Promise<void> {
-  const isoDate = dateUpdate ? convertFrenchDateToISO(dateUpdate) : null;
+export async function updateProspectTargetAccount(id: string, targetAccount: string): Promise<void> {
   if (!id) {
-    console.error('No prospect ID provided for date update');
+    console.error('No prospect ID provided for target account update');
     return;
   }
   
   const { error } = await supabase
     .from('prospects')
-    .update({ date_update: isoDate })
+    .update({ target_account: targetAccount })
     .eq('id', id);
 
   if (error) {
-    console.error('Failed to update date update:', error);
+    console.error('Failed to update target account:', error);
     throw error;
   }
 }
