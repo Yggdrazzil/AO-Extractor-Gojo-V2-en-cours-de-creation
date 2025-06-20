@@ -20,6 +20,7 @@ export function LinkedInModal({ isOpen, onClose, rfpId, onUrlCountChange }: Link
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [visitedLinks, setVisitedLinks] = useState<Set<string>>(new Set());
+  const firstInputRef = React.useRef<HTMLInputElement>(null);
 
   const updateUrlCount = useCallback((newLinks: LinkedInLink[]) => {
     if (onUrlCountChange) {
@@ -42,6 +43,13 @@ export function LinkedInModal({ isOpen, onClose, rfpId, onUrlCountChange }: Link
   useEffect(() => {
     if (isOpen && rfpId) {
       loadLinks();
+      // Focus sur le premier champ après un court délai pour s'assurer que la modal est rendue
+      setTimeout(() => {
+        if (firstInputRef.current) {
+          firstInputRef.current.focus();
+          firstInputRef.current.select();
+        }
+      }, 100);
     } else {
       setLinks([]);
       setUrls(['']);
@@ -124,6 +132,13 @@ export function LinkedInModal({ isOpen, onClose, rfpId, onUrlCountChange }: Link
       setLinks(newLinks);
       setUrls(['']); // Reset avec un champ vide
       updateUrlCount(newLinks);
+      
+      // Refocus sur le premier champ après ajout
+      setTimeout(() => {
+        if (firstInputRef.current) {
+          firstInputRef.current.focus();
+        }
+      }, 100);
     } catch (error) {
       console.error('Error adding LinkedIn links:', error);
       const errorMessage = error instanceof Error ? error.message : 'Erreur inconnue';
@@ -165,6 +180,13 @@ export function LinkedInModal({ isOpen, onClose, rfpId, onUrlCountChange }: Link
     ));
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    // Permettre Ctrl+V (ou Cmd+V sur Mac) pour coller
+    if ((e.ctrlKey || e.metaKey) && e.key === 'v') {
+      // Le navigateur gère automatiquement le collage
+      return;
+    }
+  };
   if (!isOpen) return null;
 
   return (
@@ -199,11 +221,13 @@ export function LinkedInModal({ isOpen, onClose, rfpId, onUrlCountChange }: Link
             {urls.map((url, index) => (
               <div key={index} className="flex gap-2">
                 <input
+                  ref={index === 0 ? firstInputRef : null}
                   type="url"
                   value={url}
                   onChange={(e) => handleUrlChange(index, e.target.value)}
+                  onKeyDown={handleKeyDown}
                   className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-                  placeholder="https://www.linkedin.com/in/..."
+                  placeholder="Collez ici le lien LinkedIn ou autre profil..."
                   disabled={isLoading}
                 />
                 {urls.length > 1 && (
