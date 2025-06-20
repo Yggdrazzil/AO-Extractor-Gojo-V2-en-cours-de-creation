@@ -408,19 +408,29 @@ function App() {
         throw new Error("Veuillez sélectionner un commercial valide");
       }
 
-      // Pour l'instant, créer un prospect avec des données par défaut
-      // TODO: Implémenter l'analyse IA des profils
+      // Analyser le contenu textuel avec l'IA si disponible
+      let analysisResult = {};
+      if (textContent.trim()) {
+        try {
+          analysisResult = await analyzeProspect(textContent);
+          console.log('Prospect analysis result:', analysisResult);
+        } catch (analysisError) {
+          console.error('Error analyzing prospect:', analysisError);
+          // Continuer avec des valeurs par défaut si l'analyse échoue
+        }
+      }
+
       const newProspect = await createProspect({
         textContent: textContent || '',
         fileName: file?.name || null,
         fileUrl: null, // TODO: Upload du fichier
         targetAccount: targetAccount || '',
-        availability: 'À définir',
-        dailyRate: null,
-        residence: 'À définir',
-        mobility: 'À définir',
-        phone: 'À définir',
-        email: 'À définir',
+        availability: analysisResult.availability || 'À définir',
+        dailyRate: analysisResult.dailyRate || null,
+        residence: analysisResult.residence || 'À définir',
+        mobility: analysisResult.mobility || 'À définir',
+        phone: analysisResult.phone || 'À définir',
+        email: analysisResult.email || 'À définir',
         status: 'À traiter',
         assignedTo,
         isRead: false
