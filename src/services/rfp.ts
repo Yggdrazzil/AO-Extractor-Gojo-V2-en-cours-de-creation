@@ -113,7 +113,8 @@ export async function fetchRFPs(): Promise<RFP[]> {
       startDate: rfp.start_date,
       status: rfp.status,
       assignedTo: rfp.assigned_to,
-      content: rfp.raw_content || ''
+      content: rfp.raw_content || '',
+      isRead: rfp.is_read || false
     }));
   } catch (error) {
     console.error('Failed to fetch RFPs:', error);
@@ -183,7 +184,8 @@ export async function createRFP(rfp: Omit<RFP, 'id'>): Promise<RFP> {
       startDate: data.start_date,
       status: data.status,
       assignedTo: data.assigned_to,
-      content: data.raw_content
+      content: data.raw_content,
+      isRead: data.is_read || false
     };
   } catch (error) {
     console.error('Failed to create RFP:', error);
