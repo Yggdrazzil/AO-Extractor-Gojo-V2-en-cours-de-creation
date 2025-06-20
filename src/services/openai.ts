@@ -88,13 +88,16 @@ export async function analyzeRFP(content: string): Promise<Partial<RFP>> {
       throw new Error("Erreur lors de l'analyse de la réponse");
     }
 
+    // Si aucune date de création n'est trouvée, utiliser la date du jour
+    const todayFormatted = formatDate(new Date());
+
     return {
       client: result.client === null ? 'Non spécifié' : result.client,
       mission: result.mission || 'Non spécifié',
       location: result.location || 'Non spécifié',
       maxRate: result.maxRate || null,
       startDate: result.startDate || null,
-      createdAt: result.createdAt || null
+      createdAt: result.createdAt || todayFormatted
     };
   } catch (error) {
     console.error('Erreur OpenAI:', error);
