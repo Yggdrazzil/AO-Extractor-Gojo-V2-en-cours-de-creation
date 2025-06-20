@@ -595,7 +595,7 @@ function App() {
               onStartDateChange={handleStartDateChange}
               onCreatedAtChange={handleCreatedAtChange}
               onDelete={handleDelete}
-              onViewRFP={handleViewRFP}
+              onView={handleViewRFP}
               onProspectStatusChange={handleProspectStatusChange}
               onProspectAssigneeChange={handleProspectAssigneeChange}
               onProspectDateUpdateChange={handleProspectDateUpdateChange}
@@ -606,7 +606,7 @@ function App() {
               onProspectPhoneChange={handleProspectPhoneChange}
               onProspectEmailChange={handleProspectEmailChange}
               onProspectDelete={handleProspectDelete}
-              onViewProspect={handleViewProspect}
+              onProspectView={handleViewProspect}
             />
           </div>
         </div>

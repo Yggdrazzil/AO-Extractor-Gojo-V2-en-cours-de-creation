@@ -93,7 +93,7 @@ export function TabContent({
   switch (activeTab) {
     case 'rfp-extractor':
       return (
-        <div className="space-y-6">
+        <div className="p-6 space-y-6 h-full overflow-auto">
           {onAnalyzeRFP && (
             <RFPForm
               salesReps={salesReps}
@@ -101,30 +101,26 @@ export function TabContent({
               isLoading={isAnalyzing}
             />
           )}
-          {onStatusChange && onAssigneeChange && onClientChange && onMissionChange && 
-           onLocationChange && onMaxRateChange && onStartDateChange && onCreatedAtChange && 
-           onView && onDelete && (
-            <RFPTable
-              rfps={rfps}
-              salesReps={salesReps}
-              onStatusChange={onStatusChange}
-              onAssigneeChange={onAssigneeChange}
-              onClientChange={onClientChange}
-              onMissionChange={onMissionChange}
-              onLocationChange={onLocationChange}
-              onMaxRateChange={onMaxRateChange}
-              onStartDateChange={onStartDateChange}
-              onCreatedAtChange={onCreatedAtChange}
-              onView={onView}
-              onDelete={onDelete}
-            />
-          )}
+          <RFPTable
+            rfps={rfps}
+            salesReps={salesReps}
+            onStatusChange={onStatusChange || (() => Promise.resolve())}
+            onAssigneeChange={onAssigneeChange || (() => Promise.resolve())}
+            onClientChange={onClientChange || (() => Promise.resolve())}
+            onMissionChange={onMissionChange || (() => Promise.resolve())}
+            onLocationChange={onLocationChange || (() => Promise.resolve())}
+            onMaxRateChange={onMaxRateChange || (() => Promise.resolve())}
+            onStartDateChange={onStartDateChange || (() => Promise.resolve())}
+            onCreatedAtChange={onCreatedAtChange || (() => Promise.resolve())}
+            onView={onView || (() => Promise.resolve())}
+            onDelete={onDelete || (() => Promise.resolve())}
+          />
         </div>
       );
 
     case 'prospects':
       return (
-        <div className="space-y-6">
+        <div className="p-6 space-y-6 h-full overflow-auto">
           {onAnalyzeProspect && (
             <ProspectsForm
               salesReps={salesReps}
@@ -132,26 +128,21 @@ export function TabContent({
               isLoading={isAnalyzingProspect}
             />
           )}
-          {onProspectStatusChange && onProspectAssigneeChange && onProspectDateUpdateChange && 
-           onProspectAvailabilityChange && onProspectDailyRateChange && onProspectResidenceChange && 
-           onProspectMobilityChange && onProspectPhoneChange && onProspectEmailChange && 
-           onProspectView && onProspectDelete && (
-            <ProspectsTable
-              prospects={prospects}
-              salesReps={salesReps}
-              onStatusChange={onProspectStatusChange}
-              onAssigneeChange={onProspectAssigneeChange}
-              onDateUpdateChange={onProspectDateUpdateChange}
-              onAvailabilityChange={onProspectAvailabilityChange}
-              onDailyRateChange={onProspectDailyRateChange}
-              onResidenceChange={onProspectResidenceChange}
-              onMobilityChange={onProspectMobilityChange}
-              onPhoneChange={onProspectPhoneChange}
-              onEmailChange={onProspectEmailChange}
-              onView={onProspectView}
-              onDelete={onProspectDelete}
-            />
-          )}
+          <ProspectsTable
+            prospects={prospects}
+            salesReps={salesReps}
+            onStatusChange={onProspectStatusChange || (() => Promise.resolve())}
+            onAssigneeChange={onProspectAssigneeChange || (() => Promise.resolve())}
+            onDateUpdateChange={onProspectDateUpdateChange || (() => Promise.resolve())}
+            onAvailabilityChange={onProspectAvailabilityChange || (() => Promise.resolve())}
+            onDailyRateChange={onProspectDailyRateChange || (() => Promise.resolve())}
+            onResidenceChange={onProspectResidenceChange || (() => Promise.resolve())}
+            onMobilityChange={onProspectMobilityChange || (() => Promise.resolve())}
+            onPhoneChange={onProspectPhoneChange || (() => Promise.resolve())}
+            onEmailChange={onProspectEmailChange || (() => Promise.resolve())}
+            onView={onProspectView || (() => Promise.resolve())}
+            onDelete={onProspectDelete || (() => Promise.resolve())}
+          />
         </div>
       );
 
