@@ -625,13 +625,12 @@ export function ProspectsTable({
                   <div className="flex space-x-2">
                     <button
                       onClick={() => {
-                        // Marquer comme lu
-                        handleViewProspect(prospect);
+                        // Marquer comme lu sans ouvrir la modal
+                        onView(prospect);
                         // Ouvrir directement le CV dans un nouvel onglet si disponible
                         if (prospect.fileUrl) {
                           window.open(prospect.fileUrl, '_blank');
                         }
-                        // Ne plus ouvrir la modal automatiquement
                       }}
                       className="p-1 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
                       title="Voir le profil"
