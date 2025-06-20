@@ -14,7 +14,7 @@ export interface Database {
           id: string
           rfp_id: string
           url: string
-          created_at: string
+          created_at: string | null
         }
         Insert: {
           id?: string
@@ -29,12 +29,68 @@ export interface Database {
           created_at?: string
         }
       }
+      prospects: {
+        Row: {
+          id: string
+          text_content: string | null
+          file_name: string | null
+          file_url: string | null
+          availability: string | null
+          daily_rate: number | null
+          residence: string | null
+          mobility: string | null
+          phone: string | null
+          email: string | null
+          status: 'À traiter' | 'Traité' | null
+          assigned_to: string
+          is_read: boolean
+          created_at: string | null
+          target_account: string | null
+          file_content: string | null
+        }
+        Insert: {
+          id?: string
+          text_content?: string | null
+          file_name?: string | null
+          file_url?: string | null
+          availability?: string | null
+          daily_rate?: number | null
+          residence?: string | null
+          mobility?: string | null
+          phone?: string | null
+          email?: string | null
+          status?: 'À traiter' | 'Traité' | null
+          assigned_to: string
+          is_read?: boolean
+          created_at?: string
+          target_account?: string | null
+          file_content?: string | null
+        }
+        Update: {
+          id?: string
+          text_content?: string | null
+          file_name?: string | null
+          file_url?: string | null
+          availability?: string | null
+          daily_rate?: number | null
+          residence?: string | null
+          mobility?: string | null
+          phone?: string | null
+          email?: string | null
+          status?: 'À traiter' | 'Traité' | null
+          assigned_to?: string
+          is_read?: boolean
+          created_at?: string
+          target_account?: string | null
+          file_content?: string | null
+        }
+      }
       sales_reps: {
         Row: {
           id: string
           name: string
           code: string
-          created_at: string
+          created_at: string | null
         }
         Insert: {
           id?: string
@@ -56,11 +112,12 @@ export interface Database {
           mission: string
           location: string
           max_rate: number | null
-          created_at: string
-          start_date: string
-          status: 'À traiter' | 'En cours' | 'Traité' | 'Refusé'
-          assigned_to: string  // UUID référençant sales_reps.id
+          created_at: string | null
+          start_date: string | null
+          status: 'À traiter' | 'En cours' | 'Traité' | 'Refusé' | null
+          assigned_to: string
           raw_content: string
+          is_read: boolean
         }
         Insert: {
           id?: string
@@ -69,10 +126,11 @@ export interface Database {
           location: string
           max_rate?: number | null
           created_at?: string
-          start_date: string
-          status?: 'À traiter' | 'En cours' | 'Traité' | 'Refusé'
+          start_date?: string | null
+          status?: 'À traiter' | 'En cours' | 'Traité' | 'Refusé' | null
           assigned_to: string
           raw_content: string
+          is_read?: boolean
         }
         Update: {
           id?: string
@@ -81,10 +139,11 @@ export interface Database {
           location?: string
           max_rate?: number | null
           created_at?: string
-          start_date?: string
-          status?: 'À traiter' | 'En cours' | 'Traité' | 'Refusé'
+          start_date?: string | null
+          status?: 'À traiter' | 'En cours' | 'Traité' | 'Refusé' | null
           assigned_to?: string
           raw_content?: string
+          is_read?: boolean
         }
       }
     }
@@ -95,7 +154,8 @@ export interface Database {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      rfp_status: 'En cours' | 'Refusé' | 'Traité' | 'À traiter'
+      prospect_status: 'Traité' | 'À traiter'
     }
   }
 }
