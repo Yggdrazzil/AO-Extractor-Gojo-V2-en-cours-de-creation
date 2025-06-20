@@ -57,8 +57,7 @@ export async function fetchRFPs(): Promise<RFP[]> {
       userId: session?.user?.id
     });
 
-    // D'abord, essayer avec la colonne is_read
-    let { data, error } = await supabase
+    const { data, error } = await supabase
       .from('rfps')
       .select(`
         id,
@@ -70,33 +69,10 @@ export async function fetchRFPs(): Promise<RFP[]> {
         start_date,
         status,
         assigned_to,
-        raw_content,
-        is_read
+        raw_content
       `)
       .order('created_at', { ascending: false });
 
-    // Si erreur avec is_read, essayer sans cette colonne
-    if (error && error.message?.includes('is_read')) {
-      console.warn('is_read column not found, fetching without it...');
-      const result = await supabase
-        .from('rfps')
-        .select(`
-          id,
-          client,
-          mission,
-          location,
-          max_rate,
-          created_at,
-          start_date,
-          status,
-          assigned_to,
-          raw_content
-        `)
-        .order('created_at', { ascending: false });
-      
-      data = result.data;
-      error = result.error;
-    }
 
     console.log('Supabase query result:', {
       hasData: !!data,
@@ -137,8 +113,7 @@ export async function fetchRFPs(): Promise<RFP[]> {
       startDate: rfp.start_date,
       status: rfp.status,
       assignedTo: rfp.assigned_to,
-      content: rfp.raw_content || '',
-      isRead: (rfp as any).is_read !== undefined ? (rfp as any).is_read : false
+      content: rfp.raw_content || ''
     }));
   } catch (error) {
     console.error('Failed to fetch RFPs:', error);
@@ -177,12 +152,6 @@ export async function createRFP(rfp: Omit<RFP, 'id'>): Promise<RFP> {
       raw_content: rfp.content || ''
     };
 
-    // Essayer d'ajouter is_read si la colonne existe
-    try {
-      insertData.is_read = false;
-    } catch (e) {
-      console.warn('is_read column may not exist, proceeding without it');
-    }
 
     console.log('Creating RFP with data:', insertData);
 
@@ -214,8 +183,7 @@ export async function createRFP(rfp: Omit<RFP, 'id'>): Promise<RFP> {
       startDate: data.start_date,
       status: data.status,
       assignedTo: data.assigned_to,
-      content: data.raw_content,
-      isRead: (data as any).is_read !== undefined ? (data as any).is_read : false
+      content: data.raw_content
     };
   } catch (error) {
     console.error('Failed to create RFP:', error);
@@ -223,76 +191,6 @@ export async function createRFP(rfp: Omit<RFP, 'id'>): Promise<RFP> {
   }
 }
 
-export async function markRFPAsRead(id: string): Promise<void> {
-  console.log('Marking RFP as read:', id);
-  
-  try {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) {
-      console.error('No active session found');
-      throw new Error('Authentication required');
-    }
-
-    // Essayer de mettre à jour is_read
-    const { error } = await supabase
-      .from('rfps')
-      .update({ is_read: true })
-      .eq('id', id);
-
-    if (error) {
-      console.error('Failed to mark RFP as read:', error);
-      if (error.code === 'PGRST301') {
-        throw new Error('Session expirée. Veuillez vous reconnecter.');
-      }
-      // Ne pas lancer d'erreur si la colonne is_read n'existe pas
-      if (error.message?.includes('is_read')) {
-        console.warn('is_read column not available, skipping update');
-        return;
-      }
-      throw error;
-    }
-    console.log('Successfully marked RFP as read');
-  } catch (error) {
-    console.error('Error in markRFPAsRead:', error);
-    // Ne pas lancer d'erreur pour les problèmes de colonne is_read
-    if (error instanceof Error && error.message.includes('is_read')) {
-      console.warn('Skipping read status update due to column issue');
-      return;
-    }
-    throw error;
-  }
-}
-
-export async function toggleRFPReadStatus(id: string, isRead: boolean): Promise<void> {
-  console.log('Toggling RFP read status:', { id, isRead });
-
-  try {
-    const { error } = await supabase
-      .from('rfps')
-      .update({ is_read: isRead })
-      .eq('id', id);
-
-    if (error) {
-      console.error('Error toggling RFP read status:', error);
-      // Ne pas lancer d'erreur si la colonne is_read n'existe pas
-      if (error.message?.includes('is_read')) {
-        console.warn('is_read column not available, skipping update');
-        return;
-      }
-      throw error;
-    }
-
-    console.log('Successfully toggled RFP read status');
-  } catch (error) {
-    console.error('Error in toggleRFPReadStatus:', error);
-    // Ne pas lancer d'erreur pour les problèmes de colonne is_read
-    if (error instanceof Error && error.message.includes('is_read')) {
-      console.warn('Skipping read status toggle due to column issue');
-      return;
-    }
-    throw error;
-  }
-}
 
 export async function updateRFPStatus(id: string, status: RFP['status']): Promise<void> {
   const { error } = await supabase

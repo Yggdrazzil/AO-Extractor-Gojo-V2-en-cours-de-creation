@@ -256,8 +256,7 @@ function App() {
         startDate: analysis.startDate,
         status: 'À traiter',
         assignedTo,
-        content,
-        isRead: false
+        content
       });
 
       setRfps((prev) => [newRFP, ...prev]);
@@ -371,41 +370,8 @@ function App() {
   };
 
   const handleViewRFP = async (rfp: RFP) => {
-    try {
-      console.log('Handling view RFP:', rfp.id);
-      if (!rfp.isRead) {
-        await markRFPAsRead(rfp.id);
-      }
-      setRfps(prev => prev.map(item => {
-        if (item.id === rfp.id) {
-          console.log('Updating RFP read status in state');
-          return { ...item, isRead: true };
-        }
-        return item;
-      }));
-    } catch (error) {
-      console.error('Failed to mark RFP as read:', error);
-    }
-  };
-
-  const handleToggleRead = async (id: string, isRead: boolean) => {
-    try {
-      console.log('Handling toggle read:', { id, isRead });
-      await toggleRFPReadStatus(id, isRead);
-      setRfps(prev => {
-        const updated = prev.map(rfp => 
-          rfp.id === id ? { ...rfp, isRead } : rfp
-        );
-        console.log('Updated RFPs state:', {
-          before: prev.find(r => r.id === id)?.isRead,
-          after: updated.find(r => r.id === id)?.isRead
-        });
-        return updated;
-      });
-    } catch (error) {
-      console.error('Failed to toggle read status:', error);
-      alert('Erreur lors de la mise à jour du statut de lecture');
-    }
+    // Simplement ouvrir la modal de visualisation
+    console.log('Viewing RFP:', rfp.id);
   };
 
   if (!session) {
@@ -447,7 +413,6 @@ function App() {
                 onLocationChange={handleLocationChange}
                 onMaxRateChange={handleMaxRateChange}
                 onStartDateChange={handleStartDateChange}
-                onToggleRead={handleToggleRead}
                 onCreatedAtChange={handleCreatedAtChange}
                 onView={handleViewRFP}
                 onDelete={handleDelete}

@@ -61,7 +61,6 @@ export interface Database {
           status: 'À traiter' | 'En cours' | 'Traité' | 'Refusé'
           assigned_to: string  // UUID référençant sales_reps.id
           raw_content: string
-          is_read: boolean
         }
         Insert: {
           id?: string
@@ -74,7 +73,6 @@ export interface Database {
           status?: 'À traiter' | 'En cours' | 'Traité' | 'Refusé'
           assigned_to: string
           raw_content: string
-          is_read?: boolean
         }
         Update: {
           id?: string
@@ -87,7 +85,6 @@ export interface Database {
           status?: 'À traiter' | 'En cours' | 'Traité' | 'Refusé'
           assigned_to?: string
           raw_content?: string
-          is_read?: boolean
         }
       }
     }

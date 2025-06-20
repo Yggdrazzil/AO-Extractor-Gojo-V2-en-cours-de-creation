@@ -60,7 +60,6 @@ interface RFPTableProps {
   onMissionChange: (id: string, mission: string) => Promise<void>;
   onLocationChange: (id: string, location: string) => Promise<void>;
   onMaxRateChange: (id: string, maxRate: string) => Promise<void>;
-  onToggleRead: (id: string, isRead: boolean) => Promise<void>;
   onStartDateChange: (id: string, startDate: string) => Promise<void>;
   onCreatedAtChange: (id: string, createdAt: string) => Promise<void>;
   onView: (rfp: RFP) => Promise<void>;
@@ -76,7 +75,6 @@ export function RFPTable({
   onMissionChange,
   onLocationChange,
   onMaxRateChange,
-  onToggleRead,
   onStartDateChange,
   onCreatedAtChange,
   onView,
@@ -456,22 +454,9 @@ export function RFPTable({
                   rfp.status === 'Traité' ? 'bg-gray-200 dark:bg-gray-900' : 'dark:bg-gray-600'
                 }`}
               >
-                <td 
-                  className="p-4 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onToggleRead(rfp.id, !rfp.isRead);
-                  }}
-                  title={rfp.isRead ? "Marquer comme non lu" : "Marquer comme lu"}
-                >
-                  <span 
-                    className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium transition-opacity ${
-                      !rfp.isRead 
-                        ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 opacity-100' 
-                        : 'bg-gray-100 text-gray-400 dark:bg-gray-800 dark:text-gray-500 opacity-50 hover:opacity-100'
-                    }`}
-                  >
-                    {rfp.isRead ? 'Lu' : 'New'}
+                <td className="p-4">
+                  <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                    AO
                   </span>
                 </td>
                 <td className="p-4 text-gray-900 dark:text-gray-100">
@@ -716,14 +701,8 @@ export function RFPTable({
                   <div className="flex space-x-2">
                     <button
                       onClick={() => {
-                        onView(rfp)
-                        .then(() => {
-                          const updatedRfp = { ...rfp, isRead: true };
-                          setSelectedRFP(rfp);
-                        })
-                        .catch(error => {
-                          console.error('Error viewing RFP:', error);
-                        });
+                        onView(rfp);
+                        setSelectedRFP(rfp);
                       }}
                       className="p-1 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
                     >

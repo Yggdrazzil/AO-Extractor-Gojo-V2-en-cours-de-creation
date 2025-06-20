@@ -9,7 +9,6 @@ export interface RFP {
   startDate: string | null;
   status: 'À traiter' | 'Traité';
   assignedTo: string;
-  isRead: boolean;
 }
 
 export interface SalesRep {
