@@ -624,21 +624,39 @@ export function ProspectsTable({
                 <td className="p-4">
                   <div className="flex space-x-2">
                     <button
-                      onClick={() => handleViewProspect(prospect)}
+                      onClick={() => {
+                        // Marquer comme lu
+                        handleViewProspect(prospect);
+                        // Ouvrir directement le CV dans un nouvel onglet si disponible
+                        if (prospect.fileUrl) {
+                          window.open(prospect.fileUrl, '_blank');
+                        } else {
+                          // Si pas de fichier, ouvrir la modal avec les infos textuelles
+                          setSelectedProspect(prospect);
+                        }
+                      }}
                       className="p-1 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
                       title="Voir le profil"
                     >
                       <Eye className="w-5 h-5" />
                     </button>
                     {prospect.fileUrl && (
-                      <a
-                        href={prospect.fileUrl}
-                        download={prospect.fileName}
+                      <button
+                        onClick={() => {
+                          // Créer un lien temporaire pour forcer le téléchargement
+                          const link = document.createElement('a');
+                          link.href = prospect.fileUrl;
+                          link.download = prospect.fileName || 'cv.pdf';
+                          link.target = '_blank';
+                          document.body.appendChild(link);
+                          link.click();
+                          document.body.removeChild(link);
+                        }}
                         className="p-1 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
                         title="Télécharger le CV"
                       >
                         <Download className="w-5 h-5" />
-                      </a>
+                      </button>
                     )}
                     <button
                       onClick={() => onDelete(prospect.id)}
