@@ -48,77 +48,120 @@ export function RFPContentModal({ isOpen, onClose, content, client, mission }: R
   const generatePDF = () => {
     const doc = new jsPDF();
     
-    // Configure font sizes
+    // Configure font sizes and margins
     const titleSize = 16;
     const subtitleSize = 14;
     const bodySize = 12;
-    
-    // Set title
-    doc.setFontSize(titleSize);
-    doc.text(client, 20, 20);
-    
-    // Set mission
-    doc.setFontSize(subtitleSize);
-    doc.text(mission, 20, 30);
-    
-    // Format content with sections
-    const sections = [
-      "Contexte de la mission",
-      "Objectifs et livrables",
-      "Compétences demandées",
-      "Informations générales"
-    ];
-    
-    let y = 50;
     const margin = 20;
     const lineHeight = 7;
     const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
     const maxWidth = pageWidth - 2 * margin;
     
-    // Split content into sections
-    let currentContent = content;
-    sections.forEach(section => {
-      const sectionIndex = currentContent.indexOf(section);
-      if (sectionIndex !== -1) {
-        // Add section title
-        if (y > doc.internal.pageSize.getHeight() - 20) {
+    let y = 20;
+    
+    // Set title
+    doc.setFontSize(titleSize);
+    doc.setFont(undefined, 'bold');
+    doc.text(client, margin, y);
+    y += lineHeight + 5;
+    
+    // Set mission
+    doc.setFontSize(subtitleSize);
+    doc.setFont(undefined, 'normal');
+    doc.text(mission, margin, y);
+    y += lineHeight + 10;
+    
+    // Add a separator line
+    doc.setLineWidth(0.5);
+    doc.line(margin, y, pageWidth - margin, y);
+    y += 10;
+    
+    // Set body font
+    doc.setFontSize(bodySize);
+    doc.setFont(undefined, 'normal');
+    
+    // Split content into lines and process each line
+    const lines = content.split('\n');
+    
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i].trim();
+      
+      // Skip empty lines but add some spacing
+      if (!line) {
+        y += lineHeight / 2;
+        continue;
+      }
+      
+      // Check if we need a new page
+      if (y > pageHeight - 30) {
+        doc.addPage();
+        y = 20;
+      }
+      
+      // Check if this line looks like a section header
+      const sectionHeaders = [
+        "Contexte de la mission",
+        "Objectifs et livrables", 
+        "Compétences demandées",
+        "Informations générales",
+        "Description de la mission",
+        "Profil recherché",
+        "Compétences techniques",
+        "Compétences fonctionnelles"
+      ];
+      
+      const isHeader = sectionHeaders.some(header => 
+        line.toLowerCase().includes(header.toLowerCase())
+      );
+      
+      if (isHeader) {
+        // Add some space before section headers
+        if (i > 0) {
+          y += lineHeight;
+        }
+        
+        // Check if we need a new page after adding space
+        if (y > pageHeight - 30) {
           doc.addPage();
           y = 20;
         }
+        
+        // Format as section header
         doc.setFontSize(subtitleSize);
         doc.setFont(undefined, 'bold');
-        doc.text(section, margin, y);
-        y += lineHeight;
+        const headerLines = doc.splitTextToSize(line, maxWidth);
+        headerLines.forEach(headerLine => {
+          doc.text(headerLine, margin, y);
+          y += lineHeight;
+        });
+        y += 3; // Extra space after headers
         
-        // Get section content
-        const nextSectionIndex = sections.reduce((closest, nextSection) => {
-          const index = currentContent.indexOf(nextSection, sectionIndex + section.length);
-          return index !== -1 && index < closest ? index : closest;
-        }, currentContent.length);
-        
-        const sectionContent = currentContent
-          .substring(sectionIndex + section.length, nextSectionIndex)
-          .trim();
-        
-        // Add section content
+        // Reset to normal font for next content
+        doc.setFontSize(bodySize);
+        doc.setFont(undefined, 'normal');
+      } else {
+        // Regular content line
         doc.setFontSize(bodySize);
         doc.setFont(undefined, 'normal');
         
-        const lines = doc.splitTextToSize(sectionContent, maxWidth);
-        lines.forEach(line => {
-          if (y > doc.internal.pageSize.getHeight() - 20) {
+        // Split long lines to fit page width
+        const wrappedLines = doc.splitTextToSize(line, maxWidth);
+        
+        wrappedLines.forEach(wrappedLine => {
+          // Check if we need a new page
+          if (y > pageHeight - 30) {
             doc.addPage();
             y = 20;
           }
-          if (line.trim()) {
-            doc.text(line, margin, y);
+          
+          if (wrappedLine.trim()) {
+            doc.text(wrappedLine, margin, y);
             y += lineHeight;
           }
         });
-        
-        y += lineHeight; // Add space between sections
       }
-    });
+    }
     
     // Format filename: AO_client_mission
     const formatForFilename = (str: string) => {
