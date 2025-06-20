@@ -29,6 +29,26 @@ export interface Database {
           created_at?: string
         }
       }
+      linkedin_links: {
+        Row: {
+          id: string
+          rfp_id: string
+          url: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          rfp_id: string
+          url: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          rfp_id?: string
+          url?: string
+          created_at?: string
+        }
+      }
       sales_reps: {
         Row: {
           id: string

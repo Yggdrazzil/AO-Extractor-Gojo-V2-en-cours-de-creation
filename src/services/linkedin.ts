@@ -7,62 +7,6 @@ export interface LinkedInLink {
   created_at: string;
 }
 
-// Fonction pour vérifier et créer la table si nécessaire
-async function ensureLinkedInTableExists(): Promise<void> {
-  try {
-    console.log('Checking if linkedin_links table exists...');
-    
-    // Essayer de faire une requête simple pour vérifier l'existence de la table
-    const { data, error } = await supabase
-      .from('linkedin_links')
-      .select('count', { count: 'exact', head: true });
-
-    if (error) {
-      console.log('Table does not exist, creating it...', error);
-      
-      // Créer la table via RPC ou SQL direct
-      const { error: createError } = await supabase.rpc('create_linkedin_links_table');
-      
-      if (createError) {
-        console.error('Failed to create table via RPC, trying direct SQL...', createError);
-        
-        // Fallback: essayer de créer via SQL direct
-        const createTableSQL = `
-          CREATE TABLE IF NOT EXISTS public.linkedin_links (
-            id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-            rfp_id UUID NOT NULL REFERENCES public.rfps(id) ON DELETE CASCADE,
-            url TEXT NOT NULL,
-            created_at TIMESTAMPTZ DEFAULT NOW()
-          );
-          
-          ALTER TABLE public.linkedin_links ENABLE ROW LEVEL SECURITY;
-          
-          CREATE POLICY "Allow authenticated users to manage linkedin_links"
-          ON public.linkedin_links
-          FOR ALL
-          TO authenticated
-          USING (true)
-          WITH CHECK (true);
-        `;
-        
-        const { error: sqlError } = await supabase.rpc('exec_sql', { sql: createTableSQL });
-        
-        if (sqlError) {
-          console.error('Failed to create table via SQL:', sqlError);
-          throw new Error('Impossible de créer la table linkedin_links');
-        }
-      }
-      
-      console.log('Table created successfully');
-    } else {
-      console.log('Table exists, count:', data);
-    }
-  } catch (error) {
-    console.error('Error ensuring table exists:', error);
-    throw new Error('Erreur lors de la vérification/création de la table');
-  }
-}
-
 export async function fetchLinkedInLinks(rfpId: string): Promise<LinkedInLink[]> {
   try {
     if (!rfpId) {
@@ -71,9 +15,6 @@ export async function fetchLinkedInLinks(rfpId: string): Promise<LinkedInLink[]>
     }
 
     console.log('Fetching LinkedIn links for RFP:', rfpId);
-
-    // S'assurer que la table existe
-    await ensureLinkedInTableExists();
 
     const { data, error } = await supabase
       .from('linkedin_links')
@@ -115,9 +56,6 @@ export async function addLinkedInLinks(rfpId: string, urls: string[]): Promise<L
 
     console.log('Adding LinkedIn links for RFP:', rfpId, 'URLs:', validUrls.length);
 
-    // S'assurer que la table existe
-    await ensureLinkedInTableExists();
-
     const { data, error } = await supabase
       .from('linkedin_links')
       .insert(
@@ -152,9 +90,6 @@ export async function deleteLinkedInLink(id: string): Promise<void> {
 
     console.log('Deleting LinkedIn link:', id);
 
-    // S'assurer que la table existe
-    await ensureLinkedInTableExists();
-
     const { error } = await supabase
       .from('linkedin_links')
       .delete()
@@ -178,9 +113,6 @@ export async function deleteLinkedInLink(id: string): Promise<void> {
 export async function getLinkedInLinkCounts(): Promise<Map<string, number>> {
   try {
     console.log('Fetching LinkedIn link counts');
-
-    // S'assurer que la table existe
-    await ensureLinkedInTableExists();
 
     const { data, error } = await supabase
       .from('linkedin_links')
