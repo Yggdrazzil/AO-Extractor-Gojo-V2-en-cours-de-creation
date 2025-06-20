@@ -26,7 +26,7 @@ interface TabContentProps {
   
   // Props pour les prospects
   prospects?: Prospect[];
-  onAnalyzeProspect?: (textContent: string, file: File | null, assignedTo: string) => Promise<void>;
+  onAnalyzeProspect?: (textContent: string, targetAccount: string, file: File | null, assignedTo: string) => Promise<void>;
   isAnalyzingProspect?: boolean;
   onProspectStatusChange?: (id: string, status: Prospect['status']) => Promise<void>;
   onProspectAssigneeChange?: (id: string, assignedTo: string) => Promise<void>;

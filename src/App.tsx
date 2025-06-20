@@ -396,7 +396,7 @@ function App() {
     console.log('Viewing RFP:', rfp.id);
   };
 
-  const handleAnalyzeProspect = async (textContent: string, file: File | null, assignedTo: string) => {
+  const handleAnalyzeProspect = async (textContent: string, targetAccount: string, file: File | null, assignedTo: string) => {
     setIsAnalyzingProspect(true);
     try {
       const selectedRep = salesReps.find(rep => rep.id === assignedTo);
@@ -414,7 +414,7 @@ function App() {
         textContent: textContent || '',
         fileName: file?.name || null,
         fileUrl: null, // TODO: Upload du fichier
-        targetAccount: '',
+        targetAccount: targetAccount || '',
         availability: 'À définir',
         dailyRate: null,
         residence: 'À définir',
