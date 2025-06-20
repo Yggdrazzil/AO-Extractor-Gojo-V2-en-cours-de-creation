@@ -224,6 +224,7 @@ export async function updateRFPClient(id: string, client: string): Promise<void>
 
 export async function updateRFPMission(id: string, mission: string): Promise<void> {
   const { error } = await supabase
+    .from('rfps')
     .update({ mission })
     .eq('id', id);
 

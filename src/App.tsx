@@ -3,7 +3,7 @@ import { Header } from './components/Header';
 import { RFPForm } from './components/RFPForm';
 import { RFPTable } from './components/RFPTable';
 import { analyzeRFP } from './services/openai';
-import { createRFP, fetchRFPs, updateRFPStatus, updateRFPAssignee, updateRFPClient, updateRFPMission, updateRFPLocation, updateRFPMaxRate, updateRFPStartDate, updateRFPCreatedAt, deleteRFP, markRFPAsRead, toggleRFPReadStatus } from './services/rfp';
+import { createRFP, fetchRFPs, updateRFPStatus, updateRFPAssignee, updateRFPClient, updateRFPMission, updateRFPLocation, updateRFPMaxRate, updateRFPStartDate, updateRFPCreatedAt, deleteRFP } from './services/rfp';
 import { ThemeProvider } from './context/ThemeContext';
 import { supabase, checkSupabaseConnection } from './lib/supabase';
 import { LoginForm } from './components/LoginForm';
@@ -415,7 +415,6 @@ function App() {
                 onStartDateChange={handleStartDateChange}
                 onCreatedAtChange={handleCreatedAtChange}
                 onView={handleViewRFP}
-                onMarkAsRead={handleMarkAsRead}
                 onDelete={handleDelete}
               />
             </>

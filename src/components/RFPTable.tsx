@@ -62,7 +62,6 @@ interface RFPTableProps {
   onMaxRateChange: (id: string, maxRate: string) => Promise<void>;
   onStartDateChange: (id: string, startDate: string) => Promise<void>;
   onCreatedAtChange: (id: string, createdAt: string) => Promise<void>;
-  onView: (rfp: RFP) => Promise<void>;
   onDelete: (id: string) => Promise<void>;
 }
 
@@ -77,7 +76,6 @@ export function RFPTable({
   onMaxRateChange,
   onStartDateChange,
   onCreatedAtChange,
-  onView,
   onDelete,
 }: RFPTableProps) {
   const statusOptions: RFP['status'][] = ['À traiter', 'Traité'];
