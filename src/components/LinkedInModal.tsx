@@ -1,6 +1,11 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { X, Plus, Trash2, Users } from 'lucide-react';
-import { supabase } from '../lib/supabase';
+import { 
+  fetchLinkedInLinks, 
+  addLinkedInLinks, 
+  deleteLinkedInLink,
+  type LinkedInLink 
+} from '../services/linkedin';
 
 interface LinkedInModalProps {
   isOpen: boolean;
@@ -9,16 +14,11 @@ interface LinkedInModalProps {
   onUrlCountChange?: (count: number) => void;
 }
 
-interface LinkedInLink {
-  id: string;
-  url: string;
-  visited?: boolean;
-}
-
 export function LinkedInModal({ isOpen, onClose, rfpId, onUrlCountChange }: LinkedInModalProps) {
   const [links, setLinks] = useState<LinkedInLink[]>([]);
   const [urls, setUrls] = useState<string[]>(['']);
-  const [error, setError] = useState<string | null>('');
+  const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
   const [visitedLinks, setVisitedLinks] = useState<Set<string>>(new Set());
 
   const updateUrlCount = useCallback((newLinks: LinkedInLink[]) => {
@@ -26,11 +26,16 @@ export function LinkedInModal({ isOpen, onClose, rfpId, onUrlCountChange }: Link
       onUrlCountChange(newLinks.length);
     }
   }, [onUrlCountChange]);
+
   useEffect(() => {
     // Charger les liens visités depuis le localStorage
     const storedVisitedLinks = localStorage.getItem('visitedLinkedInLinks');
     if (storedVisitedLinks) {
-      setVisitedLinks(new Set(JSON.parse(storedVisitedLinks)));
+      try {
+        setVisitedLinks(new Set(JSON.parse(storedVisitedLinks)));
+      } catch (e) {
+        console.warn('Error parsing visited links from localStorage:', e);
+      }
     }
   }, []);
 
@@ -40,64 +45,36 @@ export function LinkedInModal({ isOpen, onClose, rfpId, onUrlCountChange }: Link
     } else {
       setLinks([]);
       setUrls(['']);
-      setError('');
+      setError(null);
     }
   }, [isOpen, rfpId]);
 
   const loadLinks = async () => {
     if (!rfpId) {
-      console.warn('No RFP ID provided');
       setError('Aucun ID d\'AO fourni');
       return;
     }
 
     try {
+      setIsLoading(true);
       setError(null);
-      console.log('Loading links for RFP:', rfpId);
       
-      // Vérifier la session d'abord
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        throw new Error('Session expirée. Veuillez vous reconnecter.');
-      }
+      const data = await fetchLinkedInLinks(rfpId);
       
-      const { data, error } = await supabase
-        .from('linkedin_links')
-        .select('*')
-        .eq('rfp_id', rfpId)
-        .order('created_at', { ascending: true });
-
-      if (error) {
-        console.error('Supabase error details:', {
-          code: error.code,
-          message: error.message,
-          details: error.details,
-          hint: error.hint
-        });
-        
-        // Gérer les erreurs spécifiques
-        if (error.code === 'PGRST116') {
-          throw new Error('La table linkedin_links n\'existe pas encore. Veuillez contacter l\'administrateur.');
-        }
-        if (error.code === 'PGRST301' || error.code === '42501') {
-          throw new Error('Permissions insuffisantes. Vérifiez vos droits d\'accès.');
-        }
-        throw error;
-      }
-
-      console.log('Loaded links:', data);
       // Ajouter l'état visité à chaque lien
       const storedVisitedLinks = new Set(JSON.parse(localStorage.getItem('visitedLinkedInLinks') || '[]'));
-      const newLinks = (data || []).map(link => ({
+      const newLinks = data.map(link => ({
         ...link,
         visited: storedVisitedLinks.has(link.url)
       }));
+      
       setLinks(newLinks);
       updateUrlCount(newLinks);
-      setError(null);
     } catch (error) {
       console.error('Error loading LinkedIn links:', error);
-      setError(error instanceof Error ? error.message : 'Une erreur est survenue lors du chargement des liens');
+      setError(error instanceof Error ? error.message : 'Erreur lors du chargement des liens');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -118,7 +95,6 @@ export function LinkedInModal({ isOpen, onClose, rfpId, onUrlCountChange }: Link
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
     
     const validUrls = urls.filter(url => url.trim());
     
@@ -128,80 +104,38 @@ export function LinkedInModal({ isOpen, onClose, rfpId, onUrlCountChange }: Link
     }
 
     try {
-      // Vérifier la session d'abord
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        throw new Error('Session expirée. Veuillez vous reconnecter.');
-      }
-
-      console.log('Inserting links for RFP:', rfpId);
-      const { data, error } = await supabase
-        .from('linkedin_links')
-        .insert(
-          validUrls.map(url => ({
-            rfp_id: rfpId,
-            url: url.trim()
-          }))
-        )
-        .select();
-
-      if (error) {
-        console.error('Supabase error details:', {
-          code: error.code,
-          message: error.message,
-          details: error.details,
-          hint: error.hint
-        });
-        
-        if (error.code === 'PGRST301' || error.code === '42501') {
-          throw new Error('Permissions insuffisantes. Vérifiez vos droits d\'accès.');
-        }
-        throw error;
-      }
-
-      console.log('Successfully added links:', data);
-      setLinks([...links, ...(data || [])]);
-      setUrls(['']); // Reset avec un champ vide
-      updateUrlCount([...links, ...(data || [])]);
+      setIsLoading(true);
       setError(null);
+      
+      const newLinksData = await addLinkedInLinks(rfpId, validUrls);
+      
+      const newLinks = [...links, ...newLinksData];
+      setLinks(newLinks);
+      setUrls(['']); // Reset avec un champ vide
+      updateUrlCount(newLinks);
     } catch (error) {
       console.error('Error adding LinkedIn links:', error);
       setError(error instanceof Error ? error.message : 'Erreur lors de l\'ajout des liens');
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const handleDeleteLink = async (id: string) => {
     try {
+      setIsLoading(true);
       setError(null);
       
-      // Vérifier la session d'abord
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        throw new Error('Session expirée. Veuillez vous reconnecter.');
-      }
+      await deleteLinkedInLink(id);
       
-      console.log('Deleting link:', id);
-      
-      const { error } = await supabase
-        .from('linkedin_links')
-        .delete()
-        .eq('id', id);
-
-      if (error) {
-        if (error.code === 'PGRST301' || error.code === '42501') {
-          throw new Error('Permissions insuffisantes pour supprimer ce lien.');
-        }
-        throw error;
-      }
-
-      console.log('Successfully deleted link');
       const newLinks = links.filter(link => link.id !== id);
       setLinks(newLinks);
       updateUrlCount(newLinks);
-      setError(null);
     } catch (error) {
       console.error('Error deleting LinkedIn link:', error);
       setError(error instanceof Error ? error.message : 'Erreur lors de la suppression du lien');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -234,12 +168,20 @@ export function LinkedInModal({ isOpen, onClose, rfpId, onUrlCountChange }: Link
           <button
             onClick={onClose}
             className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
+            disabled={isLoading}
           >
             <X className="w-5 h-5 text-gray-500 dark:text-gray-400" />
           </button>
         </div>
 
         <div className="p-6">
+          {isLoading && (
+            <div className="flex items-center justify-center py-4 mb-4">
+              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+              <span className="ml-2 text-gray-600 dark:text-gray-400">Chargement...</span>
+            </div>
+          )}
+
           <form onSubmit={handleSubmit} className="space-y-4 mb-6">
             {urls.map((url, index) => (
               <div key={index} className="flex gap-2">
@@ -248,13 +190,15 @@ export function LinkedInModal({ isOpen, onClose, rfpId, onUrlCountChange }: Link
                   value={url}
                   onChange={(e) => handleUrlChange(index, e.target.value)}
                   className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-                  placeholder="https://..."
+                  placeholder="https://www.linkedin.com/in/..."
+                  disabled={isLoading}
                 />
                 {urls.length > 1 && (
                   <button
                     type="button"
                     onClick={() => handleRemoveField(index)}
-                    className="p-2 text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
+                    className="p-2 text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 disabled:opacity-50"
+                    disabled={isLoading}
                   >
                     <Trash2 className="w-5 h-5" />
                   </button>
@@ -266,7 +210,8 @@ export function LinkedInModal({ isOpen, onClose, rfpId, onUrlCountChange }: Link
               <button
                 type="button"
                 onClick={handleAddField}
-                className="flex items-center justify-center gap-2 px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                className="flex items-center justify-center gap-2 px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors disabled:opacity-50"
+                disabled={isLoading}
               >
                 <Plus className="w-4 h-4" />
                 Ajouter un champ
@@ -274,20 +219,27 @@ export function LinkedInModal({ isOpen, onClose, rfpId, onUrlCountChange }: Link
               
               <button
                 type="submit"
-                className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+                disabled={isLoading || urls.every(url => !url.trim())}
               >
-                Enregistrer les profils
+                {isLoading ? 'Enregistrement...' : 'Enregistrer les profils'}
               </button>
             </div>
           </form>
 
           {error && (
-            <p className="text-sm text-red-600 dark:text-red-400 mb-4">
+            <div className="p-3 mb-4 text-sm text-red-600 dark:text-red-400 bg-red-100 dark:bg-red-900/20 rounded-lg">
               {error}
-            </p>
+            </div>
           )}
 
           <div className="space-y-3">
+            {links.length === 0 && !isLoading && (
+              <p className="text-gray-500 dark:text-gray-400 text-center py-4">
+                Aucun profil LinkedIn ajouté pour cet AO
+              </p>
+            )}
+            
             {links.map((link) => (
               <div
                 key={link.id}
@@ -310,7 +262,9 @@ export function LinkedInModal({ isOpen, onClose, rfpId, onUrlCountChange }: Link
                 </div>
                 <button
                   onClick={() => handleDeleteLink(link.id)}
-                  className="p-1 text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
+                  className="p-1 text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 disabled:opacity-50"
+                  disabled={isLoading}
+                  title="Supprimer ce lien"
                 >
                   <Trash2 className="w-4 h-4" />
                 </button>

@@ -4,7 +4,7 @@ import { Eye, Trash2, ArrowUpDown, ArrowUp, ArrowDown, Check, X, Users } from 'l
 import { RFPContentModal } from './RFPContentModal';
 import { LinkedInModal } from './LinkedInModal';
 import { useMemo, useCallback, useRef, useEffect } from 'react';
-import { supabase } from '../lib/supabase';
+import { getLinkedInLinkCounts } from '../services/linkedin';
 
 interface LinkedInUrlCount {
   rfp_id: string;
@@ -94,31 +94,10 @@ export function RFPTable({
   useEffect(() => {
     const loadUrlCounts = async () => {
       try {
-        // Vérifier la session
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!session) {
-          console.warn('No active session, skipping URL count fetch');
-          return;
-        }
-
-        const { data, error } = await supabase
-          .from('linkedin_links')
-          .select('rfp_id');
-
-        if (error) throw error;
-        if (!data) return;
-
-        const newCounts = new Map<string, number>();
-        // Compter les occurrences de chaque rfp_id
-        data.forEach((link) => {
-          const count = newCounts.get(link.rfp_id) || 0;
-          newCounts.set(link.rfp_id, count + 1);
-        });
-
-        setUrlCounts(newCounts);
+        const counts = await getLinkedInLinkCounts();
+        setUrlCounts(counts);
       } catch (error) {
         console.error('Error loading LinkedIn URL counts:', error);
-        // Ne pas bloquer l'interface en cas d'erreur
         setUrlCounts(new Map());
       }
     };
@@ -130,7 +109,7 @@ export function RFPTable({
   useEffect(() => {
     const initializeUserFilter = async () => {
       try {
-        const { data: { session } } = await supabase.auth.getSession();
+        const { data: { session } } = await import('../lib/supabase').then(m => m.supabase.auth.getSession());
         if (!session?.user?.email) {
           console.warn('No user session found');
           return;
@@ -164,7 +143,7 @@ export function RFPTable({
   const handleSalesRepChange = (value: string) => {
     const saveSelection = async () => {
       try {
-        const { data: { session } } = await supabase.auth.getSession();
+        const { data: { session } } = await import('../lib/supabase').then(m => m.supabase.auth.getSession());
         if (session?.user?.email) {
           const storageKey = `selectedSalesRep_${session.user.email}`;
           localStorage.setItem(storageKey, value);
