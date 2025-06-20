@@ -28,6 +28,15 @@ export interface Database {
           url?: string
           created_at?: string
         }
+        Relationships: [
+          {
+            foreignKeyName: "linkedin_links_rfp_id_fkey"
+            columns: ["rfp_id"]
+            isOneToOne: false
+            referencedRelation: "rfps"
+            referencedColumns: ["id"]
+          }
+        ]
       }
       sales_reps: {
         Row: {

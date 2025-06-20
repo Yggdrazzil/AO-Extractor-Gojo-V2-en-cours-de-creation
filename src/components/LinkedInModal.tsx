@@ -98,7 +98,6 @@ export function LinkedInModal({ isOpen, onClose, rfpId, onUrlCountChange }: Link
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-    console.log('Submitting URLs:', urls);
     
     const validUrls = urls.filter(url => url.trim());
     
@@ -108,6 +107,12 @@ export function LinkedInModal({ isOpen, onClose, rfpId, onUrlCountChange }: Link
     }
 
     try {
+      // Vérifier la session d'abord
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        throw new Error('Session expirée. Veuillez vous reconnecter.');
+      }
+
       console.log('Inserting links for RFP:', rfpId);
       const { data, error } = await supabase
         .from('linkedin_links')
@@ -120,6 +125,16 @@ export function LinkedInModal({ isOpen, onClose, rfpId, onUrlCountChange }: Link
         .select();
 
       if (error) {
+        console.error('Supabase error details:', {
+          code: error.code,
+          message: error.message,
+          details: error.details,
+          hint: error.hint
+        });
+        
+        if (error.code === 'PGRST301' || error.code === '42501') {
+          throw new Error('Permissions insuffisantes. Vérifiez vos droits d\'accès.');
+        }
         throw error;
       }
 
@@ -130,13 +145,20 @@ export function LinkedInModal({ isOpen, onClose, rfpId, onUrlCountChange }: Link
       setError(null);
     } catch (error) {
       console.error('Error adding LinkedIn links:', error);
-      setError('Erreur lors de l\'ajout des liens');
+      setError(error instanceof Error ? error.message : 'Erreur lors de l\'ajout des liens');
     }
   };
 
   const handleDeleteLink = async (id: string) => {
     try {
       setError(null);
+      
+      // Vérifier la session d'abord
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        throw new Error('Session expirée. Veuillez vous reconnecter.');
+      }
+      
       console.log('Deleting link:', id);
       
       const { error } = await supabase
@@ -145,6 +167,9 @@ export function LinkedInModal({ isOpen, onClose, rfpId, onUrlCountChange }: Link
         .eq('id', id);
 
       if (error) {
+        if (error.code === 'PGRST301' || error.code === '42501') {
+          throw new Error('Permissions insuffisantes pour supprimer ce lien.');
+        }
         throw error;
       }
 
@@ -155,7 +180,7 @@ export function LinkedInModal({ isOpen, onClose, rfpId, onUrlCountChange }: Link
       setError(null);
     } catch (error) {
       console.error('Error deleting LinkedIn link:', error);
-      setError('Erreur lors de la suppression du lien');
+      setError(error instanceof Error ? error.message : 'Erreur lors de la suppression du lien');
     }
   };
 
