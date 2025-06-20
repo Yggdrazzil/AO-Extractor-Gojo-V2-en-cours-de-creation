@@ -293,3 +293,20 @@ export async function deleteRFP(id: string): Promise<void> {
 
   if (error) throw error;
 }
+
+export async function markRFPAsRead(id: string): Promise<void> {
+  try {
+    const { error } = await supabase
+      .from('rfps')
+      .update({ is_read: true })
+      .eq('id', id);
+
+    if (error) {
+      console.error('Error marking RFP as read:', error);
+      throw error;
+    }
+  } catch (error) {
+    console.error('Failed to mark RFP as read:', error);
+    throw error;
+  }
+}
