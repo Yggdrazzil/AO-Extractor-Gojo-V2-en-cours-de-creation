@@ -565,10 +565,16 @@ function App() {
   if (!session) {
     return (
       <ThemeProvider>
-        <LoginForm />
+        <LoginForm onLoginSuccess={handleLoginSuccess} />
       </ThemeProvider>
     );
   }
+
+  const handleLoginSuccess = (session: Session) => {
+    setSession(session);
+    setError(null);
+    loadInitialData(session);
+  };
 
   return (
     <ThemeProvider>
