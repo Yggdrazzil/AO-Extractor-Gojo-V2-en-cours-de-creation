@@ -630,10 +630,8 @@ export function ProspectsTable({
                         // Ouvrir directement le CV dans un nouvel onglet si disponible
                         if (prospect.fileUrl) {
                           window.open(prospect.fileUrl, '_blank');
-                        } else {
-                          // Si pas de fichier, ouvrir la modal avec les infos textuelles
-                          setSelectedProspect(prospect);
                         }
+                        // Ne plus ouvrir la modal automatiquement
                       }}
                       className="p-1 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
                       title="Voir le profil"
