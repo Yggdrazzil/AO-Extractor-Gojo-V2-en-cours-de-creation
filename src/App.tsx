@@ -5,10 +5,11 @@ import { SettingsModal } from './components/SettingsModal';
 import { analyzeRFP } from './services/openai';
 import { createRFP, fetchRFPs, updateRFPStatus, updateRFPAssignee, updateRFPClient, updateRFPMission, updateRFPLocation, updateRFPMaxRate, updateRFPStartDate, updateRFPCreatedAt, deleteRFP } from './services/rfp';
 import { markRFPAsRead } from './services/rfp';
+import { createProspect, fetchProspects, updateProspectStatus, updateProspectAssignee, updateProspectDateUpdate, updateProspectAvailability, updateProspectDailyRate, updateProspectResidence, updateProspectMobility, updateProspectPhone, updateProspectEmail, deleteProspect, markProspectAsRead } from './services/prospects';
 import { ThemeProvider } from './context/ThemeContext';
 import { supabase, checkSupabaseConnection } from './lib/supabase';
 import { LoginForm } from './components/LoginForm';
-import type { RFP, SalesRep } from './types';
+import type { RFP, SalesRep, Prospect } from './types';
 import type { Session } from '@supabase/supabase-js';
 import { Settings } from 'lucide-react';
 
@@ -62,8 +63,10 @@ async function fetchSalesReps(): Promise<SalesRep[]> {
 
 function App() {
   const [rfps, setRfps] = useState<RFP[]>([]);
+  const [prospects, setProspects] = useState<Prospect[]>([]);
   const [salesReps, setSalesReps] = useState<SalesRep[]>([]);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [isAnalyzingProspect, setIsAnalyzingProspect] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [session, setSession] = useState<Session | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -148,6 +151,12 @@ function App() {
           const rfpsData = await fetchRFPs();
           console.log('RFPs loaded:', { count: rfpsData.length });
           setRfps(rfpsData);
+
+          // Charger les prospects
+          console.log('Loading prospects...');
+          const prospectsData = await fetchProspects();
+          console.log('Prospects loaded:', { count: prospectsData.length });
+          setProspects(prospectsData);
           
         } catch (err) {
           console.error('Error loading data:', err);
@@ -386,89 +395,131 @@ function App() {
     console.log('Viewing RFP:', rfp.id);
   };
 
-  if (!session) {
-    return (
-      <ThemeProvider>
-        <div className="min-h-screen bg-gray-100 dark:bg-gray-900 flex flex-col items-center justify-center p-4">
-          <div className="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-lg max-w-md w-full space-y-6">
-            <LoginForm onLoginSuccess={setSession} />
-          </div>
-        </div>
-      </ThemeProvider>
-    );
-  }
+  const handleAnalyzeProspect = async (textContent: string, file: File | null, assignedTo: string) => {
+    setIsAnalyzingProspect(true);
+    try {
+      const selectedRep = salesReps.find(rep => rep.id === assignedTo);
 
-  return (
-    <ThemeProvider>
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex">
-        <Sidebar activeTab={activeTab} onTabChange={setActiveTab} />
-        
-        <div className="flex-1 flex flex-col">
-          {/* Header */}
-          <header className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {activeTab === 'rfp-extractor' && 'Extracteur d\'Appels d\'Offres'}
-                  {activeTab === 'prospects' && 'Gestion des Prospects'}
-                  {activeTab === 'analytics' && 'Analytics & Reporting'}
-                  {activeTab === 'tools' && 'Outils Additionnels'}
-                </h1>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  {activeTab === 'rfp-extractor' && 'Analysez et gérez vos appels d\'offres'}
-                  {activeTab === 'prospects' && 'Gérez vos prospects et clients potentiels'}
-                  {activeTab === 'analytics' && 'Visualisez vos performances et statistiques'}
-                  {activeTab === 'tools' && 'Accédez aux outils complémentaires'}
-                </p>
-              </div>
-              <button
-                onClick={() => setIsSettingsOpen(true)}
-                className="p-2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
-                aria-label="Settings"
-              >
-                <Settings className="w-6 h-6" />
-              </button>
-            </div>
-          </header>
+      if (!textContent.trim() && !file) {
+        throw new Error("Veuillez saisir du texte ou joindre un fichier");
+      }
+      if (!selectedRep) {
+        throw new Error("Veuillez sélectionner un commercial valide");
+      }
 
-          {/* Main Content */}
-          <main className="flex-1 p-6">
-            {isLoading ? (
-              <div className="flex justify-center items-center h-full">
-                <div className="text-center">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#1651EE] mx-auto mb-4"></div>
-                  <span className="text-gray-600 dark:text-gray-400">Chargement des données...</span>
-                </div>
-              </div>
-            ) : (
-              <TabContent
-                activeTab={activeTab}
-                rfps={rfps}
-                salesReps={salesReps}
-                onAnalyzeRFP={handleAnalyzeRFP}
-                isAnalyzing={isAnalyzing}
-                onStatusChange={handleStatusChange}
-                onAssigneeChange={handleAssigneeChange}
-                onClientChange={handleClientChange}
-                onMissionChange={handleMissionChange}
-                onLocationChange={handleLocationChange}
-                onMaxRateChange={handleMaxRateChange}
-                onStartDateChange={handleStartDateChange}
-                onCreatedAtChange={handleCreatedAtChange}
-                onView={handleViewRFP}
-                onDelete={handleDelete}
-              />
-            )}
-          </main>
-        </div>
-        
-        <SettingsModal
-          isOpen={isSettingsOpen}
-          onClose={() => setIsSettingsOpen(false)}
-        />
-      </div>
-    </ThemeProvider>
-  );
-}
+      // Pour l'instant, créer un prospect avec des données par défaut
+      // TODO: Implémenter l'analyse IA des profils
+      const newProspect = await createProspect({
+        textContent: textContent || '',
+        fileName: file?.name || null,
+        fileUrl: null, // TODO: Upload du fichier
+        dateUpdate: new Date().toISOString(),
+        availability: 'À définir',
+        dailyRate: null,
+        residence: 'À définir',
+        mobility: 'À définir',
+        phone: 'À définir',
+        email: 'À définir',
+        status: 'À traiter',
+        assignedTo,
+        isRead: false
+      });
 
-export default App;
+      setProspects((prev) => [newProspect, ...prev]);
+    } catch (error) {
+      console.error('Failed to analyze prospect:', error);
+      alert((error as Error).message);
+    } finally {
+      setIsAnalyzingProspect(false);
+    }
+  };
+
+  const handleProspectStatusChange = async (id: string, status: Prospect['status']) => {
+    try {
+      await updateProspectStatus(id, status);
+      setProspects((prev) =>
+        prev.map((prospect) => (prospect.id === id ? { ...prospect, status } : prospect))
+      );
+    } catch (error) {
+      console.error('Failed to update prospect status:', error);
+    }
+  };
+
+  const handleProspectAssigneeChange = async (id: string, assignedTo: string) => {
+    try {
+      await updateProspectAssignee(id, assignedTo);
+      setProspects((prev) =>
+        prev.map((prospect) => (prospect.id === id ? { ...prospect, assignedTo } : prospect))
+      );
+    } catch (error) {
+      console.error('Failed to update prospect assignee:', error);
+    }
+  };
+
+  const handleProspectDateUpdateChange = async (id: string, dateUpdate: string) => {
+    try {
+      await updateProspectDateUpdate(id, dateUpdate);
+      setProspects(prev => prev.map(prospect => prospect.id === id ? { ...prospect, dateUpdate } : prospect));
+    } catch (error) {
+      console.error('Failed to update prospect date update:', error);
+    }
+  };
+
+  const handleProspectAvailabilityChange = async (id: string, availability: string) => {
+    try {
+      await updateProspectAvailability(id, availability);
+      setProspects(prev => prev.map(prospect => prospect.id === id ? { ...prospect, availability } : prospect));
+    } catch (error) {
+      console.error('Failed to update prospect availability:', error);
+    }
+  };
+
+  const handleProspectDailyRateChange = async (id: string, dailyRate: string) => {
+    try {
+      const numericRate = dailyRate ? parseInt(dailyRate, 10) : null;
+      await updateProspectDailyRate(id, numericRate);
+      setProspects(prev => prev.map(prospect => prospect.id === id ? { ...prospect, dailyRate: numericRate } : prospect));
+    } catch (error) {
+      console.error('Failed to update prospect daily rate:', error);
+      alert('Erreur lors de la mise à jour du TJM');
+    }
+  };
+
+  const handleProspectResidenceChange = async (id: string, residence: string) => {
+    try {
+      await updateProspectResidence(id, residence);
+      setProspects(prev => prev.map(prospect => prospect.id === id ? { ...prospect, residence } : prospect));
+    } catch (error) {
+      console.error('Failed to update prospect residence:', error);
+    }
+  };
+
+  const handleProspectMobilityChange = async (id: string, mobility: string) => {
+    try {
+      await updateProspectMobility(id, mobility);
+      setProspects(prev => prev.map(prospect => prospect.id === id ? { ...prospect, mobility } : prospect));
+    } catch (error) {
+      console.error('Failed to update prospect mobility:', error);
+    }
+  };
+
+  const handleProspectPhoneChange = async (id: string, phone: string) => {
+    try {
+      await updateProspectPhone(id, phone);
+      setProspects(prev => prev.map(prospect => prospect.id === id ? { ...prospect, phone } : prospect));
+    } catch (error) {
+      console.error('Failed to update prospect phone:', error);
+    }
+  };
+
+  const handleProspectEmailChange = async (id: string, email: string) => {
+    try {
+      await updateProspectEmail(id, email);
+      setProspects(prev => prev.map(prospect => prospect.id === id ? { ...prospect, email } : prospect));
+    } catch (error) {
+      console.error('Failed to update prospect email:', error);
+    }
+  };
+
+  const handleProspectDelete = async (id: string) => {
+    try
