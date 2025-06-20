@@ -52,16 +52,43 @@ export function ProspectContentModal({ isOpen, onClose, content, fileName, fileU
             </div>
           </div>
           
-          {isPDF && (
+          {isPDF && fileUrl && (
             <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
               <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
-                Aperçu du CV (PDF) :
+                Fichier PDF disponible :
               </p>
-              <iframe
-                src={`${fileUrl}#toolbar=0&navpanes=0&scrollbar=0`}
-                className="w-full h-96 border border-gray-300 dark:border-gray-600 rounded"
-                title="Aperçu du CV"
-              />
+              <div className="flex items-center justify-between p-4 bg-white dark:bg-gray-600 rounded border border-gray-300 dark:border-gray-500">
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 bg-red-100 dark:bg-red-800 rounded flex items-center justify-center">
+                    <span className="text-red-600 dark:text-red-300 font-bold text-sm">PDF</span>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                      {fileName}
+                    </p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                      Cliquez pour ouvrir dans un nouvel onglet
+                    </p>
+                  </div>
+                </div>
+                <div className="flex space-x-2">
+                  <a
+                    href={fileUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 transition-colors"
+                  >
+                    Ouvrir
+                  </a>
+                  <a
+                    href={fileUrl}
+                    download={fileName}
+                    className="px-3 py-1 bg-gray-600 text-white text-sm rounded hover:bg-gray-700 transition-colors"
+                  >
+                    Télécharger
+                  </a>
+                </div>
+              </div>
             </div>
           )}
           
