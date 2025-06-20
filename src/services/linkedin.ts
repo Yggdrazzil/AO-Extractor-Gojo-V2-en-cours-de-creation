@@ -9,12 +9,6 @@ export interface LinkedInLink {
 
 export async function fetchLinkedInLinks(rfpId: string): Promise<LinkedInLink[]> {
   try {
-    // Vérifier la session
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) {
-      throw new Error('Session expirée. Veuillez vous reconnecter.');
-    }
-
     console.log('Fetching LinkedIn links for RFP:', rfpId);
 
     const { data, error } = await supabase
@@ -38,12 +32,6 @@ export async function fetchLinkedInLinks(rfpId: string): Promise<LinkedInLink[]>
 
 export async function addLinkedInLinks(rfpId: string, urls: string[]): Promise<LinkedInLink[]> {
   try {
-    // Vérifier la session
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) {
-      throw new Error('Session expirée. Veuillez vous reconnecter.');
-    }
-
     // Valider les URLs
     const validUrls = urls.filter(url => {
       const trimmedUrl = url.trim();
@@ -81,12 +69,6 @@ export async function addLinkedInLinks(rfpId: string, urls: string[]): Promise<L
 
 export async function deleteLinkedInLink(id: string): Promise<void> {
   try {
-    // Vérifier la session
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) {
-      throw new Error('Session expirée. Veuillez vous reconnecter.');
-    }
-
     console.log('Deleting LinkedIn link:', id);
 
     const { error } = await supabase
@@ -108,13 +90,6 @@ export async function deleteLinkedInLink(id: string): Promise<void> {
 
 export async function getLinkedInLinkCounts(): Promise<Map<string, number>> {
   try {
-    // Vérifier la session
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) {
-      console.warn('No session found for link counts');
-      return new Map();
-    }
-
     console.log('Fetching LinkedIn link counts');
 
     const { data, error } = await supabase

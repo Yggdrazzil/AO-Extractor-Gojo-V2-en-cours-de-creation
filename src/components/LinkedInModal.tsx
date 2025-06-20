@@ -50,29 +50,29 @@ export function LinkedInModal({ isOpen, onClose, rfpId, onUrlCountChange }: Link
   }, [isOpen, rfpId]);
 
   const loadLinks = async () => {
-    if (!rfpId) {
-      setError('Aucun ID d\'AO fourni');
-      return;
-    }
-
     try {
       setIsLoading(true);
       setError(null);
       
-      const data = await fetchLinkedInLinks(rfpId);
-      
-      // Ajouter l'état visité à chaque lien
-      const storedVisitedLinks = new Set(JSON.parse(localStorage.getItem('visitedLinkedInLinks') || '[]'));
-      const newLinks = data.map(link => ({
-        ...link,
-        visited: storedVisitedLinks.has(link.url)
-      }));
-      
-      setLinks(newLinks);
-      updateUrlCount(newLinks);
+      if (rfpId) {
+        const data = await fetchLinkedInLinks(rfpId);
+        
+        // Ajouter l'état visité à chaque lien
+        const storedVisitedLinks = new Set(JSON.parse(localStorage.getItem('visitedLinkedInLinks') || '[]'));
+        const newLinks = data.map(link => ({
+          ...link,
+          visited: storedVisitedLinks.has(link.url)
+        }));
+        
+        setLinks(newLinks);
+        updateUrlCount(newLinks);
+      } else {
+        setLinks([]);
+        updateUrlCount([]);
+      }
     } catch (error) {
       console.error('Error loading LinkedIn links:', error);
-      setError(error instanceof Error ? error.message : 'Erreur lors du chargement des liens');
+      setError('Erreur lors du chargement des liens LinkedIn: ' + (error instanceof Error ? error.message : 'Erreur inconnue'));
     } finally {
       setIsLoading(false);
     }
@@ -96,6 +96,11 @@ export function LinkedInModal({ isOpen, onClose, rfpId, onUrlCountChange }: Link
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    if (!rfpId) {
+      setError('Aucun ID d\'AO fourni');
+      return;
+    }
+    
     const validUrls = urls.filter(url => url.trim());
     
     if (validUrls.length === 0) {
@@ -115,7 +120,7 @@ export function LinkedInModal({ isOpen, onClose, rfpId, onUrlCountChange }: Link
       updateUrlCount(newLinks);
     } catch (error) {
       console.error('Error adding LinkedIn links:', error);
-      setError(error instanceof Error ? error.message : 'Erreur lors de l\'ajout des liens');
+      setError('Erreur lors de l\'ajout des liens LinkedIn: ' + (error instanceof Error ? error.message : 'Erreur inconnue'));
     } finally {
       setIsLoading(false);
     }
@@ -133,7 +138,7 @@ export function LinkedInModal({ isOpen, onClose, rfpId, onUrlCountChange }: Link
       updateUrlCount(newLinks);
     } catch (error) {
       console.error('Error deleting LinkedIn link:', error);
-      setError(error instanceof Error ? error.message : 'Erreur lors de la suppression du lien');
+      setError('Erreur lors de la suppression du lien: ' + (error instanceof Error ? error.message : 'Erreur inconnue'));
     } finally {
       setIsLoading(false);
     }
