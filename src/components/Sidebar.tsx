@@ -15,9 +15,9 @@ const tabs = [
   },
   {
     id: 'prospects',
-    label: 'Prospects',
+    label: 'Profils pour prise de Références',
     icon: Users,
-    description: 'Gestion des prospects'
+    description: 'Analyse de profils pour références'
   },
   {
     id: 'analytics',

@@ -1,6 +1,7 @@
 import React from 'react';
 import { RFPForm } from './RFPForm';
 import { RFPTable } from './RFPTable';
+import { ProspectsForm } from './ProspectsForm';
 import type { RFP, SalesRep } from '../types';
 
 interface TabContentProps {
@@ -91,10 +92,32 @@ export function TabContent({
 
     case 'prospects':
       return (
-        <PlaceholderTab
-          title="Gestion des Prospects"
-          description="Module de gestion des prospects et clients potentiels. Fonctionnalité en cours de développement."
-        />
+        <div className="space-y-6">
+          <ProspectsForm
+            salesReps={salesReps}
+            onSubmit={async (textContent: string, file: File | null, assignedTo: string) => {
+              console.log('Analyzing prospects:', { textContent, file: file?.name, assignedTo });
+              // TODO: Implémenter l'analyse des profils
+              alert('Fonctionnalité d\'analyse des profils en cours de développement');
+            }}
+            isLoading={false}
+          />
+          
+          {/* Placeholder pour le tableau des profils */}
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-8">
+            <div className="text-center">
+              <div className="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
+                <span className="text-2xl">📋</span>
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
+                Tableau des Profils
+              </h3>
+              <p className="text-gray-600 dark:text-gray-400">
+                Le tableau d'affichage des profils analysés sera disponible prochainement.
+              </p>
+            </div>
+          </div>
+        </div>
       );
 
     case 'analytics':
