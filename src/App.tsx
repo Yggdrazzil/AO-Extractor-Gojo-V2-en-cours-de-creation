@@ -4,6 +4,7 @@ import { RFPForm } from './components/RFPForm';
 import { RFPTable } from './components/RFPTable';
 import { analyzeRFP } from './services/openai';
 import { createRFP, fetchRFPs, updateRFPStatus, updateRFPAssignee, updateRFPClient, updateRFPMission, updateRFPLocation, updateRFPMaxRate, updateRFPStartDate, updateRFPCreatedAt, deleteRFP } from './services/rfp';
+import { markRFPAsRead } from './services/rfp';
 import { ThemeProvider } from './context/ThemeContext';
 import { supabase, checkSupabaseConnection } from './lib/supabase';
 import { LoginForm } from './components/LoginForm';
@@ -370,7 +371,15 @@ function App() {
   };
 
   const handleViewRFP = async (rfp: RFP) => {
-    // Simplement ouvrir la modal de visualisation
+    // Marquer l'AO comme lu quand on l'ouvre
+    if (!rfp.isRead) {
+      try {
+        await markRFPAsRead(rfp.id);
+        setRfps(prev => prev.map(r => r.id === rfp.id ? { ...r, isRead: true } : r));
+      } catch (error) {
+        console.error('Failed to mark RFP as read:', error);
+      }
+    }
     console.log('Viewing RFP:', rfp.id);
   };
 
