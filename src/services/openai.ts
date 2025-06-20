@@ -62,7 +62,8 @@ INSTRUCTIONS CRITIQUES:
 
 1. Extraction des données:
    - Extraire UNIQUEMENT les informations explicitement mentionnées dans le texte
-   - Si une information n'est pas présente ou n'est pas claire, renvoyer null pour ce champ
+   - Si le téléphone ou l'email ne sont pas présents dans le texte principal, indiquer "RECHERCHER_DANS_CV" pour ces champs
+   - Pour les autres informations, si elles ne sont pas présentes ou ne sont pas claires, renvoyer null
    - Ne JAMAIS inventer ou déduire d'informations
    - Être précis dans l'extraction des données de contact
 
@@ -76,7 +77,7 @@ INSTRUCTIONS CRITIQUES:
 
 3. Règles strictes:
    - Si le TJM n'est pas mentionné explicitement, renvoyer null
-   - Si les coordonnées ne sont pas présentes, renvoyer null
+   - Si les coordonnées ne sont pas présentes dans le texte, renvoyer "RECHERCHER_DANS_CV"
    - Respecter exactement le format des coordonnées tel qu'écrit
    - Ne pas reformater les numéros de téléphone
 
@@ -86,8 +87,8 @@ Exemple de réponse JSON attendue:
   "dailyRate": 650,
   "residence": "Paris",
   "mobility": "France entière",
-  "phone": "06 12 34 56 78",
-  "email": "candidat@email.com"
+  "phone": "RECHERCHER_DANS_CV",
+  "email": "RECHERCHER_DANS_CV"
 }`;
 
 export async function analyzeRFP(content: string): Promise<Partial<RFP>> {
@@ -188,14 +189,17 @@ export async function analyzeProspect(content: string): Promise<Partial<Prospect
       throw new Error("Erreur lors de l'analyse de la réponse");
     }
 
-    return {
+    // Traiter les valeurs spéciales pour les coordonnées
+    const processedResult = {
       availability: result.availability || 'À définir',
       dailyRate: result.dailyRate || null,
       residence: result.residence || 'À définir',
       mobility: result.mobility || 'À définir',
-      phone: result.phone || 'À définir',
-      email: result.email || 'À définir'
+      phone: result.phone === 'RECHERCHER_DANS_CV' ? 'À extraire du CV' : (result.phone || 'À définir'),
+      email: result.email === 'RECHERCHER_DANS_CV' ? 'À extraire du CV' : (result.email || 'À définir')
     };
+
+    return processedResult;
   } catch (error) {
     console.error('Erreur OpenAI:', error);
     if (error instanceof Error) {
