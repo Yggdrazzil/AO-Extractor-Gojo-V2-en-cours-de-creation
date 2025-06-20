@@ -69,7 +69,8 @@ export async function fetchRFPs(): Promise<RFP[]> {
         start_date,
         status,
         assigned_to,
-        raw_content
+        raw_content,
+        is_read
       `)
       .order('created_at', { ascending: false });
 

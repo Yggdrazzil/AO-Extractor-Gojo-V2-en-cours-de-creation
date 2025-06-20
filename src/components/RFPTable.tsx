@@ -679,10 +679,7 @@ export function RFPTable({
                 <td className="p-4">
                   <div className="flex space-x-2">
                     <button
-                      onClick={() => {
-                        onView(rfp);
-                        setSelectedRFP(rfp);
-                      }}
+                      onClick={() => handleViewRFP(rfp)}
                       className="p-1 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
                     >
                       <Eye className="w-5 h-5" />

@@ -415,6 +415,7 @@ function App() {
                 onStartDateChange={handleStartDateChange}
                 onCreatedAtChange={handleCreatedAtChange}
                 onView={handleViewRFP}
+                onMarkAsRead={handleMarkAsRead}
                 onDelete={handleDelete}
               />
             </>
