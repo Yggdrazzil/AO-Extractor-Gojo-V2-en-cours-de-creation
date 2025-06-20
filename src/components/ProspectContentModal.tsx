@@ -7,9 +7,10 @@ interface ProspectContentModalProps {
   content: string;
   fileName: string;
   fileUrl: string;
+  fileContent?: string;
 }
 
-export function ProspectContentModal({ isOpen, onClose, content, fileName, fileUrl }: ProspectContentModalProps) {
+export function ProspectContentModal({ isOpen, onClose, content, fileName, fileUrl, fileContent }: ProspectContentModalProps) {
   if (!isOpen) return null;
 
 
@@ -61,6 +62,17 @@ export function ProspectContentModal({ isOpen, onClose, content, fileName, fileU
                 className="w-full h-96 border border-gray-300 dark:border-gray-600 rounded"
                 title="Aperçu du CV"
               />
+            </div>
+          )}
+          
+          {fileContent && (
+            <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+              <h4 className="text-md font-medium text-gray-900 dark:text-gray-100 mb-3">
+                Contenu extrait du CV :
+              </h4>
+              <div className="text-sm text-gray-700 dark:text-gray-300 max-h-48 overflow-y-auto">
+                <pre className="whitespace-pre-wrap font-sans">{fileContent}</pre>
+              </div>
             </div>
           )}
           

@@ -24,6 +24,7 @@ export interface Prospect {
   textContent?: string;
   fileName?: string;
   fileUrl?: string;
+  fileContent?: string;
   targetAccount: string;
   availability: string;
   dailyRate: number | null;

@@ -50,7 +50,7 @@ Exemple de réponse JSON attendue:
 }`;
 
 const PROSPECT_SYSTEM_PROMPT = `Tu es un assistant spécialisé dans l'analyse de profils de candidats pour des missions de consulting IT.
-Ta tâche est d'extraire les informations clés suivantes à partir des informations textuelles fournies sur un candidat :
+Ta tâche est d'extraire les informations clés suivantes à partir des informations textuelles fournies sur un candidat ET du contenu de son CV :
 - Disponibilité : quand le candidat est disponible (ex: "Immédiatement", "Janvier 2025", "2 semaines", etc.)
 - TJM (Taux Journalier Moyen) : le tarif journalier du candidat en euros (nombre uniquement, sans le symbole €)
 - Résidence : où habite le candidat (ville, région)
@@ -61,11 +61,12 @@ Ta tâche est d'extraire les informations clés suivantes à partir des informat
 INSTRUCTIONS CRITIQUES:
 
 1. Extraction des données:
-   - Extraire UNIQUEMENT les informations explicitement mentionnées dans le texte
-   - Si le téléphone ou l'email ne sont pas présents dans le texte principal, indiquer "RECHERCHER_DANS_CV" pour ces champs
+   - Analyser BOTH le texte principal ET le contenu du CV fourni
+   - Prioriser les informations du CV pour les coordonnées (téléphone et email)
+   - Si les coordonnées ne sont trouvées ni dans le texte ni dans le CV, renvoyer null
    - Pour les autres informations, si elles ne sont pas présentes ou ne sont pas claires, renvoyer null
    - Ne JAMAIS inventer ou déduire d'informations
-   - Être précis dans l'extraction des données de contact
+   - Être précis dans l'extraction des données de contact depuis le CV
 
 2. Format des données:
    - TJM : nombre entier uniquement (ex: 650, pas "650€" ou "650 euros")
@@ -77,7 +78,7 @@ INSTRUCTIONS CRITIQUES:
 
 3. Règles strictes:
    - Si le TJM n'est pas mentionné explicitement, renvoyer null
-   - Si les coordonnées ne sont pas présentes dans le texte, renvoyer "RECHERCHER_DANS_CV"
+   - Chercher les coordonnées dans le CV en priorité
    - Respecter exactement le format des coordonnées tel qu'écrit
    - Ne pas reformater les numéros de téléphone
 
@@ -87,8 +88,8 @@ Exemple de réponse JSON attendue:
   "dailyRate": 650,
   "residence": "Paris",
   "mobility": "France entière",
-  "phone": "RECHERCHER_DANS_CV",
-  "email": "RECHERCHER_DANS_CV"
+  "phone": "06 12 34 56 78",
+  "email": "candidat@email.com"
 }`;
 
 export async function analyzeRFP(content: string): Promise<Partial<RFP>> {
@@ -150,12 +151,16 @@ export async function analyzeRFP(content: string): Promise<Partial<RFP>> {
   }
 }
 
-export async function analyzeProspect(content: string): Promise<Partial<Prospect>> {
+export async function analyzeProspect(content: string, cvContent?: string): Promise<Partial<Prospect>> {
   const apiKey = localStorage.getItem('openai-api-key');
   if (!apiKey) {
     throw new Error('Veuillez configurer votre clé API OpenAI dans les paramètres');
   }
 
+  // Combiner le contenu textuel et le contenu du CV
+  const fullContent = cvContent 
+    ? `INFORMATIONS TEXTUELLES:\n${content}\n\nCONTENU DU CV:\n${cvContent}`
+    : content;
   try {
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -167,7 +172,7 @@ export async function analyzeProspect(content: string): Promise<Partial<Prospect
         model: 'gpt-4-turbo-preview',
         messages: [
           { role: 'system', content: PROSPECT_SYSTEM_PROMPT },
-          { role: 'user', content }
+          { role: 'user', content: fullContent }
         ],
         temperature: 0.1,
       }),
@@ -195,8 +200,8 @@ export async function analyzeProspect(content: string): Promise<Partial<Prospect
       dailyRate: result.dailyRate || null,
       residence: result.residence || 'À définir',
       mobility: result.mobility || 'À définir',
-      phone: result.phone === 'RECHERCHER_DANS_CV' ? 'À extraire du CV' : (result.phone || 'À définir'),
-      email: result.email === 'RECHERCHER_DANS_CV' ? 'À extraire du CV' : (result.email || 'À définir')
+      phone: result.phone || 'Non trouvé',
+      email: result.email || 'Non trouvé'
     };
 
     return processedResult;

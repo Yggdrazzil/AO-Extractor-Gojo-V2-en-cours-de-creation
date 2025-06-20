@@ -412,7 +412,14 @@ function App() {
       let analysisResult = {};
       if (textContent.trim()) {
         try {
-          analysisResult = await analyzeProspect(textContent);
+          // Si on a un fichier, on va d'abord l'uploader pour extraire son contenu
+          let cvContent = undefined;
+          if (file) {
+            // L'upload et l'extraction du contenu se feront dans createProspect
+            // Pour l'instant on analyse juste le texte
+          }
+          
+          analysisResult = await analyzeProspect(textContent, cvContent);
           console.log('Prospect analysis result:', analysisResult);
         } catch (analysisError) {
           console.error('Error analyzing prospect:', analysisError);
@@ -424,6 +431,7 @@ function App() {
         textContent: textContent || '',
         fileName: file?.name || null,
         fileUrl: null, // TODO: Upload du fichier
+        fileContent: null,
         targetAccount: targetAccount || '',
         availability: analysisResult.availability || 'À définir',
         dailyRate: analysisResult.dailyRate || null,
@@ -434,7 +442,7 @@ function App() {
         status: 'À traiter',
         assignedTo,
         isRead: false
-      });
+      }, file);
 
       setProspects((prev) => [newProspect, ...prev]);
     } catch (error) {

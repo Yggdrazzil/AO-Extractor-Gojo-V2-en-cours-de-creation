@@ -288,6 +288,7 @@ export function ProspectsTable({
         content={selectedProspect?.textContent || ''}
         fileName={selectedProspect?.fileName || ''}
         fileUrl={selectedProspect?.fileUrl || ''}
+        fileContent={selectedProspect?.fileContent}
       />
       
       <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm">
