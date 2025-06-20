@@ -522,4 +522,101 @@ function App() {
   };
 
   const handleProspectDelete = async (id: string) => {
-    try
+    try {
+      await deleteProspect(id);
+      setProspects(prev => prev.filter(prospect => prospect.id !== id));
+    } catch (error) {
+      console.error('Failed to delete prospect:', error);
+    }
+  };
+
+  const handleViewProspect = async (prospect: Prospect) => {
+    // Marquer le prospect comme lu quand on l'ouvre
+    if (!prospect.isRead) {
+      try {
+        await markProspectAsRead(prospect.id);
+        setProspects(prev => prev.map(p => p.id === prospect.id ? { ...p, isRead: true } : p));
+      } catch (error) {
+        console.error('Failed to mark prospect as read:', error);
+      }
+    }
+    console.log('Viewing prospect:', prospect.id);
+  };
+
+  if (!session) {
+    return (
+      <ThemeProvider>
+        <LoginForm />
+      </ThemeProvider>
+    );
+  }
+
+  return (
+    <ThemeProvider>
+      <div className="flex h-screen bg-gray-100 dark:bg-gray-900">
+        <Sidebar 
+          activeTab={activeTab} 
+          onTabChange={setActiveTab}
+          rfps={rfps}
+          prospects={prospects}
+        />
+        <div className="flex-1 flex flex-col">
+          <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-4 flex justify-between items-center">
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+              {activeTab === 'rfp-extractor' ? 'Extracteur d\'AO' : 
+               activeTab === 'rfp-list' ? 'Liste des AO' :
+               activeTab === 'prospects-extractor' ? 'Extracteur de Prospects' :
+               'Liste des Prospects'}
+            </h1>
+            <button
+              onClick={() => setIsSettingsOpen(true)}
+              className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors"
+              title="Paramètres"
+            >
+              <Settings className="w-5 h-5" />
+            </button>
+          </div>
+          <div className="flex-1 overflow-hidden">
+            <TabContent
+              activeTab={activeTab}
+              rfps={rfps}
+              prospects={prospects}
+              salesReps={salesReps}
+              isAnalyzing={isAnalyzing}
+              isAnalyzingProspect={isAnalyzingProspect}
+              onAnalyzeRFP={handleAnalyzeRFP}
+              onAnalyzeProspect={handleAnalyzeProspect}
+              onStatusChange={handleStatusChange}
+              onAssigneeChange={handleAssigneeChange}
+              onClientChange={handleClientChange}
+              onMissionChange={handleMissionChange}
+              onLocationChange={handleLocationChange}
+              onMaxRateChange={handleMaxRateChange}
+              onStartDateChange={handleStartDateChange}
+              onCreatedAtChange={handleCreatedAtChange}
+              onDelete={handleDelete}
+              onViewRFP={handleViewRFP}
+              onProspectStatusChange={handleProspectStatusChange}
+              onProspectAssigneeChange={handleProspectAssigneeChange}
+              onProspectDateUpdateChange={handleProspectDateUpdateChange}
+              onProspectAvailabilityChange={handleProspectAvailabilityChange}
+              onProspectDailyRateChange={handleProspectDailyRateChange}
+              onProspectResidenceChange={handleProspectResidenceChange}
+              onProspectMobilityChange={handleProspectMobilityChange}
+              onProspectPhoneChange={handleProspectPhoneChange}
+              onProspectEmailChange={handleProspectEmailChange}
+              onProspectDelete={handleProspectDelete}
+              onViewProspect={handleViewProspect}
+            />
+          </div>
+        </div>
+        <SettingsModal 
+          isOpen={isSettingsOpen}
+          onClose={() => setIsSettingsOpen(false)}
+        />
+      </div>
+    </ThemeProvider>
+  );
+}
+
+export default App;
