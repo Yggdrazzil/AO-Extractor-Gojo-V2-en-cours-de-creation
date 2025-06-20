@@ -25,6 +25,9 @@ export const supabase = createClient<Database>(
       headers: {
         'X-Client-Info': 'supabase-js-v2'
       }
+    },
+    db: {
+      schema: 'public'
     }
   }
 );
@@ -32,21 +35,25 @@ export const supabase = createClient<Database>(
 // Helper pour vérifier la connexion
 export async function checkSupabaseConnection() {
   try {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) {
-      console.log('No active session, connection check skipped');
-      return true; // On retourne true car l'absence de session n'est pas une erreur
-    }
+    // Test simple de connexion sans authentification
+    const { data, error } = await supabase
+      .from('sales_reps')
+      .select('count', { count: 'exact', head: true });
     
-    const { error } = await supabase.from('sales_reps').select('count', { count: 'exact' });
     if (error) {
       console.error('Supabase connection error:', error);
+      // Si c'est une erreur d'autorisation, la connexion fonctionne mais l'utilisateur n'est pas connecté
+      if (error.code === 'PGRST301' || error.code === '42501') {
+        console.log('Connection OK, but authentication required');
+        return true;
+      }
       return false;
     }
     
+    console.log('Supabase connection successful');
     return true;
   } catch (error) {
-    console.warn('Connection check failed, but may be due to auth state:', error);
+    console.warn('Connection check failed:', error);
     return false;
   }
 }

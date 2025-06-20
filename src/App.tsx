@@ -14,14 +14,19 @@ import type { Session } from '@supabase/supabase-js';
 async function fetchSalesReps(): Promise<SalesRep[]> {
   console.log('Starting fetchSalesReps function...');
   
-  const { data: { session } } = await supabase.auth.getSession();
-  console.log('Auth check:', {
-    hasSession: !!session,
-    userEmail: session?.user?.email,
-    userId: session?.user?.id
-  });
-
   try {
+    const { data: { session } } = await supabase.auth.getSession();
+    console.log('Auth check:', {
+      hasSession: !!session,
+      userEmail: session?.user?.email,
+      userId: session?.user?.id
+    });
+
+    if (!session) {
+      console.warn('No active session, cannot fetch sales reps');
+      return [];
+    }
+
     console.log('Attempting to fetch from sales_reps table...');
     const { data: salesReps, error: salesRepsError } = await supabase
       .from('sales_reps')
@@ -37,13 +42,19 @@ async function fetchSalesReps(): Promise<SalesRep[]> {
 
     if (salesRepsError) {
       console.error('Error fetching sales reps:', salesRepsError);
+      // Ne pas lancer d'erreur si c'est juste un problème d'autorisation
+      if (salesRepsError.code === 'PGRST301' || salesRepsError.code === '42501') {
+        console.warn('Authorization issue, returning empty array');
+        return [];
+      }
       throw salesRepsError;
     }
 
     return salesReps || [];
   } catch (error) {
     console.error('Failed to fetch sales reps:', error);
-    throw error;
+    // Retourner un tableau vide plutôt que de lancer une erreur
+    return [];
   }
 }
 
@@ -59,75 +70,136 @@ function App() {
   useEffect(() => {
     async function initializeApp() {
       try {
+        setIsLoading(true);
+        setError(null);
+        
+        // Vérifier la connexion Supabase
         const connected = await checkSupabaseConnection();
         setIsConnected(connected);
         
-        const { data: { session } } = await supabase.auth.getSession();
+        // Récupérer la session
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        
+        if (sessionError) {
+          console.error('Session error:', sessionError);
+          // Ne pas traiter les erreurs de session comme des erreurs fatales
+        }
+        
         setSession(session);
+        console.log('App initialized:', { connected, hasSession: !!session });
+        
       } catch (err) {
         console.error('Erreur d\'initialisation:', err);
-        // Ne pas afficher d'erreur si l'utilisateur n'est pas connecté
+        // Ne pas afficher d'erreur si c'est juste un problème d'auth
         if (err instanceof Error && !err.message.includes('auth')) {
           setError('Une erreur est survenue lors de l\'initialisation de l\'application.');
         }
-      }
-    }
-    
-    initializeApp();
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
-
-  useEffect(() => {
-    async function loadInitialData() {
-      try {
-        console.log('Loading initial data...');
-        setIsLoading(true);
-        setError(null);
-
-        if (session) {
-          try {
-            // Charger d'abord les commerciaux
-            const salesRepsData = await fetchSalesReps();
-            console.log('Sales reps loaded:', { count: salesRepsData.length });
-            setSalesReps(salesRepsData);
-
-            // Puis charger les AOs
-            const rfpsData = await fetchRFPs();
-            console.log('RFPs loaded:', { count: rfpsData.length });
-            setRfps(rfpsData);
-          } catch (err) {
-            console.error('Error loading data:', err);
-            throw err;
-          }
-        } else {
-          console.warn('No active session, skipping data fetch');
-        }
-      } catch (error) {
-        console.error('Failed to load initial data. Error:', error);
-        setError('Erreur lors du chargement des données. Veuillez réessayer.');
       } finally {
         setIsLoading(false);
       }
     }
     
-    // Charger les données uniquement si nous sommes connectés et authentifiés
-    if (isConnected && session) {
+    initializeApp();
+
+    // Écouter les changements d'état d'authentification
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log('Auth state changed:', event, !!session);
+      setSession(session);
+      
+      if (event === 'SIGNED_IN' && session) {
+        // Recharger les données après connexion
+        setError(null);
+        loadInitialData(session);
+      } else if (event === 'SIGNED_OUT') {
+        // Nettoyer les données après déconnexion
+        setRfps([]);
+        setSalesReps([]);
+        setError(null);
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const loadInitialData = async (currentSession?: Session | null) => {
+    try {
+      console.log('Loading initial data...');
+      setIsLoading(true);
+      setError(null);
+
+      const activeSession = currentSession || session;
+      
+      if (activeSession && isConnected) {
+        try {
+          // Charger d'abord les commerciaux
+          console.log('Loading sales reps...');
+          const salesRepsData = await fetchSalesReps();
+          console.log('Sales reps loaded:', { count: salesRepsData.length });
+          setSalesReps(salesRepsData);
+
+          // Puis charger les AOs
+          console.log('Loading RFPs...');
+          const rfpsData = await fetchRFPs();
+          console.log('RFPs loaded:', { count: rfpsData.length });
+          setRfps(rfpsData);
+          
+        } catch (err) {
+          console.error('Error loading data:', err);
+          
+          // Gérer différents types d'erreurs
+          if (err instanceof Error) {
+            if (err.message.includes('Authentication required') || 
+                err.message.includes('Session expirée')) {
+              setError('Votre session a expiré. Veuillez vous reconnecter.');
+            } else if (err.message.includes('PGRST301') || 
+                       err.message.includes('42501')) {
+              setError('Problème d\'autorisation. Vérifiez vos permissions.');
+            } else {
+              setError('Erreur lors du chargement des données. Veuillez réessayer.');
+            }
+          } else {
+            setError('Une erreur inattendue est survenue.');
+          }
+        }
+      } else {
+        console.log('Skipping data load - not connected or not authenticated', { 
+          isConnected, 
+          hasSession: !!activeSession 
+        });
+      }
+    } catch (error) {
+      console.error('Failed to load initial data. Error:', error);
+      setError('Erreur lors du chargement des données. Veuillez réessayer.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Charger les données quand la session et la connexion sont prêtes
+  useEffect(() => {
+    if (isConnected && session && !isLoading) {
       console.log('Starting data load - connected and authenticated');
       loadInitialData();
-    } else {
-      console.log('Skipping data load - not connected or not authenticated', { 
-        isConnected, 
-        hasSession: !!session 
-      });
     }
   }, [session, isConnected]);
+
+  // Affichage de l'état de chargement initial
+  if (isLoading && !session) {
+    return (
+      <ThemeProvider>
+        <div className="min-h-screen bg-gray-100 dark:bg-gray-900 flex flex-col items-center justify-center p-4">
+          <div className="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-lg max-w-md w-full">
+            <div className="text-center space-y-4">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+              <p className="text-gray-600 dark:text-gray-400">Chargement...</p>
+            </div>
+          </div>
+        </div>
+      </ThemeProvider>
+    );
+  }
 
   if (error) {
     return (
@@ -137,19 +209,29 @@ function App() {
             <div className="text-center space-y-4">
               <h1 className="text-2xl font-bold text-red-600 dark:text-red-400">Erreur</h1>
               <p className="text-gray-600 dark:text-gray-400">{error}</p>
-              <button
-                onClick={() => window.location.reload()}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-              >
-                Réessayer
-              </button>
+              <div className="space-y-2">
+                <button
+                  onClick={() => {
+                    setError(null);
+                    loadInitialData();
+                  }}
+                  className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  Réessayer
+                </button>
+                <button
+                  onClick={() => window.location.reload()}
+                  className="w-full px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+                >
+                  Recharger la page
+                </button>
+              </div>
             </div>
           </div>
         </div>
       </ThemeProvider>
     );
   }
-
 
   const handleAnalyzeRFP = async (content: string, assignedTo: string) => {
     setIsAnalyzing(true);
@@ -190,9 +272,9 @@ function App() {
   const handleStatusChange = async (id: string, status: RFP['status']) => {
     try {
       await updateRFPStatus(id, status);
-    setRfps((prev) =>
-      prev.map((rfp) => (rfp.id === id ? { ...rfp, status } : rfp))
-    );
+      setRfps((prev) =>
+        prev.map((rfp) => (rfp.id === id ? { ...rfp, status } : rfp))
+      );
     } catch (error) {
       console.error('Failed to update status:', error);
     }
@@ -250,7 +332,6 @@ function App() {
   const handleStartDateChange = async (id: string, startDate: string) => {
     try {
       await updateRFPStartDate(id, startDate);
-      // Mettre à jour l'état local avec la nouvelle date
       const updatedRfps = prev => prev.map(rfp => {
         if (rfp.id === id) {
           return { ...rfp, startDate };
@@ -267,7 +348,6 @@ function App() {
   const handleCreatedAtChange = async (id: string, createdAt: string) => {
     try {
       await updateRFPCreatedAt(id, createdAt);
-      // Mettre à jour l'état local avec la nouvelle date
       const updatedRfps = prev => prev.map(rfp => {
         if (rfp.id === id) {
           return { ...rfp, createdAt };
@@ -305,7 +385,6 @@ function App() {
       }));
     } catch (error) {
       console.error('Failed to mark RFP as read:', error);
-      // Ne pas afficher d'erreur à l'utilisateur car ce n'est pas critique
     }
   };
 
@@ -346,26 +425,35 @@ function App() {
       <div className="min-h-screen bg-gray-100 dark:bg-gray-900">
         <Header />
         <main className="container mx-auto py-6 space-y-6">
-          <RFPForm
-            salesReps={salesReps}
-            onSubmit={handleAnalyzeRFP}
-            isLoading={isAnalyzing}
-          />
-          <RFPTable
-            rfps={rfps}
-            salesReps={salesReps}
-            onStatusChange={handleStatusChange}
-            onAssigneeChange={handleAssigneeChange}
-            onClientChange={handleClientChange}
-            onMissionChange={handleMissionChange}
-            onLocationChange={handleLocationChange}
-            onMaxRateChange={handleMaxRateChange}
-            onStartDateChange={handleStartDateChange}
-            onToggleRead={handleToggleRead}
-            onCreatedAtChange={handleCreatedAtChange}
-            onView={handleViewRFP}
-            onDelete={handleDelete}
-          />
+          {isLoading ? (
+            <div className="flex justify-center items-center py-12">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+              <span className="ml-3 text-gray-600 dark:text-gray-400">Chargement des données...</span>
+            </div>
+          ) : (
+            <>
+              <RFPForm
+                salesReps={salesReps}
+                onSubmit={handleAnalyzeRFP}
+                isLoading={isAnalyzing}
+              />
+              <RFPTable
+                rfps={rfps}
+                salesReps={salesReps}
+                onStatusChange={handleStatusChange}
+                onAssigneeChange={handleAssigneeChange}
+                onClientChange={handleClientChange}
+                onMissionChange={handleMissionChange}
+                onLocationChange={handleLocationChange}
+                onMaxRateChange={handleMaxRateChange}
+                onStartDateChange={handleStartDateChange}
+                onToggleRead={handleToggleRead}
+                onCreatedAtChange={handleCreatedAtChange}
+                onView={handleViewRFP}
+                onDelete={handleDelete}
+              />
+            </>
+          )}
         </main>
       </div>
     </ThemeProvider>
