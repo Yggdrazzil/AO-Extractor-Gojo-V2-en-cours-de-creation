@@ -205,7 +205,7 @@ export async function analyzeProspect(content: string, cvContent?: string): Prom
         'Authorization': `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        model: 'gpt-4-turbo-preview',
+        model: 'gpt-4o',
         messages: [
           { role: 'system', content: PROSPECT_SYSTEM_PROMPT },
           { role: 'user', content: analysisContent }
@@ -231,14 +231,14 @@ export async function analyzeProspect(content: string, cvContent?: string): Prom
       throw new Error("Erreur lors de l'analyse de la réponse");
     }
 
-    // Traiter les valeurs spéciales pour les coordonnées
+    // Nettoyer les réponses et forcer les tirets pour les coordonnées manquantes
     const processedResult = {
       availability: result.availability || null,
       dailyRate: result.dailyRate || null,
       residence: result.residence || null,
       mobility: result.mobility || null,
-      phone: result.phone || null,
-      email: result.email || null
+      phone: (result.phone && result.phone !== 'À définir' && result.phone !== 'Non trouvé' && result.phone !== 'Non renseigné') ? result.phone : null,
+      email: (result.email && result.email !== 'À définir' && result.email !== 'Non trouvé' && result.email !== 'Non renseigné') ? result.email : null
     };
 
     return processedResult;
