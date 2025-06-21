@@ -210,7 +210,7 @@ export async function analyzeProspect(content: string, cvContent?: string): Prom
         'Authorization': `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        model: 'gpt-4o',
+        model: 'gpt-4o-mini',
         messages: [
           { role: 'system', content: PROSPECT_SYSTEM_PROMPT },
           { role: 'user', content: analysisContent }
@@ -238,10 +238,10 @@ export async function analyzeProspect(content: string, cvContent?: string): Prom
 
     // Nettoyer les réponses et forcer les tirets pour les coordonnées manquantes
     const processedResult = {
-      availability: result.availability || null,
+      availability: result.availability && result.availability !== 'À définir' && result.availability !== 'Non trouvé' ? result.availability : null,
       dailyRate: result.dailyRate || null,
-      residence: result.residence || null,
-      mobility: result.mobility || null,
+      residence: result.residence && result.residence !== 'À définir' && result.residence !== 'Non trouvé' ? result.residence : null,
+      mobility: result.mobility && result.mobility !== 'À définir' && result.mobility !== 'Non trouvé' ? result.mobility : null,
       phone: (result.phone && result.phone !== 'À définir' && result.phone !== 'Non trouvé' && result.phone !== 'Non renseigné') ? result.phone : null,
       email: (result.email && result.email !== 'À définir' && result.email !== 'Non trouvé' && result.email !== 'Non renseigné') ? result.email : null
     };
