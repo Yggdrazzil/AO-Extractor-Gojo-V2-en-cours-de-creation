@@ -73,6 +73,8 @@ Exemple de réponse JSON:
   "mobility": "France entière",
   "phone": "06 12 34 56 78",
   "email": "candidat@email.com"
+}
+
 Ta tâche est d'extraire les informations clés suivantes à partir des informations textuelles fournies :
 - Disponibilité : quand le candidat est disponible
 - TJM/Salaire : le tarif journalier ou salaire en euros (nombre uniquement)
@@ -108,7 +110,6 @@ Si une info n'est pas trouvée:
   "phone": "-",
   "email": "-"
 }`;
-}`;
 
 export async function analyzeRFP(content: string): Promise<Partial<RFP>> {
   const apiKey = localStorage.getItem('openai-api-key');
@@ -121,7 +122,7 @@ export async function analyzeRFP(content: string): Promise<Partial<RFP>> {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`,
+        'Authorization': \`Bearer ${apiKey}`,
       },
       body: JSON.stringify({
         model: 'gpt-4-turbo-preview',
@@ -142,7 +143,7 @@ export async function analyzeRFP(content: string): Promise<Partial<RFP>> {
     const data = await response.json();
     let result;
     try {
-      const content = data.choices[0].message.content.replace(/```json\n|\n```/g, '');
+      const content = data.choices[0].message.content.replace(/``\`json\n|\n```/g, '');
       result = JSON.parse(content);
     } catch (error) {
       console.error('Erreur de parsing JSON:', data.choices[0].message.content);
@@ -179,7 +180,7 @@ export async function analyzeProspect(content: string, cvContent?: string): Prom
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`,
+        'Authorization': \`Bearer ${apiKey}`,
       },
       body: JSON.stringify({
         model: 'gpt-4o-mini',
@@ -201,7 +202,7 @@ export async function analyzeProspect(content: string, cvContent?: string): Prom
     const data = await response.json();
     let result;
     try {
-      const content = data.choices[0].message.content.replace(/```json\n|\n```/g, '');
+      const content = data.choices[0].message.content.replace(/``\`json\n|\n```/g, '');
       result = JSON.parse(content);
     } catch (error) {
       console.error('Erreur de parsing JSON:', data.choices[0].message.content);
