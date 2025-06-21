@@ -461,7 +461,7 @@ export function ProspectsTable({
                     </div>
                   ) : (
                     <div onClick={() => handleEdit(prospect, 'availability')} className="cursor-pointer hover:text-blue-600 dark:hover:text-blue-400" title="Cliquer pour modifier">
-                      {prospect.availability || '-'}
+                      {prospect.availability}
                     </div>
                   )}
                 </td>
@@ -519,9 +519,9 @@ export function ProspectsTable({
                     <div 
                       onClick={() => handleEdit(prospect, 'residence')} 
                       className="cursor-pointer hover:text-blue-600 dark:hover:text-blue-400 truncate" 
-                      title={`${prospect.residence || 'Non spécifié'} - Cliquer pour modifier`}
+                      title={`${prospect.residence} - Cliquer pour modifier`}
                     >
-                      {prospect.residence || '-'}
+                      {prospect.residence}
                     </div>
                   )}
                 </td>
@@ -549,9 +549,9 @@ export function ProspectsTable({
                     <div 
                       onClick={() => handleEdit(prospect, 'mobility')} 
                       className="cursor-pointer hover:text-blue-600 dark:hover:text-blue-400 line-clamp-3 text-sm leading-tight" 
-                      title={`${prospect.mobility || 'Non spécifié'} - Cliquer pour modifier`}
+                      title={`${prospect.mobility} - Cliquer pour modifier`}
                     >
-                      {prospect.mobility || '-'}
+                      {prospect.mobility}
                     </div>
                   )}
                 </td>
@@ -579,9 +579,9 @@ export function ProspectsTable({
                     <div 
                       onClick={() => handleEdit(prospect, 'phone')} 
                       className="cursor-pointer hover:text-blue-600 dark:hover:text-blue-400 truncate text-sm" 
-                      title={`${prospect.phone || '-'} - Cliquer pour modifier`}
+                      title={`${prospect.phone} - Cliquer pour modifier`}
                     >
-                      {prospect.phone || '-'}
+                      {prospect.phone}
                     </div>
                   )}
                 </td>
@@ -609,9 +609,9 @@ export function ProspectsTable({
                     <div 
                       onClick={() => handleEdit(prospect, 'email')} 
                       className="cursor-pointer hover:text-blue-600 dark:hover:text-blue-400 truncate text-sm" 
-                      title={`${prospect.email || '-'} - Cliquer pour modifier`}
+                      title={`${prospect.email} - Cliquer pour modifier`}
                     >
-                      {prospect.email || '-'}
+                      {prospect.email}
                     </div>
                   )}
                 </td>

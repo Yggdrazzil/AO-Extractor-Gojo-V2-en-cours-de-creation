@@ -73,6 +73,41 @@ Exemple de réponse JSON:
   "mobility": "France entière",
   "phone": "06 12 34 56 78",
   "email": "candidat@email.com"
+Ta tâche est d'extraire les informations clés suivantes à partir des informations textuelles fournies :
+- Disponibilité : quand le candidat est disponible
+- TJM/Salaire : le tarif journalier ou salaire en euros (nombre uniquement)
+- Résidence : où habite le candidat
+- Mobilité : capacité de déplacement du candidat
+- Téléphone : numéro de téléphone mobile français (06, 07, +33)
+- Email : adresse email du candidat
+
+RÈGLES STRICTES:
+- Analyser UNIQUEMENT le texte principal fourni
+- Si une information n'est pas trouvée, renvoyer exactement "-" (un tiret)
+- Ne JAMAIS utiliser "À définir", "Non trouvé", null ou similaire
+- Pour téléphone: uniquement numéros mobiles français, sinon "-"
+- Pour email: format valide avec @, sinon "-"
+- Pour TJM: si pas trouvé, renvoyer null (pas de tiret pour les nombres)
+
+Exemple de réponse JSON:
+{
+  "availability": "Immédiatement",
+  "dailyRate": 650,
+  "residence": "Paris",
+  "mobility": "France entière",
+  "phone": "06 12 34 56 78",
+  "email": "candidat@email.com"
+}
+
+Si une info n'est pas trouvée:
+{
+  "availability": "-",
+  "dailyRate": null,
+  "residence": "-",
+  "mobility": "-",
+  "phone": "-",
+  "email": "-"
+}`;
 }`;
 
 export async function analyzeRFP(content: string): Promise<Partial<RFP>> {
@@ -175,12 +210,12 @@ export async function analyzeProspect(content: string, cvContent?: string): Prom
 
     // Nettoyer les réponses et forcer null pour les coordonnées manquantes
     return {
-      availability: result.availability || null,
+      availability: result.availability || '-',
       dailyRate: result.dailyRate || null,
-      residence: result.residence || null,
-      mobility: result.mobility || null,
-      phone: result.phone || null,
-      email: result.email || null
+      residence: result.residence || '-',
+      mobility: result.mobility || '-',
+      phone: result.phone || '-',
+      email: result.email || '-'
     };
   } catch (error) {
     console.error('Erreur OpenAI:', error);
