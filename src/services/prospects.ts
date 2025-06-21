@@ -158,8 +158,8 @@ export async function createProspect(prospect: Omit<Prospect, 'id'>, file?: File
       daily_rate: prospect.dailyRate,
       residence: prospect.residence || 'À définir',
       mobility: prospect.mobility || 'À définir',
-      phone: prospect.phone || 'Non renseigné',
-      email: prospect.email || 'Non renseigné',
+      phone: prospect.phone || '-',
+      email: prospect.email || '-',
       status: prospect.status,
       assigned_to: prospect.assignedTo,
       is_read: prospect.isRead
