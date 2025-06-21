@@ -350,7 +350,7 @@ export function ProspectsTable({
                 onClick={() => handleSort('dailyRate')}
               >
                 <div className="flex items-center gap-2">
-                  TJM
+                  TJM/Salaire
                   {getSortIcon('dailyRate')}
                 </div>
               </th>

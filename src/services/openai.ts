@@ -52,7 +52,7 @@ Exemple de réponse JSON attendue:
 const PROSPECT_SYSTEM_PROMPT = `Tu es un assistant spécialisé dans l'analyse de profils de candidats pour des missions de consulting IT.
 Ta tâche est d'extraire les informations clés suivantes à partir des informations textuelles fournies sur un candidat ET du contenu de son CV :
 - Disponibilité : quand le candidat est disponible (ex: "Immédiatement", "Janvier 2025", "2 semaines", etc.)
-- TJM (Taux Journalier Moyen) : le tarif journalier du candidat en euros (nombre uniquement, sans le symbole €)
+- TJM/Salaire : le tarif journalier du candidat (pour les freelances) OU ses prétentions salariales annuelles (pour les salariés) en euros (nombre uniquement, sans le symbole €)
 - Résidence : où habite le candidat (ville, région)
 - Mobilité : capacité de déplacement du candidat (ex: "France entière", "Région parisienne", "Télétravail uniquement", etc.)
 - Téléphone : numéro de téléphone du candidat
@@ -85,9 +85,11 @@ INSTRUCTIONS CRITIQUES:
 4. Autres informations:
    - Pour les autres informations (disponibilité, TJM, résidence, mobilité), analyser le texte principal ET le CV
    - Si elles ne sont pas présentes ou ne sont pas claires, renvoyer null
+   - Pour le TJM/Salaire : chercher soit un TJM (pour freelances), soit un salaire annuel (pour salariés), soit des prétentions salariales
+   - Exemples de ce qu'il faut chercher : "TJM 650€", "salaire 55k€", "prétentions 60000€", "tarif journalier 700€", "salaire souhaité 50k"
 
 5. Format des données:
-   - TJM : nombre entier uniquement (ex: 650, pas "650€" ou "650 euros")
+   - TJM/Salaire : nombre entier uniquement (ex: 650 pour un TJM, 55000 pour un salaire annuel)
    - Téléphone : format exact tel qu'écrit dans le texte
    - Email : adresse email complète et exacte
    - Disponibilité : texte descriptif tel qu'indiqué
@@ -95,7 +97,7 @@ INSTRUCTIONS CRITIQUES:
    - Mobilité : description de la capacité de déplacement
 
 6. Règles strictes:
-   - Si le TJM n'est pas mentionné explicitement, renvoyer null
+   - Si ni le TJM ni le salaire ne sont mentionnés explicitement, renvoyer null
    - Chercher les coordonnées dans le texte principal en priorité, puis dans le CV
    - Respecter exactement le format des coordonnées tel qu'écrit
    - Ne pas reformater les numéros de téléphone
@@ -109,7 +111,9 @@ Exemple de réponse JSON attendue:
   "mobility": "France entière",
   "phone": "06 12 34 56 78",
   "email": "candidat@email.com"
-}`;
+}
+
+Note: Le champ "dailyRate" peut contenir soit un TJM (ex: 650) soit un salaire annuel (ex: 55000) selon le type de profil analysé.`;
 
 export async function analyzeRFP(content: string): Promise<Partial<RFP>> {
   const apiKey = localStorage.getItem('openai-api-key');
