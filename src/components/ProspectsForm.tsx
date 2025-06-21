@@ -209,7 +209,7 @@ export function ProspectsForm({ salesReps, onSubmit, isLoading = false }: Prospe
             />
             
             {selectedFile ? (
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between w-full p-6">
                 <div className="flex items-center space-x-3">
                   <Upload className="w-8 h-8 text-green-500" />
                   <div>
@@ -230,7 +230,7 @@ export function ProspectsForm({ salesReps, onSubmit, isLoading = false }: Prospe
                 </button>
               </div>
             ) : (
-              <div className="text-center">
+              <div className="text-center p-6">
                 <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
                 <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
                   Glissez-déposez un fichier ici ou cliquez pour sélectionner
@@ -250,14 +250,14 @@ export function ProspectsForm({ salesReps, onSubmit, isLoading = false }: Prospe
         )}
 
         {/* Sélection du commercial et bouton d'analyse */}
-        <div className="flex space-x-4">
+        <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
           <select
             value={assignedTo}
             onChange={(e) => {
               setAssignedTo(e.target.value);
               setError(null);
             }}
-            className="w-64 px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none"
+            className="w-full sm:w-64 px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none"
           >
             <option value="">
               {salesReps?.length ? 'Sélectionner un commercial' : 'Aucun commercial disponible'}
@@ -275,7 +275,7 @@ export function ProspectsForm({ salesReps, onSubmit, isLoading = false }: Prospe
           <button
             type="submit"
             disabled={isLoading || (!textContent.trim() && !selectedFile) || !assignedTo}
-            className="px-6 py-2 bg-[#1651EE] hover:bg-[#1651EE]/90 text-white font-medium rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="w-full sm:w-auto px-6 py-2 bg-[#1651EE] hover:bg-[#1651EE]/90 text-white font-medium rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             {isLoading ? 'Analyse...' : 'Analyser'}
           </button>

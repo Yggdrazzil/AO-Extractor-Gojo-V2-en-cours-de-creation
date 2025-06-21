@@ -93,7 +93,7 @@ export function TabContent({
   switch (activeTab) {
     case 'rfp-extractor':
       return (
-        <div className="p-6 space-y-6 h-full overflow-auto">
+        <div className="p-4 sm:p-6 space-y-4 sm:space-y-6 h-full overflow-auto">
           {onAnalyzeRFP && (
             <RFPForm
               salesReps={salesReps}
@@ -120,7 +120,7 @@ export function TabContent({
 
     case 'prospects':
       return (
-        <div className="p-6 space-y-6 h-full overflow-auto">
+        <div className="p-4 sm:p-6 space-y-4 sm:space-y-6 h-full overflow-auto">
           {onAnalyzeProspect && (
             <ProspectsForm
               salesReps={salesReps}

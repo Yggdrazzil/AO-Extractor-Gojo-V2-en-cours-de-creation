@@ -337,7 +337,7 @@ export function RFPTable({
         }}
       />
       <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm">
-        <div className="flex items-center space-x-2">
+        <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-2">
           <label htmlFor="sales-rep-filter" className="text-sm font-medium text-gray-700 dark:text-gray-300">
             Filtrer par commercial :
           </label>
@@ -345,7 +345,7 @@ export function RFPTable({
             id="sales-rep-filter"
             value={selectedSalesRep}
             onChange={(e) => handleSalesRepChange(e.target.value)}
-            className="w-56 px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full sm:w-56 px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           >
             <option value="">Tous les commerciaux</option>
             {[...salesReps].sort((a, b) => {
@@ -361,73 +361,73 @@ export function RFPTable({
       </div>
       <div 
         ref={tableRef}
-        className="overflow-x-auto bg-white dark:bg-gray-800 rounded-lg shadow-sm max-h-[70vh] overscroll-contain"
+        className="overflow-x-auto bg-white dark:bg-gray-800 rounded-lg shadow-sm max-h-[70vh] overscroll-contain min-w-0"
         style={{ 
           willChange: isScrolling ? 'transform' : 'auto',
           contain: 'content'
         }}
       >
-        <table className="w-full border-collapse">
+        <table className="w-full border-collapse min-w-[1400px]">
           <thead className="bg-white dark:bg-gray-800 sticky top-0 z-10">
             <tr className="text-left">
-              <th className="p-4 w-16" />
+              <th className="p-2 sm:p-4 w-12 sm:w-16" />
               <th 
-                className="p-4 font-medium text-gray-600 dark:text-gray-200 cursor-pointer select-none"
+                className="p-2 sm:p-4 font-medium text-gray-600 dark:text-gray-200 cursor-pointer select-none min-w-[120px]"
                 onClick={() => handleSort('client')}
               >
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1 sm:gap-2">
                   Client
                   {getSortIcon('client')}
                 </div>
               </th>
               <th 
-                className="p-4 font-medium text-gray-600 dark:text-gray-200 cursor-pointer select-none"
+                className="p-2 sm:p-4 font-medium text-gray-600 dark:text-gray-200 cursor-pointer select-none min-w-[150px]"
                 onClick={() => handleSort('mission')}
               >
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1 sm:gap-2">
                   Intitulé Mission
                   {getSortIcon('mission')}
                 </div>
               </th>
               <th 
-                className="p-4 font-medium text-gray-600 dark:text-gray-200 cursor-pointer select-none"
+                className="p-2 sm:p-4 font-medium text-gray-600 dark:text-gray-200 cursor-pointer select-none min-w-[100px]"
                 onClick={() => handleSort('location')}
               >
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1 sm:gap-2">
                   Localisation
                   {getSortIcon('location')}
                 </div>
               </th>
               <th 
-                className="p-4 font-medium text-gray-600 dark:text-gray-200 cursor-pointer select-none"
+                className="p-2 sm:p-4 font-medium text-gray-600 dark:text-gray-200 cursor-pointer select-none min-w-[80px]"
                 onClick={() => handleSort('maxRate')}
               >
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1 sm:gap-2">
                   TJM Max
                   {getSortIcon('maxRate')}
                 </div>
               </th>
               <th 
-                className="p-4 font-medium text-gray-600 dark:text-gray-200 cursor-pointer select-none"
+                className="p-2 sm:p-4 font-medium text-gray-600 dark:text-gray-200 cursor-pointer select-none min-w-[100px]"
                 onClick={() => handleSort('createdAt')}
               >
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1 sm:gap-2">
                   Date Création
                   {getSortIcon('createdAt')}
                 </div>
               </th>
               <th 
-                className="p-4 font-medium text-gray-600 dark:text-gray-200 cursor-pointer select-none"
+                className="p-2 sm:p-4 font-medium text-gray-600 dark:text-gray-200 cursor-pointer select-none min-w-[100px]"
                 onClick={() => handleSort('startDate')}
               >
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1 sm:gap-2">
                   Date Démarrage
                   {getSortIcon('startDate')}
                 </div>
               </th>
-              <th className="p-4 font-medium text-gray-600 dark:text-gray-200">Statut</th>
-              <th className="p-4 font-medium text-gray-600 dark:text-gray-200">Commercial</th>
-              <th className="p-4 font-medium text-gray-600 dark:text-gray-200">Actions</th>
+              <th className="p-2 sm:p-4 font-medium text-gray-600 dark:text-gray-200 min-w-[100px]">Statut</th>
+              <th className="p-2 sm:p-4 font-medium text-gray-600 dark:text-gray-200 min-w-[100px]">Commercial</th>
+              <th className="p-2 sm:p-4 font-medium text-gray-600 dark:text-gray-200 min-w-[120px]">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -438,7 +438,7 @@ export function RFPTable({
                   rfp.status === 'Traité' ? 'bg-gray-200 dark:bg-gray-900' : 'dark:bg-gray-600'
                 }`}
               >
-                <td className="p-4">
+                <td className="p-2 sm:p-4">
                   <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
                     rfp.isRead 
                       ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' 
@@ -447,7 +447,7 @@ export function RFPTable({
                     {rfp.isRead ? 'Lu' : 'NEW'}
                   </span>
                 </td>
-                <td className="p-4 text-gray-900 dark:text-gray-100">
+                <td className="p-2 sm:p-4 text-gray-900 dark:text-gray-100">
                   {editingField?.id === rfp.id && editingField.field === 'client' ? (
                     <div className="flex items-center space-x-2">
                       <input
@@ -455,19 +455,19 @@ export function RFPTable({
                         value={editingField.value}
                         onChange={(e) => setEditingField({ ...editingField, value: e.target.value })}
                         onKeyDown={handleKeyPress}
-                        className="flex-1 px-2 py-1 border border-blue-500 dark:border-blue-400 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700"
+                        className="flex-1 px-2 py-1 border border-blue-500 dark:border-blue-400 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-sm"
                         autoFocus
                       />
                       <button
                         onClick={handleSave}
-                        className="p-1 text-green-600 hover:text-green-700 dark:text-green-400"
+                        className="p-1 text-green-600 hover:text-green-700 dark:text-green-400 flex-shrink-0"
                         title="Sauvegarder"
                       >
                         <Check className="w-4 h-4" />
                       </button>
                       <button
                         onClick={handleCancel}
-                        className="p-1 text-red-600 hover:text-red-700 dark:text-red-400"
+                        className="p-1 text-red-600 hover:text-red-700 dark:text-red-400 flex-shrink-0"
                         title="Annuler"
                       >
                         <X className="w-4 h-4" />
@@ -476,8 +476,8 @@ export function RFPTable({
                   ) : (
                     <div
                       onClick={() => handleEdit(rfp, 'client')}
-                      className="cursor-pointer hover:text-blue-600 dark:hover:text-blue-400"
-                      title="Cliquer pour modifier"
+                      className="cursor-pointer hover:text-blue-600 dark:hover:text-blue-400 truncate text-sm"
+                      title={`${rfp.client} - Cliquer pour modifier`}
                     >
                       {rfp.client}
                     </div>

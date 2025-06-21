@@ -292,7 +292,7 @@ export function ProspectsTable({
       />
       
       <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm">
-        <div className="flex items-center space-x-2">
+        <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-2">
           <label htmlFor="sales-rep-filter-prospects" className="text-sm font-medium text-gray-700 dark:text-gray-300">
             Filtrer par commercial :
           </label>
@@ -300,7 +300,7 @@ export function ProspectsTable({
             id="sales-rep-filter-prospects"
             value={selectedSalesRep}
             onChange={(e) => handleSalesRepChange(e.target.value)}
-            className="w-56 px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full sm:w-56 px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           >
             <option value="">Tous les commerciaux</option>
             {[...salesReps].sort((a, b) => {
@@ -317,82 +317,82 @@ export function ProspectsTable({
       
       <div 
         ref={tableRef}
-        className="overflow-x-auto bg-white dark:bg-gray-800 rounded-lg shadow-sm max-h-[70vh] overscroll-contain"
+        className="overflow-x-auto bg-white dark:bg-gray-800 rounded-lg shadow-sm max-h-[70vh] overscroll-contain min-w-0"
         style={{ 
           willChange: isScrolling ? 'transform' : 'auto',
           contain: 'content'
         }}
       >
-        <table className="w-full border-collapse">
+        <table className="w-full border-collapse min-w-[1200px]">
           <thead className="bg-white dark:bg-gray-800 sticky top-0 z-10">
             <tr className="text-left">
-              <th className="p-4 w-16" />
+              <th className="p-2 sm:p-4 w-12 sm:w-16" />
               <th 
-                className="p-4 font-medium text-gray-600 dark:text-gray-200 cursor-pointer select-none"
+                className="p-2 sm:p-4 font-medium text-gray-600 dark:text-gray-200 cursor-pointer select-none min-w-[120px]"
                 onClick={() => handleSort('targetAccount')}
               >
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1 sm:gap-2">
                   Compte Ciblé
                   {getSortIcon('targetAccount')}
                 </div>
               </th>
               <th 
-                className="p-4 font-medium text-gray-600 dark:text-gray-200 cursor-pointer select-none"
+                className="p-2 sm:p-4 font-medium text-gray-600 dark:text-gray-200 cursor-pointer select-none min-w-[100px]"
                 onClick={() => handleSort('availability')}
               >
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1 sm:gap-2">
                   Disponibilité
                   {getSortIcon('availability')}
                 </div>
               </th>
               <th 
-                className="p-4 font-medium text-gray-600 dark:text-gray-200 cursor-pointer select-none"
+                className="p-2 sm:p-4 font-medium text-gray-600 dark:text-gray-200 cursor-pointer select-none min-w-[100px]"
                 onClick={() => handleSort('dailyRate')}
               >
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1 sm:gap-2">
                   TJM/Salaire
                   {getSortIcon('dailyRate')}
                 </div>
               </th>
               <th 
-                className="p-4 font-medium text-gray-600 dark:text-gray-200 cursor-pointer select-none"
+                className="p-2 sm:p-4 font-medium text-gray-600 dark:text-gray-200 cursor-pointer select-none min-w-[100px]"
                 onClick={() => handleSort('residence')}
               >
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1 sm:gap-2">
                   Résidence
                   {getSortIcon('residence')}
                 </div>
               </th>
               <th 
-                className="p-4 font-medium text-gray-600 dark:text-gray-200 cursor-pointer select-none"
+                className="p-2 sm:p-4 font-medium text-gray-600 dark:text-gray-200 cursor-pointer select-none min-w-[120px]"
                 onClick={() => handleSort('mobility')}
               >
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1 sm:gap-2">
                   Mobilité
                   {getSortIcon('mobility')}
                 </div>
               </th>
               <th 
-                className="p-4 font-medium text-gray-600 dark:text-gray-200 cursor-pointer select-none"
+                className="p-2 sm:p-4 font-medium text-gray-600 dark:text-gray-200 cursor-pointer select-none min-w-[120px]"
                 onClick={() => handleSort('phone')}
               >
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1 sm:gap-2">
                   Téléphone
                   {getSortIcon('phone')}
                 </div>
               </th>
               <th 
-                className="p-4 font-medium text-gray-600 dark:text-gray-200 cursor-pointer select-none"
+                className="p-2 sm:p-4 font-medium text-gray-600 dark:text-gray-200 cursor-pointer select-none min-w-[150px]"
                 onClick={() => handleSort('email')}
               >
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1 sm:gap-2">
                   Email
                   {getSortIcon('email')}
                 </div>
               </th>
-              <th className="p-4 font-medium text-gray-600 dark:text-gray-200">Statut</th>
-              <th className="p-4 font-medium text-gray-600 dark:text-gray-200">Commercial</th>
-              <th className="p-4 font-medium text-gray-600 dark:text-gray-200">Actions</th>
+              <th className="p-2 sm:p-4 font-medium text-gray-600 dark:text-gray-200 min-w-[100px]">Statut</th>
+              <th className="p-2 sm:p-4 font-medium text-gray-600 dark:text-gray-200 min-w-[100px]">Commercial</th>
+              <th className="p-2 sm:p-4 font-medium text-gray-600 dark:text-gray-200 min-w-[100px]">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -403,7 +403,7 @@ export function ProspectsTable({
                   prospect.status === 'Traité' ? 'bg-gray-200 dark:bg-gray-900' : 'dark:bg-gray-600'
                 }`}
               >
-                <td className="p-4">
+                <td className="p-2 sm:p-4">
                   <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
                     prospect.isRead 
                       ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' 
@@ -414,7 +414,7 @@ export function ProspectsTable({
                 </td>
                 
                 {/* Compte Ciblé */}
-                <td className="p-4 text-gray-900 dark:text-gray-100">
+                <td className="p-2 sm:p-4 text-gray-900 dark:text-gray-100">
                   {editingField?.id === prospect.id && editingField.field === 'targetAccount' ? (
                     <div className="flex items-center space-x-2">
                       <input
@@ -422,26 +422,26 @@ export function ProspectsTable({
                         value={editingField.value}
                         onChange={(e) => setEditingField({ ...editingField, value: e.target.value })}
                         onKeyDown={handleKeyPress}
-                        className="flex-1 px-2 py-1 border border-blue-500 dark:border-blue-400 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700"
+                        className="flex-1 px-2 py-1 border border-blue-500 dark:border-blue-400 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-sm"
                         placeholder="Nom du compte ciblé"
                         autoFocus
                       />
-                      <button onClick={handleSave} className="p-1 text-green-600 hover:text-green-700 dark:text-green-400" title="Sauvegarder">
+                      <button onClick={handleSave} className="p-1 text-green-600 hover:text-green-700 dark:text-green-400 flex-shrink-0" title="Sauvegarder">
                         <Check className="w-4 h-4" />
                       </button>
-                      <button onClick={handleCancel} className="p-1 text-red-600 hover:text-red-700 dark:text-red-400" title="Annuler">
+                      <button onClick={handleCancel} className="p-1 text-red-600 hover:text-red-700 dark:text-red-400 flex-shrink-0" title="Annuler">
                         <X className="w-4 h-4" />
                       </button>
                     </div>
                   ) : (
-                    <div onClick={() => handleEdit(prospect, 'targetAccount')} className="cursor-pointer hover:text-blue-600 dark:hover:text-blue-400" title="Cliquer pour modifier">
+                    <div onClick={() => handleEdit(prospect, 'targetAccount')} className="cursor-pointer hover:text-blue-600 dark:hover:text-blue-400 truncate text-sm" title={`${prospect.targetAccount} - Cliquer pour modifier`}>
                       {prospect.targetAccount || 'Non spécifié'}
                     </div>
                   )}
                 </td>
 
                 {/* Disponibilité */}
-                <td className="p-4 text-gray-900 dark:text-gray-100">
+                <td className="p-2 sm:p-4 text-gray-900 dark:text-gray-100">
                   {editingField?.id === prospect.id && editingField.field === 'availability' ? (
                     <div className="flex items-center space-x-2">
                       <input
@@ -449,25 +449,25 @@ export function ProspectsTable({
                         value={editingField.value}
                         onChange={(e) => setEditingField({ ...editingField, value: e.target.value })}
                         onKeyDown={handleKeyPress}
-                        className="flex-1 px-2 py-1 border border-blue-500 dark:border-blue-400 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700"
+                        className="flex-1 px-2 py-1 border border-blue-500 dark:border-blue-400 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-sm"
                         autoFocus
                       />
-                      <button onClick={handleSave} className="p-1 text-green-600 hover:text-green-700 dark:text-green-400" title="Sauvegarder">
+                      <button onClick={handleSave} className="p-1 text-green-600 hover:text-green-700 dark:text-green-400 flex-shrink-0" title="Sauvegarder">
                         <Check className="w-4 h-4" />
                       </button>
-                      <button onClick={handleCancel} className="p-1 text-red-600 hover:text-red-700 dark:text-red-400" title="Annuler">
+                      <button onClick={handleCancel} className="p-1 text-red-600 hover:text-red-700 dark:text-red-400 flex-shrink-0" title="Annuler">
                         <X className="w-4 h-4" />
                       </button>
                     </div>
                   ) : (
-                    <div onClick={() => handleEdit(prospect, 'availability')} className="cursor-pointer hover:text-blue-600 dark:hover:text-blue-400" title="Cliquer pour modifier">
+                    <div onClick={() => handleEdit(prospect, 'availability')} className="cursor-pointer hover:text-blue-600 dark:hover:text-blue-400 truncate text-sm" title={`${prospect.availability} - Cliquer pour modifier`}>
                       {prospect.availability}
                     </div>
                   )}
                 </td>
 
                 {/* TJM */}
-                <td className="p-4 text-gray-900 dark:text-gray-100">
+                <td className="p-2 sm:p-4 text-gray-900 dark:text-gray-100">
                   {editingField?.id === prospect.id && editingField.field === 'dailyRate' ? (
                     <div className="flex items-center space-x-2">
                       <input
@@ -475,20 +475,20 @@ export function ProspectsTable({
                         value={editingField.value}
                         onChange={(e) => setEditingField({ ...editingField, value: e.target.value })}
                         onKeyDown={handleKeyPress}
-                        className="flex-1 px-2 py-1 border border-blue-500 dark:border-blue-400 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700"
+                        className="flex-1 px-2 py-1 border border-blue-500 dark:border-blue-400 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-sm"
                         min="0"
                         step="1"
                         autoFocus
                       />
-                      <button onClick={handleSave} className="p-1 text-green-600 hover:text-green-700 dark:text-green-400" title="Sauvegarder">
+                      <button onClick={handleSave} className="p-1 text-green-600 hover:text-green-700 dark:text-green-400 flex-shrink-0" title="Sauvegarder">
                         <Check className="w-4 h-4" />
                       </button>
-                      <button onClick={handleCancel} className="p-1 text-red-600 hover:text-red-700 dark:text-red-400" title="Annuler">
+                      <button onClick={handleCancel} className="p-1 text-red-600 hover:text-red-700 dark:text-red-400 flex-shrink-0" title="Annuler">
                         <X className="w-4 h-4" />
                       </button>
                     </div>
                   ) : (
-                    <div onClick={() => handleEdit(prospect, 'dailyRate')} className="cursor-pointer hover:text-blue-600 dark:hover:text-blue-400" title="Cliquer pour modifier">
+                    <div onClick={() => handleEdit(prospect, 'dailyRate')} className="cursor-pointer hover:text-blue-600 dark:hover:text-blue-400 text-sm" title="Cliquer pour modifier">
                       {typeof prospect.dailyRate === 'number' ? 
                         prospect.dailyRate >= 1000 ? `${Math.round(prospect.dailyRate / 1000)}K€` : `${prospect.dailyRate}€` 
                         : '-'}
@@ -497,7 +497,7 @@ export function ProspectsTable({
                 </td>
 
                 {/* Résidence */}
-                <td className="p-4 text-gray-900 dark:text-gray-100 max-w-32">
+                <td className="p-2 sm:p-4 text-gray-900 dark:text-gray-100 max-w-24 sm:max-w-32">
                   {editingField?.id === prospect.id && editingField.field === 'residence' ? (
                     <div className="flex items-center space-x-2">
                       <input
@@ -505,20 +505,20 @@ export function ProspectsTable({
                         value={editingField.value}
                         onChange={(e) => setEditingField({ ...editingField, value: e.target.value })}
                         onKeyDown={handleKeyPress}
-                        className="flex-1 px-2 py-1 border border-blue-500 dark:border-blue-400 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700"
+                        className="flex-1 px-2 py-1 border border-blue-500 dark:border-blue-400 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-sm"
                         autoFocus
                       />
-                      <button onClick={handleSave} className="p-1 text-green-600 hover:text-green-700 dark:text-green-400" title="Sauvegarder">
+                      <button onClick={handleSave} className="p-1 text-green-600 hover:text-green-700 dark:text-green-400 flex-shrink-0" title="Sauvegarder">
                         <Check className="w-4 h-4" />
                       </button>
-                      <button onClick={handleCancel} className="p-1 text-red-600 hover:text-red-700 dark:text-red-400" title="Annuler">
+                      <button onClick={handleCancel} className="p-1 text-red-600 hover:text-red-700 dark:text-red-400 flex-shrink-0" title="Annuler">
                         <X className="w-4 h-4" />
                       </button>
                     </div>
                   ) : (
                     <div 
                       onClick={() => handleEdit(prospect, 'residence')} 
-                      className="cursor-pointer hover:text-blue-600 dark:hover:text-blue-400 truncate" 
+                      className="cursor-pointer hover:text-blue-600 dark:hover:text-blue-400 truncate text-sm" 
                       title={`${prospect.residence} - Cliquer pour modifier`}
                     >
                       {prospect.residence}
@@ -527,21 +527,20 @@ export function ProspectsTable({
                 </td>
 
                 {/* Mobilité */}
-                <td className="p-4 text-gray-900 dark:text-gray-100 max-w-48">
+                <td className="p-2 sm:p-4 text-gray-900 dark:text-gray-100 max-w-32 sm:max-w-48">
                   {editingField?.id === prospect.id && editingField.field === 'mobility' ? (
                     <div className="flex items-center space-x-2">
                       <textarea
-                        type="text"
                         value={editingField.value}
                         onChange={(e) => setEditingField({ ...editingField, value: e.target.value })}
                         onKeyDown={handleKeyPress}
-                        className="flex-1 px-2 py-1 border border-blue-500 dark:border-blue-400 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 resize-none h-20"
+                        className="flex-1 px-2 py-1 border border-blue-500 dark:border-blue-400 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 resize-none h-16 sm:h-20 text-sm"
                         autoFocus
                       />
-                      <button onClick={handleSave} className="p-1 text-green-600 hover:text-green-700 dark:text-green-400" title="Sauvegarder">
+                      <button onClick={handleSave} className="p-1 text-green-600 hover:text-green-700 dark:text-green-400 flex-shrink-0" title="Sauvegarder">
                         <Check className="w-4 h-4" />
                       </button>
-                      <button onClick={handleCancel} className="p-1 text-red-600 hover:text-red-700 dark:text-red-400" title="Annuler">
+                      <button onClick={handleCancel} className="p-1 text-red-600 hover:text-red-700 dark:text-red-400 flex-shrink-0" title="Annuler">
                         <X className="w-4 h-4" />
                       </button>
                     </div>
@@ -557,7 +556,7 @@ export function ProspectsTable({
                 </td>
 
                 {/* Téléphone */}
-                <td className="p-4 text-gray-900 dark:text-gray-100 max-w-32">
+                <td className="p-2 sm:p-4 text-gray-900 dark:text-gray-100 max-w-24 sm:max-w-32">
                   {editingField?.id === prospect.id && editingField.field === 'phone' ? (
                     <div className="flex items-center space-x-2">
                       <input
@@ -565,13 +564,13 @@ export function ProspectsTable({
                         value={editingField.value}
                         onChange={(e) => setEditingField({ ...editingField, value: e.target.value })}
                         onKeyDown={handleKeyPress}
-                        className="flex-1 px-2 py-1 border border-blue-500 dark:border-blue-400 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700"
+                        className="flex-1 px-2 py-1 border border-blue-500 dark:border-blue-400 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-sm"
                         autoFocus
                       />
-                      <button onClick={handleSave} className="p-1 text-green-600 hover:text-green-700 dark:text-green-400" title="Sauvegarder">
+                      <button onClick={handleSave} className="p-1 text-green-600 hover:text-green-700 dark:text-green-400 flex-shrink-0" title="Sauvegarder">
                         <Check className="w-4 h-4" />
                       </button>
-                      <button onClick={handleCancel} className="p-1 text-red-600 hover:text-red-700 dark:text-red-400" title="Annuler">
+                      <button onClick={handleCancel} className="p-1 text-red-600 hover:text-red-700 dark:text-red-400 flex-shrink-0" title="Annuler">
                         <X className="w-4 h-4" />
                       </button>
                     </div>
@@ -587,7 +586,7 @@ export function ProspectsTable({
                 </td>
 
                 {/* Email */}
-                <td className="p-4 text-gray-900 dark:text-gray-100 max-w-48">
+                <td className="p-2 sm:p-4 text-gray-900 dark:text-gray-100 max-w-32 sm:max-w-48">
                   {editingField?.id === prospect.id && editingField.field === 'email' ? (
                     <div className="flex items-center space-x-2">
                       <input
@@ -595,13 +594,13 @@ export function ProspectsTable({
                         value={editingField.value}
                         onChange={(e) => setEditingField({ ...editingField, value: e.target.value })}
                         onKeyDown={handleKeyPress}
-                        className="flex-1 px-2 py-1 border border-blue-500 dark:border-blue-400 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700"
+                        className="flex-1 px-2 py-1 border border-blue-500 dark:border-blue-400 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-sm"
                         autoFocus
                       />
-                      <button onClick={handleSave} className="p-1 text-green-600 hover:text-green-700 dark:text-green-400" title="Sauvegarder">
+                      <button onClick={handleSave} className="p-1 text-green-600 hover:text-green-700 dark:text-green-400 flex-shrink-0" title="Sauvegarder">
                         <Check className="w-4 h-4" />
                       </button>
-                      <button onClick={handleCancel} className="p-1 text-red-600 hover:text-red-700 dark:text-red-400" title="Annuler">
+                      <button onClick={handleCancel} className="p-1 text-red-600 hover:text-red-700 dark:text-red-400 flex-shrink-0" title="Annuler">
                         <X className="w-4 h-4" />
                       </button>
                     </div>
@@ -617,11 +616,11 @@ export function ProspectsTable({
                 </td>
 
                 {/* Statut */}
-                <td className="p-4">
+                <td className="p-2 sm:p-4">
                   <select
                     value={prospect.status}
                     onChange={(e) => onStatusChange(prospect.id, e.target.value as Prospect['status'])}
-                    className="p-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full p-1 sm:p-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                   >
                     {statusOptions.map((status) => (
                       <option key={status} value={status}>
@@ -632,15 +631,15 @@ export function ProspectsTable({
                 </td>
 
                 {/* Commercial */}
-                <td className="p-4">
-                  <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                <td className="p-2 sm:p-4">
+                  <span className="inline-flex items-center px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
                     {salesRepsMap.get(prospect.assignedTo) || '---'}
                   </span>
                 </td>
 
                 {/* Actions */}
-                <td className="p-4">
-                  <div className="flex space-x-2">
+                <td className="p-2 sm:p-4">
+                  <div className="flex space-x-1 sm:space-x-2">
                     <button
                       onClick={() => {
                         // Marquer comme lu sans ouvrir la modal
@@ -650,17 +649,17 @@ export function ProspectsTable({
                           window.open(prospect.fileUrl, '_blank');
                         }
                       }}
-                      className="p-1 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+                      className="p-1 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 flex-shrink-0"
                       title="Voir le profil"
                     >
-                      <Eye className="w-5 h-5" />
+                      <Eye className="w-4 h-4 sm:w-5 sm:h-5" />
                     </button>
                     <button
                       onClick={() => onDelete(prospect.id)}
                       title="Supprimer"
-                      className="p-1 text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
+                      className="p-1 text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 flex-shrink-0"
                     >
-                      <Trash2 className="w-5 h-5" />
+                      <Trash2 className="w-4 h-4 sm:w-5 sm:h-5" />
                     </button>
                   </div>
                 </td>
