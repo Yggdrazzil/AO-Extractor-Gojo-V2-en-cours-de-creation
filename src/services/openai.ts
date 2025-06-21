@@ -169,12 +169,10 @@ export async function analyzeProspect(content: string, cvContent?: string): Prom
         'Authorization': `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        model: 'gpt-4o',
+        model: 'o1-mini',
         messages: [
-          { role: 'system', content: PROSPECT_SYSTEM_PROMPT },
           { role: 'user', content: fullContent }
         ],
-        temperature: 0.1,
       }),
     });
 
