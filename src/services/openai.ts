@@ -58,13 +58,13 @@ Ta tâche est d'extraire les informations clés suivantes à partir des informat
 - Téléphone : numéro de téléphone du candidat
 - Email : adresse email du candidat
 
-INSTRUCTIONS CRITIQUES:
+INSTRUCTIONS ABSOLUMENT CRITIQUES - À RESPECTER SANS EXCEPTION:
 
 1. Source d'information UNIQUE:
    - Analyser UNIQUEMENT le texte principal fourni par l'utilisateur
    - IGNORER complètement le contenu du CV pour la recherche des coordonnées
    - Si les coordonnées ne sont pas dans le texte principal, renvoyer null
-   - Ne JAMAIS inventer, déduire ou utiliser des valeurs par défaut comme "Non trouvé"
+   - INTERDICTION ABSOLUE d'utiliser "À définir", "Non trouvé", "Non renseigné" ou toute autre valeur par défaut
 
 2. Recherche du téléphone:
    - Chercher un numéro de téléphone mobile français suivant ces formats:
@@ -76,13 +76,13 @@ INSTRUCTIONS CRITIQUES:
      * +33 X XX XX XX XX (format international avec espaces)
    - Accepter aussi les formats avec points ou tirets: 06.XX.XX.XX.XX ou 06-XX-XX-XX-XX
    - Renvoyer le numéro EXACTEMENT tel qu'il apparaît dans le texte
-   - Si aucun numéro mobile français n'est trouvé dans le texte principal, renvoyer null
+   - Si aucun numéro mobile français n'est trouvé dans le texte principal, renvoyer OBLIGATOIREMENT null
 
 3. Recherche de l'email:
    - Chercher une adresse email contenant obligatoirement le caractère "@"
    - Format attendu: texte@domaine.extension
    - Renvoyer l'adresse email EXACTEMENT telle qu'elle apparaît dans le texte
-   - Si aucune adresse email n'est trouvée dans le texte principal, renvoyer null
+   - Si aucune adresse email n'est trouvée dans le texte principal, renvoyer OBLIGATOIREMENT null
 
 4. Autres informations:
    - Pour les autres informations (disponibilité, TJM, résidence, mobilité), analyser uniquement le texte principal
@@ -98,15 +98,18 @@ INSTRUCTIONS CRITIQUES:
    - Résidence : ville ou région mentionnée
    - Mobilité : description de la capacité de déplacement
 
-6. Règles ABSOLUES:
+6. RÈGLES ABSOLUES - AUCUNE EXCEPTION TOLÉRÉE:
    - Si ni le TJM ni le salaire ne sont mentionnés explicitement, renvoyer null
    - Chercher les coordonnées UNIQUEMENT dans le texte principal
    - Respecter exactement le format des coordonnées tel qu'écrit
    - Ne pas reformater les numéros de téléphone
    - Pour le téléphone, ne retenir que les numéros mobiles français (06, 07, +33)
-   - JAMAIS utiliser des valeurs comme "Non trouvé", "Non renseigné", "À définir" - utiliser null à la place
+   - INTERDICTION FORMELLE d'utiliser "Non trouvé", "Non renseigné", "À définir", "Non spécifié" ou toute autre chaîne de caractères pour les champs manquants
+   - UTILISER EXCLUSIVEMENT null pour les valeurs manquantes
 
-Exemple de réponse JSON attendue:
+EXEMPLES DE RÉPONSES JSON OBLIGATOIRES:
+
+Exemple avec toutes les informations:
 {
   "availability": "Immédiatement",
   "dailyRate": 650,
@@ -125,6 +128,8 @@ Exemple avec coordonnées manquantes:
   "phone": null,
   "email": null
 }
+
+ATTENTION: Toute réponse contenant "À définir", "Non trouvé" ou similaire sera considérée comme une erreur grave.
 
 Note: Le champ "dailyRate" peut contenir soit un TJM (ex: 650) soit un salaire annuel (ex: 55000) selon le type de profil analysé.`;
 
