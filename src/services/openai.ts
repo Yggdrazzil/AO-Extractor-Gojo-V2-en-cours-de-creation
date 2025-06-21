@@ -50,66 +50,22 @@ Exemple de réponse JSON attendue:
 }`;
 
 const PROSPECT_SYSTEM_PROMPT = `Tu es un assistant spécialisé dans l'analyse de profils de candidats pour des missions de consulting IT.
-Ta tâche est d'extraire les informations clés suivantes à partir des informations textuelles fournies sur un candidat ET du contenu de son CV :
-- Disponibilité : quand le candidat est disponible (ex: "Immédiatement", "Janvier 2025", "2 semaines", etc.)
-- TJM/Salaire : le tarif journalier du candidat (pour les freelances) OU ses prétentions salariales annuelles (pour les salariés) en euros (nombre uniquement, sans le symbole €)
-- Résidence : où habite le candidat (ville, région)
-- Mobilité : capacité de déplacement du candidat (ex: "France entière", "Région parisienne", "Télétravail uniquement", etc.)
-- Téléphone : numéro de téléphone du candidat
+Ta tâche est d'extraire les informations clés suivantes à partir des informations textuelles fournies :
+- Disponibilité : quand le candidat est disponible
+- TJM/Salaire : le tarif journalier ou salaire en euros (nombre uniquement)
+- Résidence : où habite le candidat
+- Mobilité : capacité de déplacement du candidat
+- Téléphone : numéro de téléphone mobile français (06, 07, +33)
 - Email : adresse email du candidat
 
-INSTRUCTIONS ABSOLUMENT CRITIQUES - À RESPECTER SANS EXCEPTION:
+RÈGLES STRICTES:
+- Analyser UNIQUEMENT le texte principal fourni
+- Si une information n'est pas trouvée, renvoyer null
+- Ne JAMAIS utiliser "À définir", "Non trouvé" ou similaire
+- Pour téléphone: uniquement numéros mobiles français
+- Pour email: format valide avec @
 
-1. Source d'information UNIQUE:
-   - Analyser UNIQUEMENT le texte principal fourni par l'utilisateur
-   - IGNORER complètement le contenu du CV pour la recherche des coordonnées
-   - Si les coordonnées ne sont pas dans le texte principal, renvoyer null
-   - INTERDICTION ABSOLUE d'utiliser "À définir", "Non trouvé", "Non renseigné" ou toute autre valeur par défaut
-
-2. Recherche du téléphone:
-   - Chercher un numéro de téléphone mobile français suivant ces formats:
-     * 06XXXXXXXX (10 chiffres commençant par 06)
-     * 07XXXXXXXX (10 chiffres commençant par 07)
-     * +33XXXXXXXXXX (format international)
-     * 06 XX XX XX XX (avec espaces)
-     * 07 XX XX XX XX (avec espaces)
-     * +33 X XX XX XX XX (format international avec espaces)
-   - Accepter aussi les formats avec points ou tirets: 06.XX.XX.XX.XX ou 06-XX-XX-XX-XX
-   - Renvoyer le numéro EXACTEMENT tel qu'il apparaît dans le texte
-   - Si aucun numéro mobile français n'est trouvé dans le texte principal, renvoyer OBLIGATOIREMENT null
-
-3. Recherche de l'email:
-   - Chercher une adresse email contenant obligatoirement le caractère "@"
-   - Format attendu: texte@domaine.extension
-   - Renvoyer l'adresse email EXACTEMENT telle qu'elle apparaît dans le texte
-   - Si aucune adresse email n'est trouvée dans le texte principal, renvoyer OBLIGATOIREMENT null
-
-4. Autres informations:
-   - Pour les autres informations (disponibilité, TJM, résidence, mobilité), analyser uniquement le texte principal
-   - Si elles ne sont pas présentes ou ne sont pas claires, renvoyer null
-   - Pour le TJM/Salaire : chercher soit un TJM (pour freelances), soit un salaire annuel (pour salariés), soit des prétentions salariales
-   - Exemples de ce qu'il faut chercher : "TJM 650€", "salaire 55k€", "prétentions 60000€", "tarif journalier 700€", "salaire souhaité 50k"
-
-5. Format des données:
-   - TJM/Salaire : nombre entier uniquement (ex: 650 pour un TJM, 55000 pour un salaire annuel)
-   - Téléphone : format exact tel qu'écrit dans le texte
-   - Email : adresse email complète et exacte
-   - Disponibilité : texte descriptif tel qu'indiqué
-   - Résidence : ville ou région mentionnée
-   - Mobilité : description de la capacité de déplacement
-
-6. RÈGLES ABSOLUES - AUCUNE EXCEPTION TOLÉRÉE:
-   - Si ni le TJM ni le salaire ne sont mentionnés explicitement, renvoyer null
-   - Chercher les coordonnées UNIQUEMENT dans le texte principal
-   - Respecter exactement le format des coordonnées tel qu'écrit
-   - Ne pas reformater les numéros de téléphone
-   - Pour le téléphone, ne retenir que les numéros mobiles français (06, 07, +33)
-   - INTERDICTION FORMELLE d'utiliser "Non trouvé", "Non renseigné", "À définir", "Non spécifié" ou toute autre chaîne de caractères pour les champs manquants
-   - UTILISER EXCLUSIVEMENT null pour les valeurs manquantes
-
-EXEMPLES DE RÉPONSES JSON OBLIGATOIRES:
-
-Exemple avec toutes les informations:
+Exemple de réponse JSON:
 {
   "availability": "Immédiatement",
   "dailyRate": 650,
@@ -117,21 +73,7 @@ Exemple avec toutes les informations:
   "mobility": "France entière",
   "phone": "06 12 34 56 78",
   "email": "candidat@email.com"
-}
-
-Exemple avec coordonnées manquantes:
-{
-  "availability": "Immédiatement",
-  "dailyRate": null,
-  "residence": "Paris",
-  "mobility": "France entière",
-  "phone": null,
-  "email": null
-}
-
-ATTENTION: Toute réponse contenant "À définir", "Non trouvé" ou similaire sera considérée comme une erreur grave.
-
-Note: Le champ "dailyRate" peut contenir soit un TJM (ex: 650) soit un salaire annuel (ex: 55000) selon le type de profil analysé.`;
+}`;
 
 export async function analyzeRFP(content: string): Promise<Partial<RFP>> {
   const apiKey = localStorage.getItem('openai-api-key');
@@ -172,7 +114,6 @@ export async function analyzeRFP(content: string): Promise<Partial<RFP>> {
       throw new Error("Erreur lors de l'analyse de la réponse");
     }
 
-    // Si aucune date de création n'est trouvée, utiliser la date du jour
     const todayFormatted = formatDate(new Date());
 
     return {
@@ -198,10 +139,6 @@ export async function analyzeProspect(content: string, cvContent?: string): Prom
     throw new Error('Veuillez configurer votre clé API OpenAI dans les paramètres');
   }
 
-  // Combiner le contenu textuel et le contenu du CV
-  // Analyser uniquement le texte principal, ignorer le CV pour les coordonnées
-  const analysisContent = content;
-  
   try {
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -213,7 +150,7 @@ export async function analyzeProspect(content: string, cvContent?: string): Prom
         model: 'gpt-4o-mini',
         messages: [
           { role: 'system', content: PROSPECT_SYSTEM_PROMPT },
-          { role: 'user', content: analysisContent }
+          { role: 'user', content: content }
         ],
         temperature: 0.1,
         response_format: { type: "json_object" }
@@ -236,17 +173,15 @@ export async function analyzeProspect(content: string, cvContent?: string): Prom
       throw new Error("Erreur lors de l'analyse de la réponse");
     }
 
-    // Nettoyer les réponses et forcer les tirets pour les coordonnées manquantes
-    const processedResult = {
-      availability: result.availability && result.availability !== 'À définir' && result.availability !== 'Non trouvé' ? result.availability : null,
+    // Nettoyer les réponses et forcer null pour les coordonnées manquantes
+    return {
+      availability: result.availability || null,
       dailyRate: result.dailyRate || null,
-      residence: result.residence && result.residence !== 'À définir' && result.residence !== 'Non trouvé' ? result.residence : null,
-      mobility: result.mobility && result.mobility !== 'À définir' && result.mobility !== 'Non trouvé' ? result.mobility : null,
-      phone: (result.phone && result.phone !== 'À définir' && result.phone !== 'Non trouvé' && result.phone !== 'Non renseigné') ? result.phone : null,
-      email: (result.email && result.email !== 'À définir' && result.email !== 'Non trouvé' && result.email !== 'Non renseigné') ? result.email : null
+      residence: result.residence || null,
+      mobility: result.mobility || null,
+      phone: result.phone || null,
+      email: result.email || null
     };
-
-    return processedResult;
   } catch (error) {
     console.error('Erreur OpenAI:', error);
     if (error instanceof Error) {
