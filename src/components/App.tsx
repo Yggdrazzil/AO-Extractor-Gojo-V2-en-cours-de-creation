@@ -5,6 +5,7 @@
 +      <div className="flex h-screen bg-gray-100 dark:bg-gray-900">
          <Sidebar 
            activeTab={activeTab} 
+   )
 @@ .. @@
          />
          <div className="flex-1 flex flex-col">
@@ -14,6 +15,7 @@
 +            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
                {activeTab === 'rfp-extractor' ? 'Extracteur d\'AO' : 
                 activeTab === 'rfp-list' ? 'Liste des AO' :
+         }
 @@ .. @@
              <button
                onClick={() => setIsSettingsOpen(true)}
