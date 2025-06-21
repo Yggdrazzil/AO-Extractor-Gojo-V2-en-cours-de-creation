@@ -489,13 +489,15 @@ export function ProspectsTable({
                     </div>
                   ) : (
                     <div onClick={() => handleEdit(prospect, 'dailyRate')} className="cursor-pointer hover:text-blue-600 dark:hover:text-blue-400" title="Cliquer pour modifier">
-                      {typeof prospect.dailyRate === 'number' ? `${prospect.dailyRate}€` : '-'}
+                      {typeof prospect.dailyRate === 'number' ? 
+                        prospect.dailyRate >= 1000 ? `${Math.round(prospect.dailyRate / 1000)}K€` : `${prospect.dailyRate}€` 
+                        : '-'}
                     </div>
                   )}
                 </td>
 
                 {/* Résidence */}
-                <td className="p-4 text-gray-900 dark:text-gray-100">
+                <td className="p-4 text-gray-900 dark:text-gray-100 max-w-32">
                   {editingField?.id === prospect.id && editingField.field === 'residence' ? (
                     <div className="flex items-center space-x-2">
                       <input
@@ -514,22 +516,26 @@ export function ProspectsTable({
                       </button>
                     </div>
                   ) : (
-                    <div onClick={() => handleEdit(prospect, 'residence')} className="cursor-pointer hover:text-blue-600 dark:hover:text-blue-400" title="Cliquer pour modifier">
+                    <div 
+                      onClick={() => handleEdit(prospect, 'residence')} 
+                      className="cursor-pointer hover:text-blue-600 dark:hover:text-blue-400 truncate" 
+                      title={`${prospect.residence || 'Non spécifié'} - Cliquer pour modifier`}
+                    >
                       {prospect.residence || 'Non spécifié'}
                     </div>
                   )}
                 </td>
 
                 {/* Mobilité */}
-                <td className="p-4 text-gray-900 dark:text-gray-100">
+                <td className="p-4 text-gray-900 dark:text-gray-100 max-w-48">
                   {editingField?.id === prospect.id && editingField.field === 'mobility' ? (
                     <div className="flex items-center space-x-2">
-                      <input
+                      <textarea
                         type="text"
                         value={editingField.value}
                         onChange={(e) => setEditingField({ ...editingField, value: e.target.value })}
                         onKeyDown={handleKeyPress}
-                        className="flex-1 px-2 py-1 border border-blue-500 dark:border-blue-400 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700"
+                        className="flex-1 px-2 py-1 border border-blue-500 dark:border-blue-400 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 resize-none h-20"
                         autoFocus
                       />
                       <button onClick={handleSave} className="p-1 text-green-600 hover:text-green-700 dark:text-green-400" title="Sauvegarder">
@@ -540,14 +546,18 @@ export function ProspectsTable({
                       </button>
                     </div>
                   ) : (
-                    <div onClick={() => handleEdit(prospect, 'mobility')} className="cursor-pointer hover:text-blue-600 dark:hover:text-blue-400" title="Cliquer pour modifier">
+                    <div 
+                      onClick={() => handleEdit(prospect, 'mobility')} 
+                      className="cursor-pointer hover:text-blue-600 dark:hover:text-blue-400 line-clamp-3 text-sm leading-tight" 
+                      title={`${prospect.mobility || 'Non spécifié'} - Cliquer pour modifier`}
+                    >
                       {prospect.mobility || 'Non spécifié'}
                     </div>
                   )}
                 </td>
 
                 {/* Téléphone */}
-                <td className="p-4 text-gray-900 dark:text-gray-100">
+                <td className="p-4 text-gray-900 dark:text-gray-100 max-w-32">
                   {editingField?.id === prospect.id && editingField.field === 'phone' ? (
                     <div className="flex items-center space-x-2">
                       <input
@@ -566,14 +576,18 @@ export function ProspectsTable({
                       </button>
                     </div>
                   ) : (
-                    <div onClick={() => handleEdit(prospect, 'phone')} className="cursor-pointer hover:text-blue-600 dark:hover:text-blue-400" title="Cliquer pour modifier">
+                    <div 
+                      onClick={() => handleEdit(prospect, 'phone')} 
+                      className="cursor-pointer hover:text-blue-600 dark:hover:text-blue-400 truncate text-sm" 
+                      title={`${prospect.phone || 'Non spécifié'} - Cliquer pour modifier`}
+                    >
                       {prospect.phone || 'Non spécifié'}
                     </div>
                   )}
                 </td>
 
                 {/* Email */}
-                <td className="p-4 text-gray-900 dark:text-gray-100">
+                <td className="p-4 text-gray-900 dark:text-gray-100 max-w-48">
                   {editingField?.id === prospect.id && editingField.field === 'email' ? (
                     <div className="flex items-center space-x-2">
                       <input
@@ -592,7 +606,11 @@ export function ProspectsTable({
                       </button>
                     </div>
                   ) : (
-                    <div onClick={() => handleEdit(prospect, 'email')} className="cursor-pointer hover:text-blue-600 dark:hover:text-blue-400" title="Cliquer pour modifier">
+                    <div 
+                      onClick={() => handleEdit(prospect, 'email')} 
+                      className="cursor-pointer hover:text-blue-600 dark:hover:text-blue-400 truncate text-sm" 
+                      title={`${prospect.email || 'Non spécifié'} - Cliquer pour modifier`}
+                    >
                       {prospect.email || 'Non spécifié'}
                     </div>
                   )}
