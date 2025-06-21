@@ -60,15 +60,33 @@ Ta tâche est d'extraire les informations clés suivantes à partir des informat
 
 INSTRUCTIONS CRITIQUES:
 
-1. Extraction des données:
-   - Analyser BOTH le texte principal ET le contenu du CV fourni
-   - Prioriser les informations du CV pour les coordonnées (téléphone et email)
+1. Priorité d'extraction des coordonnées:
+   - PRIORITÉ 1: Chercher d'abord les coordonnées dans le texte principal fourni par l'utilisateur
+   - PRIORITÉ 2: Si elles ne sont pas dans le texte principal, alors chercher dans le contenu du CV
    - Si les coordonnées ne sont trouvées ni dans le texte ni dans le CV, renvoyer null
-   - Pour les autres informations, si elles ne sont pas présentes ou ne sont pas claires, renvoyer null
    - Ne JAMAIS inventer ou déduire d'informations
-   - Être précis dans l'extraction des données de contact depuis le CV
 
-2. Format des données:
+2. Recherche du téléphone:
+   - Chercher un numéro de téléphone mobile français suivant ces formats:
+     * 06XXXXXXXX (10 chiffres commençant par 06)
+     * 07XXXXXXXX (10 chiffres commençant par 07)
+     * +33XXXXXXXXXX (format international)
+     * 06 XX XX XX XX (avec espaces)
+     * 07 XX XX XX XX (avec espaces)
+     * +33 X XX XX XX XX (format international avec espaces)
+   - Accepter aussi les formats avec points ou tirets: 06.XX.XX.XX.XX ou 06-XX-XX-XX-XX
+   - Renvoyer le numéro EXACTEMENT tel qu'il apparaît dans le texte
+
+3. Recherche de l'email:
+   - Chercher une adresse email contenant obligatoirement le caractère "@"
+   - Format attendu: texte@domaine.extension
+   - Renvoyer l'adresse email EXACTEMENT telle qu'elle apparaît dans le texte
+
+4. Autres informations:
+   - Pour les autres informations (disponibilité, TJM, résidence, mobilité), analyser le texte principal ET le CV
+   - Si elles ne sont pas présentes ou ne sont pas claires, renvoyer null
+
+5. Format des données:
    - TJM : nombre entier uniquement (ex: 650, pas "650€" ou "650 euros")
    - Téléphone : format exact tel qu'écrit dans le texte
    - Email : adresse email complète et exacte
@@ -76,11 +94,12 @@ INSTRUCTIONS CRITIQUES:
    - Résidence : ville ou région mentionnée
    - Mobilité : description de la capacité de déplacement
 
-3. Règles strictes:
+6. Règles strictes:
    - Si le TJM n'est pas mentionné explicitement, renvoyer null
-   - Chercher les coordonnées dans le CV en priorité
+   - Chercher les coordonnées dans le texte principal en priorité, puis dans le CV
    - Respecter exactement le format des coordonnées tel qu'écrit
    - Ne pas reformater les numéros de téléphone
+   - Pour le téléphone, ne retenir que les numéros mobiles français (06, 07, +33)
 
 Exemple de réponse JSON attendue:
 {
