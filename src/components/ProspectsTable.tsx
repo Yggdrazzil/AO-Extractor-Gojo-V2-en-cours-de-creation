@@ -579,9 +579,9 @@ export function ProspectsTable({
                     <div 
                       onClick={() => handleEdit(prospect, 'phone')} 
                       className="cursor-pointer hover:text-blue-600 dark:hover:text-blue-400 truncate text-sm" 
-                      title={`${prospect.phone || 'Non spécifié'} - Cliquer pour modifier`}
+                      title={`${prospect.phone || 'Non renseigné'} - Cliquer pour modifier`}
                     >
-                      {prospect.phone || 'Non spécifié'}
+                      {prospect.phone || 'Non renseigné'}
                     </div>
                   )}
                 </td>
@@ -609,9 +609,9 @@ export function ProspectsTable({
                     <div 
                       onClick={() => handleEdit(prospect, 'email')} 
                       className="cursor-pointer hover:text-blue-600 dark:hover:text-blue-400 truncate text-sm" 
-                      title={`${prospect.email || 'Non spécifié'} - Cliquer pour modifier`}
+                      title={`${prospect.email || 'Non renseigné'} - Cliquer pour modifier`}
                     >
-                      {prospect.email || 'Non spécifié'}
+                      {prospect.email || 'Non renseigné'}
                     </div>
                   )}
                 </td>
