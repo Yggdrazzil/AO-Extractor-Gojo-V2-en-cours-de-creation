@@ -60,11 +60,11 @@ Ta tâche est d'extraire les informations clés suivantes à partir des informat
 
 INSTRUCTIONS CRITIQUES:
 
-1. Priorité d'extraction des coordonnées:
-   - PRIORITÉ 1: Chercher d'abord les coordonnées dans le texte principal fourni par l'utilisateur
-   - PRIORITÉ 2: Si elles ne sont pas dans le texte principal, alors chercher dans le contenu du CV
-   - Si les coordonnées ne sont trouvées ni dans le texte ni dans le CV, renvoyer null
-   - Ne JAMAIS inventer ou déduire d'informations
+1. Source d'information UNIQUE:
+   - Analyser UNIQUEMENT le texte principal fourni par l'utilisateur
+   - IGNORER complètement le contenu du CV pour la recherche des coordonnées
+   - Si les coordonnées ne sont pas dans le texte principal, renvoyer null
+   - Ne JAMAIS inventer, déduire ou utiliser des valeurs par défaut comme "Non trouvé"
 
 2. Recherche du téléphone:
    - Chercher un numéro de téléphone mobile français suivant ces formats:
@@ -76,14 +76,16 @@ INSTRUCTIONS CRITIQUES:
      * +33 X XX XX XX XX (format international avec espaces)
    - Accepter aussi les formats avec points ou tirets: 06.XX.XX.XX.XX ou 06-XX-XX-XX-XX
    - Renvoyer le numéro EXACTEMENT tel qu'il apparaît dans le texte
+   - Si aucun numéro mobile français n'est trouvé dans le texte principal, renvoyer null
 
 3. Recherche de l'email:
    - Chercher une adresse email contenant obligatoirement le caractère "@"
    - Format attendu: texte@domaine.extension
    - Renvoyer l'adresse email EXACTEMENT telle qu'elle apparaît dans le texte
+   - Si aucune adresse email n'est trouvée dans le texte principal, renvoyer null
 
 4. Autres informations:
-   - Pour les autres informations (disponibilité, TJM, résidence, mobilité), analyser le texte principal ET le CV
+   - Pour les autres informations (disponibilité, TJM, résidence, mobilité), analyser uniquement le texte principal
    - Si elles ne sont pas présentes ou ne sont pas claires, renvoyer null
    - Pour le TJM/Salaire : chercher soit un TJM (pour freelances), soit un salaire annuel (pour salariés), soit des prétentions salariales
    - Exemples de ce qu'il faut chercher : "TJM 650€", "salaire 55k€", "prétentions 60000€", "tarif journalier 700€", "salaire souhaité 50k"
@@ -96,12 +98,13 @@ INSTRUCTIONS CRITIQUES:
    - Résidence : ville ou région mentionnée
    - Mobilité : description de la capacité de déplacement
 
-6. Règles strictes:
+6. Règles ABSOLUES:
    - Si ni le TJM ni le salaire ne sont mentionnés explicitement, renvoyer null
-   - Chercher les coordonnées dans le texte principal en priorité, puis dans le CV
+   - Chercher les coordonnées UNIQUEMENT dans le texte principal
    - Respecter exactement le format des coordonnées tel qu'écrit
    - Ne pas reformater les numéros de téléphone
    - Pour le téléphone, ne retenir que les numéros mobiles français (06, 07, +33)
+   - JAMAIS utiliser des valeurs comme "Non trouvé", "Non renseigné", "À définir" - utiliser null à la place
 
 Exemple de réponse JSON attendue:
 {
@@ -111,6 +114,16 @@ Exemple de réponse JSON attendue:
   "mobility": "France entière",
   "phone": "06 12 34 56 78",
   "email": "candidat@email.com"
+}
+
+Exemple avec coordonnées manquantes:
+{
+  "availability": "Immédiatement",
+  "dailyRate": null,
+  "residence": "Paris",
+  "mobility": "France entière",
+  "phone": null,
+  "email": null
 }
 
 Note: Le champ "dailyRate" peut contenir soit un TJM (ex: 650) soit un salaire annuel (ex: 55000) selon le type de profil analysé.`;
@@ -181,9 +194,9 @@ export async function analyzeProspect(content: string, cvContent?: string): Prom
   }
 
   // Combiner le contenu textuel et le contenu du CV
-  const fullContent = cvContent 
-    ? `INFORMATIONS TEXTUELLES:\n${content}\n\nCONTENU DU CV:\n${cvContent}`
-    : content;
+  // Analyser uniquement le texte principal, ignorer le CV pour les coordonnées
+  const analysisContent = content;
+  
   try {
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -195,7 +208,7 @@ export async function analyzeProspect(content: string, cvContent?: string): Prom
         model: 'gpt-4-turbo-preview',
         messages: [
           { role: 'system', content: PROSPECT_SYSTEM_PROMPT },
-          { role: 'user', content: fullContent }
+          { role: 'user', content: analysisContent }
         ],
         temperature: 0.1,
         response_format: { type: "json_object" }
@@ -220,12 +233,12 @@ export async function analyzeProspect(content: string, cvContent?: string): Prom
 
     // Traiter les valeurs spéciales pour les coordonnées
     const processedResult = {
-      availability: result.availability || 'À définir',
+      availability: result.availability || null,
       dailyRate: result.dailyRate || null,
-      residence: result.residence || 'À définir',
-      mobility: result.mobility || 'À définir',
-      phone: result.phone || 'Non trouvé',
-      email: result.email || 'Non trouvé'
+      residence: result.residence || null,
+      mobility: result.mobility || null,
+      phone: result.phone || null,
+      email: result.email || null
     };
 
     return processedResult;
