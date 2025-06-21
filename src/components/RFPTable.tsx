@@ -361,18 +361,18 @@ export function RFPTable({
       </div>
       <div 
         ref={tableRef}
-        className="overflow-x-auto bg-white dark:bg-gray-800 rounded-lg shadow-sm max-h-[70vh] overscroll-contain min-w-0"
+        className="overflow-x-auto bg-white dark:bg-gray-800 rounded-lg shadow-sm max-h-[70vh] overscroll-contain"
         style={{ 
           willChange: isScrolling ? 'transform' : 'auto',
           contain: 'content'
         }}
       >
-        <table className="w-full border-collapse min-w-[1400px]">
+        <table className="w-full border-collapse min-w-[1200px]">
           <thead className="bg-white dark:bg-gray-800 sticky top-0 z-10">
             <tr className="text-left">
               <th className="p-2 sm:p-4 w-12 sm:w-16" />
               <th 
-                className="p-2 sm:p-4 font-medium text-gray-600 dark:text-gray-200 cursor-pointer select-none min-w-[120px]"
+                className="p-2 sm:p-4 font-medium text-gray-600 dark:text-gray-200 cursor-pointer select-none min-w-[100px]"
                 onClick={() => handleSort('client')}
               >
                 <div className="flex items-center gap-1 sm:gap-2">
@@ -381,7 +381,7 @@ export function RFPTable({
                 </div>
               </th>
               <th 
-                className="p-2 sm:p-4 font-medium text-gray-600 dark:text-gray-200 cursor-pointer select-none min-w-[150px]"
+                className="p-2 sm:p-4 font-medium text-gray-600 dark:text-gray-200 cursor-pointer select-none min-w-[120px]"
                 onClick={() => handleSort('mission')}
               >
                 <div className="flex items-center gap-1 sm:gap-2">
@@ -390,7 +390,7 @@ export function RFPTable({
                 </div>
               </th>
               <th 
-                className="p-2 sm:p-4 font-medium text-gray-600 dark:text-gray-200 cursor-pointer select-none min-w-[100px]"
+                className="p-2 sm:p-4 font-medium text-gray-600 dark:text-gray-200 cursor-pointer select-none min-w-[80px]"
                 onClick={() => handleSort('location')}
               >
                 <div className="flex items-center gap-1 sm:gap-2">
@@ -399,7 +399,7 @@ export function RFPTable({
                 </div>
               </th>
               <th 
-                className="p-2 sm:p-4 font-medium text-gray-600 dark:text-gray-200 cursor-pointer select-none min-w-[80px]"
+                className="p-2 sm:p-4 font-medium text-gray-600 dark:text-gray-200 cursor-pointer select-none min-w-[70px]"
                 onClick={() => handleSort('maxRate')}
               >
                 <div className="flex items-center gap-1 sm:gap-2">
@@ -408,7 +408,7 @@ export function RFPTable({
                 </div>
               </th>
               <th 
-                className="p-2 sm:p-4 font-medium text-gray-600 dark:text-gray-200 cursor-pointer select-none min-w-[100px]"
+                className="p-2 sm:p-4 font-medium text-gray-600 dark:text-gray-200 cursor-pointer select-none min-w-[90px]"
                 onClick={() => handleSort('createdAt')}
               >
                 <div className="flex items-center gap-1 sm:gap-2">
@@ -417,7 +417,7 @@ export function RFPTable({
                 </div>
               </th>
               <th 
-                className="p-2 sm:p-4 font-medium text-gray-600 dark:text-gray-200 cursor-pointer select-none min-w-[100px]"
+                className="p-2 sm:p-4 font-medium text-gray-600 dark:text-gray-200 cursor-pointer select-none min-w-[90px]"
                 onClick={() => handleSort('startDate')}
               >
                 <div className="flex items-center gap-1 sm:gap-2">
@@ -425,9 +425,9 @@ export function RFPTable({
                   {getSortIcon('startDate')}
                 </div>
               </th>
-              <th className="p-2 sm:p-4 font-medium text-gray-600 dark:text-gray-200 min-w-[100px]">Statut</th>
-              <th className="p-2 sm:p-4 font-medium text-gray-600 dark:text-gray-200 min-w-[100px]">Commercial</th>
-              <th className="p-2 sm:p-4 font-medium text-gray-600 dark:text-gray-200 min-w-[120px]">Actions</th>
+              <th className="p-2 sm:p-4 font-medium text-gray-600 dark:text-gray-200 min-w-[90px]">Statut</th>
+              <th className="p-2 sm:p-4 font-medium text-gray-600 dark:text-gray-200 min-w-[80px]">Commercial</th>
+              <th className="p-2 sm:p-4 font-medium text-gray-600 dark:text-gray-200 min-w-[100px]">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -455,19 +455,19 @@ export function RFPTable({
                         value={editingField.value}
                         onChange={(e) => setEditingField({ ...editingField, value: e.target.value })}
                         onKeyDown={handleKeyPress}
-                        className="flex-1 px-2 py-1 border border-blue-500 dark:border-blue-400 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-sm"
+                        className="flex-1 px-2 py-1 border border-blue-500 dark:border-blue-400 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700"
                         autoFocus
                       />
                       <button
                         onClick={handleSave}
-                        className="p-1 text-green-600 hover:text-green-700 dark:text-green-400 flex-shrink-0"
+                        className="p-1 text-green-600 hover:text-green-700 dark:text-green-400"
                         title="Sauvegarder"
                       >
                         <Check className="w-4 h-4" />
                       </button>
                       <button
                         onClick={handleCancel}
-                        className="p-1 text-red-600 hover:text-red-700 dark:text-red-400 flex-shrink-0"
+                        className="p-1 text-red-600 hover:text-red-700 dark:text-red-400"
                         title="Annuler"
                       >
                         <X className="w-4 h-4" />
@@ -476,8 +476,8 @@ export function RFPTable({
                   ) : (
                     <div
                       onClick={() => handleEdit(rfp, 'client')}
-                      className="cursor-pointer hover:text-blue-600 dark:hover:text-blue-400 truncate text-sm"
-                      title={`${rfp.client} - Cliquer pour modifier`}
+                      className="cursor-pointer hover:text-blue-600 dark:hover:text-blue-400"
+                      title="Cliquer pour modifier"
                     >
                       {rfp.client}
                     </div>
