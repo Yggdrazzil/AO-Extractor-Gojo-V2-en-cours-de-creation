@@ -209,7 +209,7 @@ export function ProspectsForm({ salesReps, onSubmit, isLoading = false }: Prospe
             />
             
             {selectedFile ? (
-              <div className="flex items-center justify-between w-full p-6">
+              <div className="flex items-center justify-between w-full p-6 min-h-[120px]">
                 <div className="flex items-center space-x-3">
                   <Upload className="w-8 h-8 text-green-500" />
                   <div>
@@ -230,7 +230,7 @@ export function ProspectsForm({ salesReps, onSubmit, isLoading = false }: Prospe
                 </button>
               </div>
             ) : (
-              <div className="text-center p-6">
+              <div className="text-center p-6 min-h-[120px] flex flex-col justify-center">
                 <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
                 <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
                   Glissez-déposez un fichier ici ou cliquez pour sélectionner

@@ -317,18 +317,18 @@ export function ProspectsTable({
       
       <div 
         ref={tableRef}
-        className="overflow-x-auto bg-white dark:bg-gray-800 rounded-lg shadow-sm max-h-[70vh] overscroll-contain min-w-0"
+        className="overflow-x-auto bg-white dark:bg-gray-800 rounded-lg shadow-sm max-h-[70vh] overscroll-contain"
         style={{ 
           willChange: isScrolling ? 'transform' : 'auto',
           contain: 'content'
         }}
       >
-        <table className="w-full border-collapse min-w-[1200px]">
+        <table className="w-full border-collapse min-w-[1600px]">
           <thead className="bg-white dark:bg-gray-800 sticky top-0 z-10">
             <tr className="text-left">
               <th className="p-2 sm:p-4 w-12 sm:w-16" />
               <th 
-                className="p-2 sm:p-4 font-medium text-gray-600 dark:text-gray-200 cursor-pointer select-none min-w-[120px]"
+                className="p-2 sm:p-4 font-medium text-gray-600 dark:text-gray-200 cursor-pointer select-none min-w-[140px]"
                 onClick={() => handleSort('targetAccount')}
               >
                 <div className="flex items-center gap-1 sm:gap-2">
@@ -337,7 +337,7 @@ export function ProspectsTable({
                 </div>
               </th>
               <th 
-                className="p-2 sm:p-4 font-medium text-gray-600 dark:text-gray-200 cursor-pointer select-none min-w-[100px]"
+                className="p-2 sm:p-4 font-medium text-gray-600 dark:text-gray-200 cursor-pointer select-none min-w-[120px]"
                 onClick={() => handleSort('availability')}
               >
                 <div className="flex items-center gap-1 sm:gap-2">
@@ -346,7 +346,7 @@ export function ProspectsTable({
                 </div>
               </th>
               <th 
-                className="p-2 sm:p-4 font-medium text-gray-600 dark:text-gray-200 cursor-pointer select-none min-w-[100px]"
+                className="p-2 sm:p-4 font-medium text-gray-600 dark:text-gray-200 cursor-pointer select-none min-w-[110px]"
                 onClick={() => handleSort('dailyRate')}
               >
                 <div className="flex items-center gap-1 sm:gap-2">
@@ -355,7 +355,7 @@ export function ProspectsTable({
                 </div>
               </th>
               <th 
-                className="p-2 sm:p-4 font-medium text-gray-600 dark:text-gray-200 cursor-pointer select-none min-w-[100px]"
+                className="p-2 sm:p-4 font-medium text-gray-600 dark:text-gray-200 cursor-pointer select-none min-w-[120px]"
                 onClick={() => handleSort('residence')}
               >
                 <div className="flex items-center gap-1 sm:gap-2">
@@ -364,7 +364,7 @@ export function ProspectsTable({
                 </div>
               </th>
               <th 
-                className="p-2 sm:p-4 font-medium text-gray-600 dark:text-gray-200 cursor-pointer select-none min-w-[120px]"
+                className="p-2 sm:p-4 font-medium text-gray-600 dark:text-gray-200 cursor-pointer select-none min-w-[140px]"
                 onClick={() => handleSort('mobility')}
               >
                 <div className="flex items-center gap-1 sm:gap-2">
@@ -373,7 +373,7 @@ export function ProspectsTable({
                 </div>
               </th>
               <th 
-                className="p-2 sm:p-4 font-medium text-gray-600 dark:text-gray-200 cursor-pointer select-none min-w-[120px]"
+                className="p-2 sm:p-4 font-medium text-gray-600 dark:text-gray-200 cursor-pointer select-none min-w-[130px]"
                 onClick={() => handleSort('phone')}
               >
                 <div className="flex items-center gap-1 sm:gap-2">
@@ -382,7 +382,7 @@ export function ProspectsTable({
                 </div>
               </th>
               <th 
-                className="p-2 sm:p-4 font-medium text-gray-600 dark:text-gray-200 cursor-pointer select-none min-w-[150px]"
+                className="p-2 sm:p-4 font-medium text-gray-600 dark:text-gray-200 cursor-pointer select-none min-w-[180px]"
                 onClick={() => handleSort('email')}
               >
                 <div className="flex items-center gap-1 sm:gap-2">
@@ -390,8 +390,8 @@ export function ProspectsTable({
                   {getSortIcon('email')}
                 </div>
               </th>
-              <th className="p-2 sm:p-4 font-medium text-gray-600 dark:text-gray-200 min-w-[100px]">Statut</th>
-              <th className="p-2 sm:p-4 font-medium text-gray-600 dark:text-gray-200 min-w-[100px]">Commercial</th>
+              <th className="p-2 sm:p-4 font-medium text-gray-600 dark:text-gray-200 min-w-[110px]">Statut</th>
+              <th className="p-2 sm:p-4 font-medium text-gray-600 dark:text-gray-200 min-w-[110px]">Commercial</th>
               <th className="p-2 sm:p-4 font-medium text-gray-600 dark:text-gray-200 min-w-[100px]">Actions</th>
             </tr>
           </thead>
