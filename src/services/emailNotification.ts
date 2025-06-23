@@ -28,26 +28,29 @@ export async function sendRFPNotification(data: RFPNotificationData): Promise<bo
     if (error) {
       console.error('Error invoking email function:', error);
       
-      // Log more detailed error information
-      if (error.message) {
-        console.error('Error details:', error.message);
+      // Handle specific error cases
+      if (error.message && error.message.includes('RESEND_API_KEY')) {
+        console.warn('Email notification skipped: Resend API key not configured');
+        return false;
       }
-      if (error.context) {
-        console.error('Error context:', error.context);
+      
+      // Handle CORS and network errors gracefully
+      if (error.context && error.context.status === 500) {
+        console.warn('Email notification failed: Server error (likely configuration issue)');
+        return false;
       }
+      
       return false;
     }
 
     if (!result?.success) {
       console.error('Email function returned error:', result);
       
-      // Show user-friendly error message if available
+      // Handle configuration errors gracefully
       if (result?.details) {
-        console.error('Error details:', result.details);
-        
-        // Check for specific configuration errors
         if (result.details.includes('RESEND_API_KEY')) {
-          console.error('Configuration Error: Resend API key is not configured in Supabase Edge Function settings');
+          console.warn('Email notification skipped: Resend API key not configured in Edge Function settings');
+          return false;
         }
       }
       return false;
@@ -57,6 +60,16 @@ export async function sendRFPNotification(data: RFPNotificationData): Promise<bo
     return true;
   } catch (error) {
     console.error('Failed to send RFP notification:', error);
+    
+    // Don't throw errors for email failures - they should be non-blocking
+    if (error instanceof Error) {
+      if (error.message.includes('fetch') || error.message.includes('network')) {
+        console.warn('Email notification skipped: Network error');
+      } else if (error.message.includes('RESEND_API_KEY')) {
+        console.warn('Email notification skipped: API key configuration issue');
+      }
+    }
+    
     return false;
   }
 }

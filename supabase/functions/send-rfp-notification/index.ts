@@ -131,7 +131,7 @@ async function sendEmail(to: string, subject: string, html: string, text: string
   const resendApiKey = Deno.env.get('RESEND_API_KEY')
   
   if (!resendApiKey) {
-    const errorMsg = 'RESEND_API_KEY environment variable is not configured. Please add your Resend API key in the Supabase Edge Function settings.'
+    const errorMsg = 'RESEND_API_KEY environment variable is not configured'
     console.error(errorMsg)
     return { success: false, error: errorMsg }
   }
@@ -154,7 +154,7 @@ async function sendEmail(to: string, subject: string, html: string, text: string
 
     if (!response.ok) {
       const errorData = await response.text()
-      const errorMsg = `Resend API error (${response.status}): ${errorData}`
+      const errorMsg = `Resend API error: ${response.status}`
       console.error(errorMsg)
       return { success: false, error: errorMsg }
     }
@@ -163,7 +163,7 @@ async function sendEmail(to: string, subject: string, html: string, text: string
     console.log('Email sent successfully:', result.id)
     return { success: true }
   } catch (error) {
-    const errorMsg = `Error sending email: ${error.message || error}`
+    const errorMsg = `Email sending failed: ${error.message || 'Unknown error'}`
     console.error(errorMsg)
     return { success: false, error: errorMsg }
   }

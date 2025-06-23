@@ -280,21 +280,27 @@ function App() {
       try {
         const salesRepCode = await getSalesRepCode(assignedTo);
         if (salesRepCode) {
-          await sendRFPNotification({
+          const emailSent = await sendRFPNotification({
             rfpId: newRFP.id,
             client: newRFP.client,
             mission: newRFP.mission,
             salesRepCode,
             assignedTo
           });
-          console.log('Email notification sent successfully');
+          
+          if (emailSent) {
+            console.log('Email notification sent successfully');
+          } else {
+            console.log('Email notification was not sent (likely due to configuration)');
+          }
         } else {
           console.warn('Could not send email: sales rep code not found');
         }
       } catch (emailError) {
-        console.error('Email notification failed (non-blocking):', emailError);
+        console.warn('Email notification failed (non-blocking):', emailError);
         // L'erreur d'email ne doit pas empêcher la création de l'AO
       }
+      
       setRfps((prev) => [newRFP, ...prev]);
     } catch (error) {
       console.error('Failed to analyze RFP:', error);
