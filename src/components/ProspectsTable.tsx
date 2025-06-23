@@ -78,8 +78,6 @@ export function ProspectsTable({
   const [selectedProspect, setSelectedProspect] = useState<Prospect | null>(null);
   const tableRef = useRef<HTMLDivElement>(null);
   const [isScrolling, setIsScrolling] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(50);
   const [searchTerm, setSearchTerm] = useState('');
 
   // Effet pour initialiser le filtre avec le commercial connecté
@@ -181,7 +179,7 @@ export function ProspectsTable({
     return <ArrowUpDown className="w-4 h-4 opacity-50" />;
   };
 
-  const sortedAndPaginatedProspects = useMemo(() => {
+  const sortedProspects = useMemo(() => {
     if (!sort.field || !sort.direction) return filteredProspects;
 
     return [...filteredProspects].sort((a, b) => {
@@ -200,20 +198,6 @@ export function ProspectsTable({
       }
     });
   }, [filteredProspects, sort]);
-
-  // Pagination
-  const paginatedProspects = useMemo(() => {
-    const startIndex = (currentPage - 1) * itemsPerPage;
-    const endIndex = startIndex + itemsPerPage;
-    return sortedAndPaginatedProspects.slice(startIndex, endIndex);
-  }, [sortedAndPaginatedProspects, currentPage, itemsPerPage]);
-
-  const totalPages = Math.ceil(sortedAndPaginatedProspects.length / itemsPerPage);
-
-  // Reset page when filters change
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [selectedSalesRep, searchTerm, sort]);
 
   const handleEdit = (prospect: Prospect, field: EditingField['field']) => {
     let value = '';
@@ -372,49 +356,12 @@ export function ProspectsTable({
             </div>
           </div>
           
-          {/* Deuxième ligne : Statistiques et pagination */}
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-2 sm:space-y-0">
-            <div className="flex items-center space-x-4 text-sm text-gray-600 dark:text-gray-400">
+          {/* Deuxième ligne : Statistiques */}
+          <div className="flex items-center text-sm text-gray-600 dark:text-gray-400">
               <span>
-                {sortedAndPaginatedProspects.length} prospect{sortedAndPaginatedProspects.length > 1 ? 's' : ''} 
+                {sortedProspects.length} prospect{sortedProspects.length > 1 ? 's' : ''} 
                 {filteredProspects.length !== prospects.length && ` (sur ${prospects.length} total)`}
               </span>
-              <select
-                value={itemsPerPage}
-                onChange={(e) => {
-                  setItemsPerPage(Number(e.target.value));
-                  setCurrentPage(1);
-                }}
-                className="px-2 py-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded text-gray-900 dark:text-gray-100"
-              >
-                <option value={25}>25 par page</option>
-                <option value={50}>50 par page</option>
-                <option value={100}>100 par page</option>
-                <option value={200}>200 par page</option>
-              </select>
-            </div>
-            
-            {totalPages > 1 && (
-              <div className="flex items-center space-x-2">
-                <button
-                  onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-                  disabled={currentPage === 1}
-                  className="px-3 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-200 dark:hover:bg-gray-600"
-                >
-                  Précédent
-                </button>
-                <span className="text-sm text-gray-600 dark:text-gray-400">
-                  Page {currentPage} sur {totalPages}
-                </span>
-                <button
-                  onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
-                  disabled={currentPage === totalPages}
-                  className="px-3 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-200 dark:hover:bg-gray-600"
-                >
-                  Suivant
-                </button>
-              </div>
-            )}
           </div>
         </div>
       </div>
@@ -507,7 +454,7 @@ export function ProspectsTable({
               </tr>
             </thead>
             <tbody>
-              {paginatedProspects.map((prospect) => (
+              {sortedProspects.map((prospect) => (
                 <tr 
                   key={prospect.id} 
                   className={`border-t border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 group ${
