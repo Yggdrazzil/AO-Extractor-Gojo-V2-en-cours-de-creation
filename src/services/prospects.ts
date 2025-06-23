@@ -48,24 +48,7 @@ export async function fetchProspects(): Promise<Prospect[]> {
 
     const { data, error } = await supabase
       .from('prospects')
-      .select(`
-        id,
-        text_content,
-        file_name,
-        file_url,
-        file_content,
-        target_account,
-        availability,
-        daily_rate,
-        residence,
-        mobility,
-        phone,
-        email,
-        status,
-        assigned_to,
-        is_read,
-        created_at
-      `)
+      .select('id, text_content, file_name, file_url, file_content, target_account, availability, daily_rate, residence, mobility, phone, email, status, assigned_to, is_read, created_at')
       .order('created_at', { ascending: false });
 
     if (error) {

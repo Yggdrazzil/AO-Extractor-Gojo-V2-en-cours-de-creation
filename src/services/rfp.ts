@@ -60,19 +60,7 @@ export async function fetchRFPs(): Promise<RFP[]> {
 
     const { data, error } = await supabase
       .from('rfps')
-      .select(`
-        id,
-        client,
-        mission,
-        location,
-        max_rate,
-        created_at,
-        start_date,
-        status,
-        assigned_to,
-        raw_content,
-        is_read
-      `)
+      .select('id, client, mission, location, max_rate, created_at, start_date, status, assigned_to, raw_content, is_read')
       .order('created_at', { ascending: false });
 
 
