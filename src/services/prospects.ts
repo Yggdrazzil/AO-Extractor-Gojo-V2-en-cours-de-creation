@@ -48,7 +48,7 @@ export async function fetchProspects(): Promise<Prospect[]> {
 
     const { data, error } = await supabase
       .from('prospects')
-      .select('id, text_content, file_name, file_url, file_content, target_account, availability, daily_rate, residence, mobility, phone, email, status, assigned_to, is_read, created_at')
+      .select('*')
       .order('created_at', { ascending: false });
 
     if (error) {
@@ -77,12 +77,12 @@ export async function fetchProspects(): Promise<Prospect[]> {
       fileUrl: prospect.file_url,
       fileContent: prospect.file_content,
       targetAccount: prospect.target_account || '',
-      availability: prospect.availability || '',
+      availability: prospect.availability || '-',
       dailyRate: prospect.daily_rate,
-      residence: prospect.residence || '',
-      mobility: prospect.mobility || '',
-      phone: prospect.phone || '',
-      email: prospect.email || '',
+      residence: prospect.residence || '-',
+      mobility: prospect.mobility || '-',
+      phone: prospect.phone || '-',
+      email: prospect.email || '-',
       status: prospect.status,
       assignedTo: prospect.assigned_to,
       isRead: prospect.is_read || false
@@ -115,7 +115,6 @@ export async function createProspect(prospect: Omit<Prospect, 'id'>, file?: File
     let fileName = prospect.fileName;
     let fileContent = null;
 
-    // Upload du fichier si fourni
     if (file) {
       try {
         const uploadResult = await uploadFile(file, 'cvs');
@@ -125,13 +124,13 @@ export async function createProspect(prospect: Omit<Prospect, 'id'>, file?: File
         console.log('File uploaded successfully:', { url: fileUrl, content: fileContent?.substring(0, 100) + '...' });
       } catch (uploadError) {
         console.error('File upload failed:', uploadError);
-        // Continuer sans le fichier plutôt que d'échouer complètement
         fileUrl = null;
         fileName = null;
         fileContent = null;
       }
     }
-    const insertData: any = {
+
+    const insertData = {
       text_content: prospect.textContent,
       file_name: fileName,
       file_url: fileUrl,
@@ -281,7 +280,6 @@ export async function updateProspectEmail(id: string, email: string): Promise<vo
 
 export async function deleteProspect(id: string): Promise<void> {
   try {
-    // Récupérer les informations du fichier avant suppression
     const { data: prospect, error: fetchError } = await supabase
       .from('prospects')
       .select('file_url')
@@ -292,7 +290,6 @@ export async function deleteProspect(id: string): Promise<void> {
       console.error('Error fetching prospect for deletion:', fetchError);
     }
 
-    // Supprimer l'enregistrement de la base de données
     const { error } = await supabase
       .from('prospects')
       .delete()
@@ -300,35 +297,22 @@ export async function deleteProspect(id: string): Promise<void> {
 
     if (error) throw error;
 
-    // Supprimer le fichier du storage si il existe
     if (prospect?.file_url) {
       try {
-        // Extraire le chemin du fichier depuis l'URL
         const url = new URL(prospect.file_url);
         const pathParts = url.pathname.split('/');
-        const filePath = pathParts.slice(-2).join('/'); // Récupérer "cvs/filename"
+        const filePath = pathParts.slice(-2).join('/');
         
         await deleteFile(filePath);
         console.log('File deleted from storage:', filePath);
       } catch (fileError) {
         console.error('Error deleting file from storage:', fileError);
-        // Ne pas faire échouer la suppression si le fichier ne peut pas être supprimé
       }
     }
   } catch (error) {
     console.error('Error in deleteProspect:', error);
     throw error;
   }
-}
-
-// Fonction pour supprimer l'ancienne version
-export async function deleteProspectOld(id: string): Promise<void> {
-  const { error } = await supabase
-    .from('prospects')
-    .delete()
-    .eq('id', id);
-
-  if (error) throw error;
 }
 
 export async function markProspectAsRead(id: string): Promise<void> {

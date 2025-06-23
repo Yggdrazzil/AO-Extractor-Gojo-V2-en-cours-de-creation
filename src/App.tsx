@@ -263,15 +263,16 @@ function App() {
       const analysis = await analyzeRFP(content);
       const newRFP = await createRFP({
         ...analysis,
-        client: analysis.client,
-        mission: analysis.mission,
-        location: analysis.location,
-        maxRate: analysis.maxRate,
-        createdAt: analysis.createdAt,
-        startDate: analysis.startDate,
+        client: analysis.client || 'Non spécifié',
+        mission: analysis.mission || 'Non spécifié',
+        location: analysis.location || 'Non spécifié',
+        maxRate: analysis.maxRate || null,
+        createdAt: analysis.createdAt || null,
+        startDate: analysis.startDate || null,
         status: 'À traiter',
         assignedTo,
-        content
+        content,
+        isRead: false
       });
 
       setRfps((prev) => [newRFP, ...prev]);

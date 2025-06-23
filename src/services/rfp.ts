@@ -4,24 +4,19 @@ import type { RFP } from '../types';
 function convertFrenchDateToISO(dateStr: string | null): string | null {
   if (!dateStr) return null;
   
-  // Nettoyer la chaîne de caractères
   const cleanDateStr = dateStr.trim();
   
   try {
     let date: Date;
     
-    // Vérifier le format JJ/MM/AAAA
     const frenchMatch = cleanDateStr.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
     if (frenchMatch) {
       const [, day, month, year] = frenchMatch;
-      // Créer la date en UTC
       date = new Date(Date.UTC(parseInt(year), parseInt(month) - 1, parseInt(day)));
     } else {
-      // Essayer de parser comme une date ISO
       date = new Date(cleanDateStr);
     }
     
-    // Vérifier si la date est valide
     if (isNaN(date.getTime())) {
       console.error('Invalid date:', cleanDateStr);
       return null;
@@ -38,7 +33,6 @@ export async function fetchRFPs(): Promise<RFP[]> {
   console.log('Fetching RFPs...');
   
   try {
-    // Vérifier la session avant de faire la requête
     const { data: { session }, error: sessionError } = await supabase.auth.getSession();
     
     if (sessionError) {
@@ -59,9 +53,8 @@ export async function fetchRFPs(): Promise<RFP[]> {
 
     const { data, error } = await supabase
       .from('rfps')
-      .select('id, client, mission, location, max_rate, created_at, start_date, status, assigned_to, raw_content, is_read')
+      .select('*')
       .order('created_at', { ascending: false });
-
 
     console.log('Supabase query result:', {
       hasData: !!data,
@@ -74,7 +67,6 @@ export async function fetchRFPs(): Promise<RFP[]> {
     if (error) {
       console.error('Error fetching RFPs:', error);
       
-      // Gérer différents types d'erreurs
       if (error.code === 'PGRST301') {
         throw new Error('Session expirée. Veuillez vous reconnecter.');
       } else if (error.code === '42501') {
@@ -91,7 +83,6 @@ export async function fetchRFPs(): Promise<RFP[]> {
   
     console.log('Successfully fetched RFPs:', { count: data.length });
     
-    // Transformer les données pour correspondre au format de l'application
     return data.map(rfp => ({
       id: rfp.id,
       client: rfp.client || '',
@@ -118,7 +109,6 @@ export async function fetchRFPs(): Promise<RFP[]> {
 
 export async function createRFP(rfp: Omit<RFP, 'id'>): Promise<RFP> {
   try {
-    // Vérifier que le commercial existe
     const { data: salesRep, error: salesRepError } = await supabase
       .from('sales_reps')
       .select('id, code')
@@ -130,7 +120,7 @@ export async function createRFP(rfp: Omit<RFP, 'id'>): Promise<RFP> {
       throw new Error('Commercial non trouvé');
     }
 
-    const insertData: any = {
+    const insertData = {
       client: rfp.client,
       mission: rfp.mission,
       location: rfp.location,
@@ -139,9 +129,9 @@ export async function createRFP(rfp: Omit<RFP, 'id'>): Promise<RFP> {
       start_date: convertFrenchDateToISO(rfp.startDate) || new Date().toISOString(),
       status: rfp.status,
       assigned_to: rfp.assignedTo,
-      raw_content: rfp.content || ''
+      raw_content: rfp.content || '',
+      is_read: false
     };
-
 
     console.log('Creating RFP with data:', insertData);
 
@@ -162,7 +152,6 @@ export async function createRFP(rfp: Omit<RFP, 'id'>): Promise<RFP> {
     
     console.log('Successfully created RFP:', data);
     
-    // Convertir les champs de la base de données au format de l'application
     return {
       id: data.id,
       client: data.client,
@@ -181,7 +170,6 @@ export async function createRFP(rfp: Omit<RFP, 'id'>): Promise<RFP> {
     throw error;
   }
 }
-
 
 export async function updateRFPStatus(id: string, status: RFP['status']): Promise<void> {
   const { error } = await supabase
