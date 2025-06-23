@@ -3,6 +3,23 @@
 @tailwind utilities;
 
 @layer utilities {
+  /* Optimisation du scroll pour les grandes listes */
+  .table-container {
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  /* Amélioration des performances de rendu */
+  .table-row {
+    contain: layout style;
+  }
+  
+  /* Optimisation pour les tableaux avec beaucoup de données */
+  .large-table {
+    transform: translateZ(0);
+    backface-visibility: hidden;
+  }
+  
   .line-clamp-3 {
     display: -webkit-box;
     -webkit-line-clamp: 3;

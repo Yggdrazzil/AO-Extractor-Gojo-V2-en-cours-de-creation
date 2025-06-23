@@ -291,7 +291,7 @@ export function ProspectsTable({
         fileContent={selectedProspect?.fileContent}
       />
       
-      <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm">
+      <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm flex-shrink-0">
         <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-2">
           <label htmlFor="sales-rep-filter-prospects" className="text-sm font-medium text-gray-700 dark:text-gray-300">
             Filtrer par commercial :
@@ -315,16 +315,17 @@ export function ProspectsTable({
         </div>
       </div>
       
-      <div className="w-full overflow-hidden bg-white dark:bg-gray-800 rounded-lg shadow-sm">
+      <div className="flex-1 bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden">
         <div 
           ref={tableRef}
-          className="w-full overflow-x-auto max-h-[70vh]"
+          className="w-full h-full overflow-auto"
           style={{ 
             willChange: isScrolling ? 'transform' : 'auto',
-            contain: 'content'
+            contain: 'layout style paint',
+            maxHeight: 'calc(100vh - 280px)'
           }}
         >
-          <table className="w-full border-collapse">
+          <table className="w-full border-collapse min-w-[1200px]">
             <thead className="bg-white dark:bg-gray-800 sticky top-0 z-10 border-b border-gray-200 dark:border-gray-700">
               <tr className="text-left">
                 <th className="p-2 sm:p-4 w-16 bg-white dark:bg-gray-800" />
@@ -675,6 +676,7 @@ export function ProspectsTable({
               ))}
             </tbody>
           </table>
+        </div>
         </div>
       </div>
     </div>

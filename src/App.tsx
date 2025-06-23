@@ -637,14 +637,14 @@ function App() {
 
   return (
     <ThemeProvider>
-      <div className="flex flex-col lg:flex-row h-screen bg-gray-100 dark:bg-gray-900">
+      <div className="flex h-screen bg-gray-100 dark:bg-gray-900 overflow-hidden">
         <Sidebar 
           activeTab={activeTab} 
           onTabChange={setActiveTab}
           rfps={rfps}
           prospects={prospects}
         />
-        <div className="flex-1 flex flex-col">
+        <div className="flex-1 flex flex-col min-w-0">
           <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 sm:px-6 py-4 flex flex-col sm:flex-row sm:justify-between sm:items-center space-y-2 sm:space-y-0">
             <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
               {activeTab === 'rfp-extractor' ? 'Extracteur d\'AO' : 
@@ -660,7 +660,7 @@ function App() {
               <Settings className="w-5 h-5" />
             </button>
           </div>
-          <div className="flex-1 overflow-hidden">
+          <div className="flex-1 min-h-0">
             <TabContent
               activeTab={activeTab}
               rfps={rfps}
