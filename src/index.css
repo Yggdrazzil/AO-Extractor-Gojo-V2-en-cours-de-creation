@@ -10,3 +10,59 @@
     overflow: hidden;
   }
 }
+
+/* Optimisations pour les gros tableaux */
+.virtualized-table {
+  contain: layout style paint;
+}
+
+.table-row {
+  contain: layout style;
+}
+
+/* Amélioration du scrolling */
+.smooth-scroll {
+  scroll-behavior: smooth;
+}
+
+/* Optimisation des transitions pour les gros volumes */
+.performance-mode * {
+  transition: none !important;
+  animation: none !important;
+}
+
+/* Styles pour la pagination */
+.pagination-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.pagination-button {
+  padding: 0.5rem 1rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.375rem;
+  background: white;
+  color: #374151;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.pagination-button:hover:not(:disabled) {
+  background: #f3f4f6;
+}
+
+.pagination-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.dark .pagination-button {
+  background: #374151;
+  color: #d1d5db;
+  border-color: #4b5563;
+}
+
+.dark .pagination-button:hover:not(:disabled) {
+  background: #4b5563;
+}
