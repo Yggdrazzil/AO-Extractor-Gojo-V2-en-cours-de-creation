@@ -53,7 +53,7 @@ export async function fetchRFPs(): Promise<RFP[]> {
 
     const { data, error } = await supabase
       .from('rfps')
-      .select('*')
+      .select('id, client, mission, location, max_rate, created_at, start_date, status, assigned_to, raw_content, is_read')
       .order('created_at', { ascending: false });
 
     console.log('Supabase query result:', {
@@ -138,7 +138,7 @@ export async function createRFP(rfp: Omit<RFP, 'id'>): Promise<RFP> {
     const { data, error } = await supabase
       .from('rfps')
       .insert([insertData])
-      .select()
+      .select('id, client, mission, location, max_rate, created_at, start_date, status, assigned_to, raw_content, is_read')
       .single();
 
     if (error) {

@@ -48,7 +48,7 @@ export async function fetchProspects(): Promise<Prospect[]> {
 
     const { data, error } = await supabase
       .from('prospects')
-      .select('*')
+      .select('id, text_content, file_name, file_url, file_content, target_account, availability, daily_rate, residence, mobility, phone, email, status, assigned_to, is_read, created_at')
       .order('created_at', { ascending: false });
 
     if (error) {
@@ -152,7 +152,7 @@ export async function createProspect(prospect: Omit<Prospect, 'id'>, file?: File
     const { data, error } = await supabase
       .from('prospects')
       .insert([insertData])
-      .select()
+      .select('id, text_content, file_name, file_url, file_content, target_account, availability, daily_rate, residence, mobility, phone, email, status, assigned_to, is_read')
       .single();
 
     if (error) {
