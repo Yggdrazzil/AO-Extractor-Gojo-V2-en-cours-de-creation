@@ -6,6 +6,7 @@ import { analyzeRFP, analyzeProspect } from './services/openai';
 import { createRFP, fetchRFPs, updateRFPStatus, updateRFPAssignee, updateRFPClient, updateRFPMission, updateRFPLocation, updateRFPMaxRate, updateRFPStartDate, updateRFPCreatedAt, deleteRFP } from './services/rfp';
 import { markRFPAsRead } from './services/rfp';
 import { extractFileContent } from './services/fileUpload';
+import { sendRFPNotification, getSalesRepCode } from './services/emailNotification';
 import { createProspect, fetchProspects, updateProspectStatus, updateProspectAssignee, updateProspectDateUpdate, updateProspectAvailability, updateProspectDailyRate, updateProspectResidence, updateProspectMobility, updateProspectPhone, updateProspectEmail, deleteProspect, markProspectAsRead } from './services/prospects';
 import { updateProspectTargetAccount } from './services/prospects';
 import { ThemeProvider } from './context/ThemeContext';
@@ -275,6 +276,25 @@ function App() {
         isRead: false
       });
 
+      // Envoi de la notification email (non bloquant)
+      try {
+        const salesRepCode = await getSalesRepCode(assignedTo);
+        if (salesRepCode) {
+          await sendRFPNotification({
+            rfpId: newRFP.id,
+            client: newRFP.client,
+            mission: newRFP.mission,
+            salesRepCode,
+            assignedTo
+          });
+          console.log('Email notification sent successfully');
+        } else {
+          console.warn('Could not send email: sales rep code not found');
+        }
+      } catch (emailError) {
+        console.error('Email notification failed (non-blocking):', emailError);
+        // L'erreur d'email ne doit pas empêcher la création de l'AO
+      }
       setRfps((prev) => [newRFP, ...prev]);
     } catch (error) {
       console.error('Failed to analyze RFP:', error);
