@@ -144,12 +144,12 @@ export function RFPForm({ salesReps, onSubmit, isLoading = false }: RFPFormProps
                 {salesReps?.length ? 'Sélectionner un commercial' : 'Aucun commercial disponible'}
               </option>
               {[...salesReps].sort((a, b) => {
-                const order = ['IKH', 'BVI', 'GMA', 'TSA', 'EPO', 'BCI', 'VIE'];
+                const order = ['EPO', 'IKH', 'BVI', 'GMA', 'TSA', 'BCI', 'VIE', 'JVO'];
                 return order.indexOf(a.code) - order.indexOf(b.code);
               }).map((rep) => {
                 return (
                   <option key={rep.id} value={rep.id}>
-                    {rep.code}
+                    {rep.code} - {rep.name}
                   </option>
                 );
               })}

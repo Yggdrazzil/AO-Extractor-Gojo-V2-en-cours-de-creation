@@ -36,7 +36,7 @@ async function fetchSalesReps(): Promise<SalesRep[]> {
     console.log('Attempting to fetch from sales_reps table...');
     const { data: salesReps, error: salesRepsError } = await supabase
       .from('sales_reps')
-      .select('id, code, name, created_at')
+      .select('id, code, name, email, is_admin, created_at')
       .order('code');
 
     console.log('Supabase response:', {

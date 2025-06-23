@@ -91,6 +91,7 @@ export interface Database {
           name: string
           code: string
           email: string
+          is_admin: boolean
           created_at: string | null
         }
         Insert: {
@@ -98,6 +99,7 @@ export interface Database {
           name: string
           code: string
           email: string
+          is_admin?: boolean
           created_at?: string
         }
         Update: {
@@ -105,6 +107,7 @@ export interface Database {
           name?: string
           code?: string
           email?: string
+          is_admin?: boolean
           created_at?: string
         }
       }

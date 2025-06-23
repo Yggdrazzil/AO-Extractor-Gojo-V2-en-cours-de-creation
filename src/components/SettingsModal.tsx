@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { Sun, Moon, X, KeyRound, LogOut } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { supabase } from '../lib/supabase';
+import { checkAdminRights } from '../services/auth';
 
 type SettingsModalProps = {
   isOpen: boolean;
@@ -16,13 +17,18 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
   const [showSuccess, setShowSuccess] = useState(false);
   const { theme, setTheme } = useTheme();
   const [userEmail, setUserEmail] = useState<string | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
-    const getUserEmail = async () => {
+    const getUserInfo = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       setUserEmail(session?.user?.email || null);
+      
+      // Vérifier les droits admin
+      const adminRights = await checkAdminRights();
+      setIsAdmin(adminRights);
     };
-    getUserEmail();
+    getUserInfo();
   }, []);
 
   const handleClickOutside = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -105,7 +111,8 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
             </div>
           </div>
 
-          <div>
+          {isAdmin && (
+            <div>
             <h3 className="text-gray-600 dark:text-gray-400 mb-3 flex items-center gap-2">
               <KeyRound className="w-4 h-4" />
               Configuration OpenAI
@@ -133,6 +140,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
               </button>
             </div>
           </div>
+          )}
 
           <button
             onClick={handleLogout}
