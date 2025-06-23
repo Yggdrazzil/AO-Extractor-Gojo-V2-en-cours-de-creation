@@ -90,18 +90,21 @@ export interface Database {
           id: string
           name: string
           code: string
+          email: string
           created_at: string | null
         }
         Insert: {
           id?: string
           name: string
           code: string
+          email: string
           created_at?: string
         }
         Update: {
           id?: string
           name?: string
           code?: string
+          email?: string
           created_at?: string
         }
       }

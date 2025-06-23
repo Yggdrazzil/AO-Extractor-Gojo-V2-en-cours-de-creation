@@ -1,4 +1,4 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 interface RFPNotificationData {
   rfpId: string
@@ -97,26 +97,31 @@ Email automatique - Ne pas répondre
 }
 
 /**
- * Récupère l'email du commercial depuis les variables d'environnement
+ * Récupère l'email du commercial depuis la base de données
  */
-function getSalesRepEmail(salesRepCode: string): string | null {
-  const emailMapping: Record<string, string> = {
-    'IKH': Deno.env.get('EMAIL_IKH') || '',
-    'BVI': Deno.env.get('EMAIL_BVI') || '',
-    'GMA': Deno.env.get('EMAIL_GMA') || '',
-    'TSA': Deno.env.get('EMAIL_TSA') || '',
-    'EPO': Deno.env.get('EMAIL_EPO') || '',
-    'BCI': Deno.env.get('EMAIL_BCI') || '',
-    'VIE': Deno.env.get('EMAIL_VIE') || '',
-  }
+async function getSalesRepEmail(assignedTo: string): Promise<string | null> {
+  try {
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+    
+    const supabase = createClient(supabaseUrl, supabaseServiceKey)
+    
+    const { data, error } = await supabase
+      .from('sales_reps')
+      .select('email')
+      .eq('id', assignedTo)
+      .single()
 
-  const email = emailMapping[salesRepCode]
-  if (!email) {
-    console.error('No email configured for sales rep:', salesRepCode)
+    if (error || !data) {
+      console.error('Error fetching sales rep email:', error)
+      return null
+    }
+
+    return data.email
+  } catch (error) {
+    console.error('Failed to get sales rep email:', error)
     return null
   }
-
-  return email
 }
 
 /**
@@ -138,7 +143,7 @@ async function sendEmail(to: string, subject: string, html: string, text: string
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: Deno.env.get('FROM_EMAIL') || 'noreply@gojo.fr',
+        from: Deno.env.get('FROM_EMAIL') || 'noreply@hito.digital',
         to: [to],
         subject,
         html,
@@ -164,7 +169,7 @@ async function sendEmail(to: string, subject: string, html: string, text: string
 /**
  * Handler principal
  */
-serve(async (req) => {
+Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
@@ -183,7 +188,7 @@ serve(async (req) => {
     const data = await req.json() as RFPNotificationData
     
     // Validation
-    if (!data.rfpId || !data.salesRepCode || !data.client || !data.mission) {
+    if (!data.rfpId || !data.salesRepCode || !data.client || !data.mission || !data.assignedTo) {
       return new Response(
         JSON.stringify({ error: 'Missing required fields' }),
         { 
@@ -193,11 +198,11 @@ serve(async (req) => {
       )
     }
 
-    // Récupération de l'email du commercial
-    const salesRepEmail = getSalesRepEmail(data.salesRepCode)
+    // Récupération de l'email du commercial depuis la base
+    const salesRepEmail = await getSalesRepEmail(data.assignedTo)
     if (!salesRepEmail) {
       return new Response(
-        JSON.stringify({ error: 'Sales rep email not configured' }),
+        JSON.stringify({ error: 'Sales rep email not found' }),
         { 
           status: 400, 
           headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
