@@ -28,16 +28,9 @@ export async function sendRFPNotification(data: RFPNotificationData): Promise<bo
     if (error) {
       console.error('Error invoking email function:', error);
       
-      // Handle specific error cases
-      if (error.message && error.message.includes('RESEND_API_KEY')) {
-        console.warn('Email notification skipped: Resend API key not configured');
-        return false;
-      }
-      
-      // Handle CORS and network errors gracefully
-      if (error.context && error.context.status === 500) {
-        console.warn('Email notification failed: Server error (likely configuration issue)');
-        return false;
+      // Log détaillé pour le debugging
+      if (error.context) {
+        console.error('Error context:', error.context);
       }
       
       return false;
@@ -45,31 +38,17 @@ export async function sendRFPNotification(data: RFPNotificationData): Promise<bo
 
     if (!result?.success) {
       console.error('Email function returned error:', result);
-      
-      // Handle configuration errors gracefully
-      if (result?.details) {
-        if (result.details.includes('RESEND_API_KEY')) {
-          console.warn('Email notification skipped: Resend API key not configured in Edge Function settings');
-          return false;
-        }
-      }
       return false;
     }
 
     console.log('Email notification sent successfully to:', result.recipient);
+    if (result.messageId) {
+      console.log('Resend message ID:', result.messageId);
+    }
+    
     return true;
   } catch (error) {
     console.error('Failed to send RFP notification:', error);
-    
-    // Don't throw errors for email failures - they should be non-blocking
-    if (error instanceof Error) {
-      if (error.message.includes('fetch') || error.message.includes('network')) {
-        console.warn('Email notification skipped: Network error');
-      } else if (error.message.includes('RESEND_API_KEY')) {
-        console.warn('Email notification skipped: API key configuration issue');
-      }
-    }
-    
     return false;
   }
 }
@@ -118,4 +97,19 @@ export async function getSalesRepEmail(salesRepId: string): Promise<string | nul
     console.error('Failed to get sales rep email:', error);
     return null;
   }
+}
+
+/**
+ * Teste l'envoi d'email (fonction utilitaire pour le debugging)
+ */
+export async function testEmailNotification(salesRepId: string): Promise<boolean> {
+  const testData: RFPNotificationData = {
+    rfpId: 'test-rfp-id',
+    client: 'Client Test',
+    mission: 'Mission de test',
+    salesRepCode: 'TEST',
+    assignedTo: salesRepId
+  };
+
+  return await sendRFPNotification(testData);
 }

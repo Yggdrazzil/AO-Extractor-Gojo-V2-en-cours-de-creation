@@ -15,7 +15,7 @@ const corsHeaders = {
 }
 
 /**
- * Génère le contenu HTML concis de l'email
+ * Génère le contenu HTML de l'email
  */
 function generateEmailHTML(data: RFPNotificationData, platformUrl: string): string {
   return `
@@ -26,47 +26,154 @@ function generateEmailHTML(data: RFPNotificationData, platformUrl: string): stri
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <title>Nouvel AO assigné</title>
       <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 20px; background-color: #f8fafc; }
-        .container { max-width: 500px; margin: 0 auto; background: white; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); overflow: hidden; }
-        .header { background: linear-gradient(135deg, #1651EE 0%, #4F46E5 100%); color: white; padding: 24px; text-align: center; }
-        .header h1 { margin: 0; font-size: 20px; font-weight: 600; }
-        .content { padding: 24px; }
-        .mission-card { background: #f1f5f9; border-left: 4px solid #1651EE; padding: 16px; border-radius: 6px; margin: 16px 0; }
-        .mission-title { font-weight: 600; color: #1e293b; margin-bottom: 4px; }
-        .client-name { color: #64748b; font-size: 14px; }
-        .cta-button { display: inline-block; background: #1651EE; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: 500; margin: 20px 0; transition: background-color 0.2s; }
-        .cta-button:hover { background: #1e40af; }
-        .footer { text-align: center; color: #64748b; font-size: 12px; padding: 16px 24px; border-top: 1px solid #e2e8f0; }
+        body { 
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
+          line-height: 1.6; 
+          color: #333; 
+          margin: 0; 
+          padding: 20px; 
+          background-color: #f8fafc; 
+        }
+        .container { 
+          max-width: 600px; 
+          margin: 0 auto; 
+          background: white; 
+          border-radius: 12px; 
+          box-shadow: 0 4px 6px rgba(0,0,0,0.05); 
+          overflow: hidden; 
+        }
+        .header { 
+          background: linear-gradient(135deg, #1651EE 0%, #4F46E5 100%); 
+          color: white; 
+          padding: 32px 24px; 
+          text-align: center; 
+        }
+        .header h1 { 
+          margin: 0; 
+          font-size: 24px; 
+          font-weight: 600; 
+        }
+        .header p { 
+          margin: 8px 0 0 0; 
+          opacity: 0.9; 
+          font-size: 16px; 
+        }
+        .content { 
+          padding: 32px 24px; 
+        }
+        .greeting { 
+          font-size: 18px; 
+          margin-bottom: 24px; 
+        }
+        .mission-card { 
+          background: #f1f5f9; 
+          border-left: 4px solid #1651EE; 
+          padding: 20px; 
+          border-radius: 8px; 
+          margin: 24px 0; 
+        }
+        .mission-title { 
+          font-weight: 600; 
+          color: #1e293b; 
+          font-size: 18px; 
+          margin-bottom: 8px; 
+        }
+        .client-name { 
+          color: #64748b; 
+          font-size: 16px; 
+          font-weight: 500; 
+        }
+        .cta-section { 
+          text-align: center; 
+          margin: 32px 0; 
+        }
+        .cta-button { 
+          display: inline-block; 
+          background: #1651EE; 
+          color: white; 
+          padding: 16px 32px; 
+          text-decoration: none; 
+          border-radius: 8px; 
+          font-weight: 600; 
+          font-size: 16px; 
+          transition: background-color 0.2s; 
+        }
+        .cta-button:hover { 
+          background: #1e40af; 
+        }
+        .instructions { 
+          background: #fef3c7; 
+          border: 1px solid #fbbf24; 
+          border-radius: 8px; 
+          padding: 16px; 
+          margin: 24px 0; 
+        }
+        .instructions-title { 
+          font-weight: 600; 
+          color: #92400e; 
+          margin-bottom: 8px; 
+        }
+        .instructions-text { 
+          color: #92400e; 
+          font-size: 14px; 
+          margin: 0; 
+        }
+        .footer { 
+          text-align: center; 
+          color: #64748b; 
+          font-size: 12px; 
+          padding: 24px; 
+          border-top: 1px solid #e2e8f0; 
+          background: #f8fafc; 
+        }
+        .logo { 
+          font-size: 20px; 
+          font-weight: bold; 
+          margin-bottom: 8px; 
+        }
       </style>
     </head>
     <body>
       <div class="container">
         <div class="header">
+          <div class="logo">🚀 HITO Digital</div>
           <h1>📋 Nouvel AO assigné</h1>
+          <p>Un appel d'offres vous attend</p>
         </div>
         
         <div class="content">
-          <p>Bonjour <strong>${data.salesRepCode}</strong>,</p>
-          <p>Un nouvel appel d'offres vous a été assigné :</p>
+          <div class="greeting">
+            Bonjour <strong>${data.salesRepCode}</strong>,
+          </div>
+          
+          <p>Un nouvel appel d'offres vient d'être analysé et vous a été assigné automatiquement :</p>
           
           <div class="mission-card">
             <div class="mission-title">${data.mission}</div>
-            <div class="client-name">${data.client}</div>
+            <div class="client-name">📍 ${data.client}</div>
           </div>
           
-          <div style="text-align: center;">
+          <div class="instructions">
+            <div class="instructions-title">⚡ Action requise</div>
+            <p class="instructions-text">
+              Connectez-vous à la plateforme pour consulter tous les détails de cet AO et commencer le traitement.
+            </p>
+          </div>
+          
+          <div class="cta-section">
             <a href="${platformUrl}" class="cta-button">
-              Consulter l'AO
+              🔍 Consulter l'AO
             </a>
           </div>
           
-          <p style="font-size: 14px; color: #64748b; margin-top: 20px;">
-            Connectez-vous à la plateforme pour voir tous les détails et commencer le traitement.
+          <p style="font-size: 14px; color: #64748b; margin-top: 24px;">
+            <strong>Rappel :</strong> Pensez à marquer l'AO comme "lu" une fois consulté pour optimiser le suivi.
           </p>
         </div>
         
         <div class="footer">
-          Email automatique • Ne pas répondre
+          <div>📧 Email automatique • Ne pas répondre</div>
+          <div style="margin-top: 8px;">HITO Digital - Plateforme de gestion des AO</div>
         </div>
       </div>
     </body>
@@ -79,20 +186,26 @@ function generateEmailHTML(data: RFPNotificationData, platformUrl: string): stri
  */
 function generateEmailText(data: RFPNotificationData, platformUrl: string): string {
   return `
-Nouvel AO assigné
+🚀 HITO Digital - Nouvel AO assigné
 
 Bonjour ${data.salesRepCode},
 
-Un nouvel appel d'offres vous a été assigné :
+Un nouvel appel d'offres vient d'être analysé et vous a été assigné :
 
-Mission: ${data.mission}
-Client: ${data.client}
+📋 Mission: ${data.mission}
+📍 Client: ${data.client}
 
-Consultez l'AO complet sur la plateforme :
+⚡ Action requise:
+Connectez-vous à la plateforme pour consulter tous les détails et commencer le traitement.
+
+🔗 Lien vers la plateforme:
 ${platformUrl}
 
+Rappel: Pensez à marquer l'AO comme "lu" une fois consulté.
+
 ---
-Email automatique - Ne pas répondre
+📧 Email automatique - Ne pas répondre
+HITO Digital - Plateforme de gestion des AO
   `.trim()
 }
 
@@ -108,7 +221,7 @@ async function getSalesRepEmail(assignedTo: string): Promise<string | null> {
     
     const { data, error } = await supabase
       .from('sales_reps')
-      .select('email')
+      .select('email, name')
       .eq('id', assignedTo)
       .single()
 
@@ -117,6 +230,7 @@ async function getSalesRepEmail(assignedTo: string): Promise<string | null> {
       return null
     }
 
+    console.log(`Found sales rep: ${data.name} (${data.email})`)
     return data.email
   } catch (error) {
     console.error('Failed to get sales rep email:', error)
@@ -127,16 +241,19 @@ async function getSalesRepEmail(assignedTo: string): Promise<string | null> {
 /**
  * Envoie l'email via Resend
  */
-async function sendEmail(to: string, subject: string, html: string, text: string): Promise<{ success: boolean; error?: string }> {
-  const resendApiKey = Deno.env.get('RESEND_API_KEY')
+async function sendEmail(to: string, subject: string, html: string, text: string): Promise<{ success: boolean; error?: string; messageId?: string }> {
+  // Utiliser la clé API fournie directement
+  const resendApiKey = 're_LtozHyN9_3ja5xMz6PFTWzf98ejsNbSaw'
   
   if (!resendApiKey) {
-    const errorMsg = 'RESEND_API_KEY environment variable is not configured'
+    const errorMsg = 'RESEND_API_KEY not configured'
     console.error(errorMsg)
     return { success: false, error: errorMsg }
   }
 
   try {
+    console.log(`Sending email to: ${to}`)
+    
     const response = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
@@ -144,7 +261,7 @@ async function sendEmail(to: string, subject: string, html: string, text: string
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: Deno.env.get('FROM_EMAIL') || 'noreply@hito.digital',
+        from: 'HITO Digital <noreply@hito.digital>',
         to: [to],
         subject,
         html,
@@ -152,19 +269,21 @@ async function sendEmail(to: string, subject: string, html: string, text: string
       }),
     })
 
+    const responseText = await response.text()
+    console.log(`Resend API response (${response.status}):`, responseText)
+
     if (!response.ok) {
-      const errorData = await response.text()
-      const errorMsg = `Resend API error: ${response.status}`
+      const errorMsg = `Resend API error: ${response.status} - ${responseText}`
       console.error(errorMsg)
       return { success: false, error: errorMsg }
     }
 
-    const result = await response.json()
+    const result = JSON.parse(responseText)
     console.log('Email sent successfully:', result.id)
-    return { success: true }
+    return { success: true, messageId: result.id }
   } catch (error) {
     const errorMsg = `Email sending failed: ${error.message || 'Unknown error'}`
-    console.error(errorMsg)
+    console.error(errorMsg, error)
     return { success: false, error: errorMsg }
   }
 }
@@ -173,6 +292,7 @@ async function sendEmail(to: string, subject: string, html: string, text: string
  * Handler principal
  */
 Deno.serve(async (req) => {
+  // Gestion CORS
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
@@ -188,14 +308,25 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const data = await req.json() as RFPNotificationData
+    console.log('Processing RFP notification request...')
     
-    // Validation
+    const data = await req.json() as RFPNotificationData
+    console.log('Received data:', {
+      rfpId: data.rfpId,
+      client: data.client,
+      mission: data.mission,
+      salesRepCode: data.salesRepCode,
+      assignedTo: data.assignedTo
+    })
+    
+    // Validation des données
     if (!data.rfpId || !data.salesRepCode || !data.client || !data.mission || !data.assignedTo) {
+      const errorMsg = 'Missing required fields: rfpId, salesRepCode, client, mission, and assignedTo are required'
+      console.error(errorMsg)
       return new Response(
         JSON.stringify({ 
           error: 'Missing required fields',
-          details: 'rfpId, salesRepCode, client, mission, and assignedTo are required'
+          details: errorMsg
         }),
         { 
           status: 400, 
@@ -204,13 +335,17 @@ Deno.serve(async (req) => {
       )
     }
 
-    // Récupération de l'email du commercial depuis la base
+    // Récupération de l'email du commercial
+    console.log(`Fetching email for sales rep ID: ${data.assignedTo}`)
     const salesRepEmail = await getSalesRepEmail(data.assignedTo)
+    
     if (!salesRepEmail) {
+      const errorMsg = `No email found for sales rep with ID: ${data.assignedTo}`
+      console.error(errorMsg)
       return new Response(
         JSON.stringify({ 
           error: 'Sales rep email not found',
-          details: `No email found for sales rep with ID: ${data.assignedTo}`
+          details: errorMsg
         }),
         { 
           status: 400, 
@@ -219,18 +354,21 @@ Deno.serve(async (req) => {
       )
     }
 
-    // URL de la plateforme
-    const platformUrl = Deno.env.get('PLATFORM_URL') || 'https://votre-plateforme.com'
+    // URL de la plateforme (vous pouvez la configurer via une variable d'environnement)
+    const platformUrl = Deno.env.get('PLATFORM_URL') || 'https://onuznsfzlkguvfdeilff.supabase.co'
     
     // Génération du contenu email
-    const subject = `📋 Nouvel AO : ${data.mission}`
+    const subject = `📋 Nouvel AO assigné : ${data.mission}`
     const html = generateEmailHTML(data, platformUrl)
     const text = generateEmailText(data, platformUrl)
+
+    console.log(`Preparing to send email with subject: "${subject}"`)
 
     // Envoi de l'email
     const emailResult = await sendEmail(salesRepEmail, subject, html, text)
     
     if (!emailResult.success) {
+      console.error('Failed to send email:', emailResult.error)
       return new Response(
         JSON.stringify({ 
           error: 'Failed to send email',
@@ -243,11 +381,14 @@ Deno.serve(async (req) => {
       )
     }
 
+    console.log(`Email notification sent successfully to ${salesRepEmail}`)
+    
     return new Response(
       JSON.stringify({ 
         success: true, 
         message: 'Email sent successfully',
-        recipient: salesRepEmail 
+        recipient: salesRepEmail,
+        messageId: emailResult.messageId
       }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
