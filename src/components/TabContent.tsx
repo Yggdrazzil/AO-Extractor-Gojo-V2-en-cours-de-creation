@@ -93,8 +93,7 @@ export function TabContent({
   switch (activeTab) {
     case 'rfp-extractor':
       return (
-        <div className="flex flex-col h-full">
-          <div className="p-6 space-y-6 flex-shrink-0">
+        <div className="p-6 space-y-6 h-full overflow-auto">
           {onAnalyzeRFP && (
             <RFPForm
               salesReps={salesReps}
@@ -102,8 +101,6 @@ export function TabContent({
               isLoading={isAnalyzing}
             />
           )}
-          </div>
-          <div className="flex-1 px-6 pb-6 min-h-0">
           <RFPTable
             rfps={rfps}
             salesReps={salesReps}
@@ -118,14 +115,12 @@ export function TabContent({
             onView={onView || (() => Promise.resolve())}
             onDelete={onDelete || (() => Promise.resolve())}
           />
-          </div>
         </div>
       );
 
     case 'prospects':
       return (
-        <div className="flex flex-col h-full">
-          <div className="p-6 space-y-6 flex-shrink-0">
+        <div className="p-6 space-y-6 h-full overflow-auto">
           {onAnalyzeProspect && (
             <ProspectsForm
               salesReps={salesReps}
@@ -133,8 +128,6 @@ export function TabContent({
               isLoading={isAnalyzingProspect}
             />
           )}
-          </div>
-          <div className="flex-1 px-6 pb-6 min-h-0">
           <ProspectsTable
             prospects={prospects}
             salesReps={salesReps}
@@ -150,7 +143,6 @@ export function TabContent({
             onView={onProspectView || (() => Promise.resolve())}
             onDelete={onProspectDelete || (() => Promise.resolve())}
           />
-          </div>
         </div>
       );
 

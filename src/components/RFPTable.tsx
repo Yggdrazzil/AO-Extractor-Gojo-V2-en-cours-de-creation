@@ -336,7 +336,7 @@ export function RFPTable({
           }
         }}
       />
-      <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm flex-shrink-0">
+      <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm">
         <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-2">
           <label htmlFor="sales-rep-filter" className="text-sm font-medium text-gray-700 dark:text-gray-300">
             Filtrer par commercial :
@@ -359,17 +359,15 @@ export function RFPTable({
           </select>
         </div>
       </div>
-      <div className="flex-1 bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden">
-        <div 
-          ref={tableRef}
-          className="w-full h-full overflow-auto"
-          style={{ 
-            willChange: isScrolling ? 'transform' : 'auto',
-            contain: 'layout style paint',
-            maxHeight: 'calc(100vh - 280px)'
-          }}
-        >
-          <table className="w-full border-collapse min-w-[1200px]">
+      <div 
+        ref={tableRef}
+        className="overflow-x-auto bg-white dark:bg-gray-800 rounded-lg shadow-sm max-h-[70vh] overscroll-contain"
+        style={{ 
+          willChange: isScrolling ? 'transform' : 'auto',
+          contain: 'content'
+        }}
+      >
+        <table className="w-full border-collapse min-w-[1200px]">
           <thead className="bg-white dark:bg-gray-800 sticky top-0 z-10">
             <tr className="text-left">
               <th className="p-2 sm:p-4 w-12 sm:w-16" />
@@ -720,7 +718,6 @@ export function RFPTable({
             ))}
           </tbody>
         </table>
-        </div>
       </div>
     </div>
   );
