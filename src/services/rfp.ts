@@ -1,5 +1,6 @@
 import { supabase } from '../lib/supabase';
 import type { RFP } from '../types';
+import { sendRFPNotification } from './email';
 
 function convertFrenchDateToISO(dateStr: string | null): string | null {
   if (!dateStr) return null;
@@ -173,6 +174,22 @@ export async function createRFP(rfp: Omit<RFP, 'id'>): Promise<RFP> {
     }
     
     console.log('Successfully created RFP:', data);
+    
+    // Envoyer la notification email de manière asynchrone
+    try {
+      await sendRFPNotification({
+        rfpId: data.id,
+        salesRepId: data.assigned_to,
+        client: data.client,
+        mission: data.mission,
+        location: data.location,
+        maxRate: data.max_rate,
+        startDate: data.start_date
+      });
+    } catch (emailError) {
+      console.error('Email notification failed:', emailError);
+      // Ne pas faire échouer la création de l'AO si l'email échoue
+    }
     
     // Convertir les champs de la base de données au format de l'application
     return {
