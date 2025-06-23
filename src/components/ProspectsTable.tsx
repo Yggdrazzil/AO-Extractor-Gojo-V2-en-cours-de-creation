@@ -304,11 +304,11 @@ export function ProspectsTable({
           >
             <option value="">Tous les commerciaux</option>
             {[...salesReps].sort((a, b) => {
-              const order = ['IKH', 'BVI', 'GMA', 'TSA', 'EPO', 'BCI', 'VIE'];
+              const order = ['EPO', 'IKH', 'BVI', 'GMA', 'TSA', 'BCI', 'VIE', 'JVO'];
               return order.indexOf(a.code) - order.indexOf(b.code);
             }).map((rep) => (
               <option key={rep.id} value={rep.id}>
-                {rep.code}
+                {rep.code} - {rep.name}
               </option>
             ))}
           </select>
