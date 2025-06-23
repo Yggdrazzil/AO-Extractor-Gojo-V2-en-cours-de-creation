@@ -1,9 +1,8 @@
 import React from 'react';
 import { useState, useEffect } from 'react';
-import { Sun, Moon, X, KeyRound, LogOut, Mail, CheckCircle, AlertCircle } from 'lucide-react';
+import { Sun, Moon, X, KeyRound, LogOut } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { supabase } from '../lib/supabase';
-import { testEmailConfiguration } from '../services/email';
 
 type SettingsModalProps = {
   isOpen: boolean;
@@ -17,7 +16,6 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
   const [showSuccess, setShowSuccess] = useState(false);
   const { theme, setTheme } = useTheme();
   const [userEmail, setUserEmail] = useState<string | null>(null);
-  const [emailTestStatus, setEmailTestStatus] = useState<'idle' | 'testing' | 'success' | 'error'>('idle');
 
   useEffect(() => {
     const getUserEmail = async () => {
@@ -49,19 +47,6 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
       window.location.reload(); // Recharge la page pour réinitialiser l'état
     } catch (error) {
       console.error('Erreur lors de la déconnexion:', error);
-    }
-  };
-
-  const handleTestEmail = async () => {
-    setEmailTestStatus('testing');
-    try {
-      const success = await testEmailConfiguration();
-      setEmailTestStatus(success ? 'success' : 'error');
-      setTimeout(() => setEmailTestStatus('idle'), 3000);
-    } catch (error) {
-      console.error('Email test error:', error);
-      setEmailTestStatus('error');
-      setTimeout(() => setEmailTestStatus('idle'), 3000);
     }
   };
 
@@ -145,41 +130,6 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                 disabled={showSuccess}
               >
                 {showSuccess ? '✓ Clé mise à jour' : 'Mettre à jour la clé'}
-              </button>
-            </div>
-          </div>
-
-          <div>
-            <h3 className="text-gray-600 dark:text-gray-400 mb-3 flex items-center gap-2">
-              <Mail className="w-4 h-4" />
-              Notifications Email
-            </h3>
-            <div className="space-y-3">
-              <p className="text-sm text-gray-500 dark:text-gray-400">
-                Les commerciaux reçoivent automatiquement un email lors de l'attribution d'un nouvel AO.
-              </p>
-              <button
-                onClick={handleTestEmail}
-                disabled={emailTestStatus === 'testing'}
-                className={`w-full flex items-center justify-center gap-2 px-4 py-2 rounded-lg transition-colors ${
-                  emailTestStatus === 'success'
-                    ? 'bg-green-500 text-white'
-                    : emailTestStatus === 'error'
-                    ? 'bg-red-500 text-white'
-                    : 'bg-gray-500 text-white hover:bg-gray-600'
-                } disabled:opacity-50`}
-              >
-                {emailTestStatus === 'testing' && (
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                )}
-                {emailTestStatus === 'success' && <CheckCircle className="w-4 h-4" />}
-                {emailTestStatus === 'error' && <AlertCircle className="w-4 h-4" />}
-                {emailTestStatus === 'idle' && <Mail className="w-4 h-4" />}
-                
-                {emailTestStatus === 'testing' && 'Test en cours...'}
-                {emailTestStatus === 'success' && 'Configuration OK'}
-                {emailTestStatus === 'error' && 'Erreur de configuration'}
-                {emailTestStatus === 'idle' && 'Tester la configuration'}
               </button>
             </div>
           </div>
