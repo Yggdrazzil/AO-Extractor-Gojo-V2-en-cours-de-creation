@@ -27,11 +27,29 @@ export async function sendRFPNotification(data: RFPNotificationData): Promise<bo
 
     if (error) {
       console.error('Error invoking email function:', error);
+      
+      // Log more detailed error information
+      if (error.message) {
+        console.error('Error details:', error.message);
+      }
+      if (error.context) {
+        console.error('Error context:', error.context);
+      }
       return false;
     }
 
     if (!result?.success) {
       console.error('Email function returned error:', result);
+      
+      // Show user-friendly error message if available
+      if (result?.details) {
+        console.error('Error details:', result.details);
+        
+        // Check for specific configuration errors
+        if (result.details.includes('RESEND_API_KEY')) {
+          console.error('Configuration Error: Resend API key is not configured in Supabase Edge Function settings');
+        }
+      }
       return false;
     }
 

@@ -127,12 +127,13 @@ async function getSalesRepEmail(assignedTo: string): Promise<string | null> {
 /**
  * Envoie l'email via Resend
  */
-async function sendEmail(to: string, subject: string, html: string, text: string): Promise<boolean> {
+async function sendEmail(to: string, subject: string, html: string, text: string): Promise<{ success: boolean; error?: string }> {
   const resendApiKey = Deno.env.get('RESEND_API_KEY')
   
   if (!resendApiKey) {
-    console.error('RESEND_API_KEY not configured')
-    return false
+    const errorMsg = 'RESEND_API_KEY environment variable is not configured. Please add your Resend API key in the Supabase Edge Function settings.'
+    console.error(errorMsg)
+    return { success: false, error: errorMsg }
   }
 
   try {
@@ -153,16 +154,18 @@ async function sendEmail(to: string, subject: string, html: string, text: string
 
     if (!response.ok) {
       const errorData = await response.text()
-      console.error('Resend API error:', response.status, errorData)
-      return false
+      const errorMsg = `Resend API error (${response.status}): ${errorData}`
+      console.error(errorMsg)
+      return { success: false, error: errorMsg }
     }
 
     const result = await response.json()
     console.log('Email sent successfully:', result.id)
-    return true
+    return { success: true }
   } catch (error) {
-    console.error('Error sending email:', error)
-    return false
+    const errorMsg = `Error sending email: ${error.message || error}`
+    console.error(errorMsg)
+    return { success: false, error: errorMsg }
   }
 }
 
@@ -190,7 +193,10 @@ Deno.serve(async (req) => {
     // Validation
     if (!data.rfpId || !data.salesRepCode || !data.client || !data.mission || !data.assignedTo) {
       return new Response(
-        JSON.stringify({ error: 'Missing required fields' }),
+        JSON.stringify({ 
+          error: 'Missing required fields',
+          details: 'rfpId, salesRepCode, client, mission, and assignedTo are required'
+        }),
         { 
           status: 400, 
           headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
@@ -202,7 +208,10 @@ Deno.serve(async (req) => {
     const salesRepEmail = await getSalesRepEmail(data.assignedTo)
     if (!salesRepEmail) {
       return new Response(
-        JSON.stringify({ error: 'Sales rep email not found' }),
+        JSON.stringify({ 
+          error: 'Sales rep email not found',
+          details: `No email found for sales rep with ID: ${data.assignedTo}`
+        }),
         { 
           status: 400, 
           headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
@@ -219,11 +228,14 @@ Deno.serve(async (req) => {
     const text = generateEmailText(data, platformUrl)
 
     // Envoi de l'email
-    const emailSent = await sendEmail(salesRepEmail, subject, html, text)
+    const emailResult = await sendEmail(salesRepEmail, subject, html, text)
     
-    if (!emailSent) {
+    if (!emailResult.success) {
       return new Response(
-        JSON.stringify({ error: 'Failed to send email' }),
+        JSON.stringify({ 
+          error: 'Failed to send email',
+          details: emailResult.error
+        }),
         { 
           status: 500, 
           headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
@@ -245,7 +257,10 @@ Deno.serve(async (req) => {
   } catch (error) {
     console.error('Function error:', error)
     return new Response(
-      JSON.stringify({ error: 'Internal server error' }),
+      JSON.stringify({ 
+        error: 'Internal server error',
+        details: error.message || 'Unknown error occurred'
+      }),
       { 
         status: 500, 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
