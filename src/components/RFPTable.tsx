@@ -400,13 +400,6 @@ export function RFPTable({
             </div>
           </div>
           
-          {/* Deuxième ligne : Statistiques */}
-          <div className="flex items-center text-sm text-gray-600 dark:text-gray-400">
-              <span>
-                {sortedRfps.length} AO{sortedRfps.length > 1 ? 's' : ''} 
-                {filteredRfps.length !== rfps.length && ` (sur ${rfps.length} total)`}
-              </span>
-          </div>
         </div>
       </div>
       <div 

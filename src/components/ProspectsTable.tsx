@@ -356,13 +356,6 @@ export function ProspectsTable({
             </div>
           </div>
           
-          {/* Deuxième ligne : Statistiques */}
-          <div className="flex items-center text-sm text-gray-600 dark:text-gray-400">
-              <span>
-                {sortedProspects.length} prospect{sortedProspects.length > 1 ? 's' : ''} 
-                {filteredProspects.length !== prospects.length && ` (sur ${prospects.length} total)`}
-              </span>
-          </div>
         </div>
       </div>
       
