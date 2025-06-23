@@ -291,13 +291,21 @@ function App() {
           if (emailSent) {
             console.log('Email notification sent successfully');
           } else {
-            console.log('Email notification was not sent (likely due to configuration)');
+            console.log('Email notification was not sent (domain verification or configuration issue)');
+            // Show a non-blocking warning to the user
+            setTimeout(() => {
+              alert('AO créé avec succès ! Note: La notification email n\'a pas pu être envoyée (problème de configuration du domaine).');
+            }, 100);
           }
         } else {
           console.warn('Could not send email: sales rep code not found');
         }
       } catch (emailError) {
         console.warn('Email notification failed (non-blocking):', emailError);
+        // Show a non-blocking warning to the user
+        setTimeout(() => {
+          alert('AO créé avec succès ! Note: La notification email n\'a pas pu être envoyée.');
+        }, 100);
         // L'erreur d'email ne doit pas empêcher la création de l'AO
       }
       

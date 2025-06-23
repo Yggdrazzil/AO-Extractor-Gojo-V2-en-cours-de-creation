@@ -33,11 +33,14 @@ export async function sendRFPNotification(data: RFPNotificationData): Promise<bo
         console.error('Error context:', error.context);
       }
       
+      // Don't throw error for email failures, just log and return false
+      console.warn('Email notification failed, but continuing with RFP creation');
       return false;
     }
 
     if (!result?.success) {
       console.error('Email function returned error:', result);
+      console.warn('Email notification failed, but continuing with RFP creation');
       return false;
     }
 
@@ -49,6 +52,7 @@ export async function sendRFPNotification(data: RFPNotificationData): Promise<bo
     return true;
   } catch (error) {
     console.error('Failed to send RFP notification:', error);
+    console.warn('Email notification failed, but continuing with RFP creation');
     return false;
   }
 }

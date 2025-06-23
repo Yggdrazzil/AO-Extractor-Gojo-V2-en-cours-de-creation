@@ -254,6 +254,9 @@ async function sendEmail(to: string, subject: string, html: string, text: string
   try {
     console.log(`Sending email to: ${to}`)
     
+    // Use a verified domain or fallback to resend's default domain
+    const fromEmail = 'onboarding@resend.dev' // Resend's verified domain for testing
+    
     const response = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
@@ -261,11 +264,12 @@ async function sendEmail(to: string, subject: string, html: string, text: string
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: 'HITO Digital <noreply@hito.digital>',
+        from: `HITO Digital <${fromEmail}>`,
         to: [to],
         subject,
         html,
         text,
+        reply_to: 'noreply@resend.dev', // Set a reply-to address
       }),
     })
 
