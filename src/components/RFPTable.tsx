@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo, useCallback, useRef, useEffect } from 'react';
 import type { RFP, SalesRep } from '../types';
 import { Eye, Trash2, ArrowUpDown, ArrowUp, ArrowDown, Check, X, Users } from 'lucide-react';
 import { RFPContentModal } from './RFPContentModal';
 import { LinkedInModal } from './LinkedInModal';
-import { useMemo, useCallback, useRef, useEffect } from 'react';
 import { getLinkedInLinkCounts } from '../services/linkedin';
+import { VirtualizedTable } from './VirtualizedTable';
 
 interface LinkedInUrlCount {
   rfp_id: string;
@@ -89,6 +89,9 @@ export function RFPTable({
   const tableRef = useRef<HTMLDivElement>(null);
   const [isScrolling, setIsScrolling] = useState(false);
   const [urlCounts, setUrlCounts] = useState<Map<string, number>>(new Map());
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(50);
+  const [searchTerm, setSearchTerm] = useState('');
 
   // Charger le nombre d'URLs LinkedIn pour chaque AO
   useEffect(() => {
@@ -165,11 +168,24 @@ export function RFPTable({
 
   const filteredRfps = useMemo(() => {
     let filtered = rfps;
+    
+    // Filtrage par commercial
     if (selectedSalesRep) {
       filtered = rfps.filter(rfp => rfp.assignedTo === selectedSalesRep);
     }
+    
+    // Filtrage par recherche textuelle
+    if (searchTerm.trim()) {
+      const searchLower = searchTerm.toLowerCase();
+      filtered = filtered.filter(rfp => 
+        rfp.client.toLowerCase().includes(searchLower) ||
+        rfp.mission.toLowerCase().includes(searchLower) ||
+        rfp.location.toLowerCase().includes(searchLower)
+      );
+    }
+    
     return filtered;
-  }, [rfps, selectedSalesRep]);
+  }, [rfps, selectedSalesRep, searchTerm]);
 
   const handleSort = (field: SortField) => {
     setSort(prev => ({
@@ -191,7 +207,7 @@ export function RFPTable({
     return <ArrowUpDown className="w-4 h-4 opacity-50" />;
   };
 
-  const sortedRfps = useMemo(() => {
+  const sortedAndPaginatedRfps = useMemo(() => {
     if (!sort.field || !sort.direction) return filteredRfps;
 
     return [...filteredRfps].sort((a, b) => {
@@ -216,6 +232,20 @@ export function RFPTable({
       }
     });
   }, [filteredRfps, sort]);
+
+  // Pagination
+  const paginatedRfps = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    return sortedAndPaginatedRfps.slice(startIndex, endIndex);
+  }, [sortedAndPaginatedRfps, currentPage, itemsPerPage]);
+
+  const totalPages = Math.ceil(sortedAndPaginatedRfps.length / itemsPerPage);
+
+  // Reset page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedSalesRep, searchTerm, sort]);
 
   const handleEdit = (rfp: RFP, field: EditingField['field']) => {
     let value = '';
@@ -337,7 +367,10 @@ export function RFPTable({
         }}
       />
       <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm">
-        <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-2">
+        <div className="flex flex-col space-y-4">
+          {/* Première ligne : Filtres */}
+          <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-4">
+            <div className="flex items-center space-x-2">
           <label htmlFor="sales-rep-filter" className="text-sm font-medium text-gray-700 dark:text-gray-300">
             Filtrer par commercial :
           </label>
@@ -357,6 +390,76 @@ export function RFPTable({
               </option>
             ))}
           </select>
+            </div>
+            
+            <div className="flex items-center space-x-2 flex-1">
+              <label htmlFor="search-filter" className="text-sm font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">
+                Rechercher :
+              </label>
+              <input
+                id="search-filter"
+                type="text"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder="Client, mission, localisation..."
+                className="flex-1 px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+              {searchTerm && (
+                <button
+                  onClick={() => setSearchTerm('')}
+                  className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                  title="Effacer la recherche"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              )}
+            </div>
+          </div>
+          
+          {/* Deuxième ligne : Statistiques et pagination */}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-2 sm:space-y-0">
+            <div className="flex items-center space-x-4 text-sm text-gray-600 dark:text-gray-400">
+              <span>
+                {sortedAndPaginatedRfps.length} AO{sortedAndPaginatedRfps.length > 1 ? 's' : ''} 
+                {filteredRfps.length !== rfps.length && ` (sur ${rfps.length} total)`}
+              </span>
+              <select
+                value={itemsPerPage}
+                onChange={(e) => {
+                  setItemsPerPage(Number(e.target.value));
+                  setCurrentPage(1);
+                }}
+                className="px-2 py-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded text-gray-900 dark:text-gray-100"
+              >
+                <option value={25}>25 par page</option>
+                <option value={50}>50 par page</option>
+                <option value={100}>100 par page</option>
+                <option value={200}>200 par page</option>
+              </select>
+            </div>
+            
+            {totalPages > 1 && (
+              <div className="flex items-center space-x-2">
+                <button
+                  onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                  disabled={currentPage === 1}
+                  className="px-3 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-200 dark:hover:bg-gray-600"
+                >
+                  Précédent
+                </button>
+                <span className="text-sm text-gray-600 dark:text-gray-400">
+                  Page {currentPage} sur {totalPages}
+                </span>
+                <button
+                  onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                  disabled={currentPage === totalPages}
+                  className="px-3 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-200 dark:hover:bg-gray-600"
+                >
+                  Suivant
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
       <div 
@@ -431,7 +534,7 @@ export function RFPTable({
             </tr>
           </thead>
           <tbody>
-            {sortedRfps.map((rfp) => (
+            {paginatedRfps.map((rfp) => (
               <tr 
                 key={rfp.id} 
                 className={`border-t border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 group ${
