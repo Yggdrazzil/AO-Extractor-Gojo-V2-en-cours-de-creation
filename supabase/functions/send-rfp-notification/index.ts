@@ -34,6 +34,7 @@ function generateEmailHTML(data: RFPNotificationData, salesRepName: string, plat
           margin: 0; 
           padding: 20px; 
           background-color: #f8fafc; 
+          font-size: 16px;
         }
         .container { 
           max-width: 600px; 
@@ -46,25 +47,32 @@ function generateEmailHTML(data: RFPNotificationData, salesRepName: string, plat
         .header { 
           background: linear-gradient(135deg, #1651EE 0%, #4F46E5 100%); 
           color: white; 
-          padding: 32px 24px; 
+          padding: 40px 24px; 
           text-align: center; 
         }
         .header h1 { 
           margin: 0; 
-          font-size: 24px; 
+          font-size: 28px; 
           font-weight: 600; 
         }
         .header p { 
-          margin: 8px 0 0 0; 
+          margin: 12px 0 0 0; 
           opacity: 0.9; 
-          font-size: 16px; 
+          font-size: 18px; 
         }
         .content { 
           padding: 32px 24px; 
         }
         .greeting { 
-          font-size: 18px; 
+          font-size: 16px; 
           margin-bottom: 24px; 
+          font-weight: 400;
+        }
+        .intro-text {
+          font-size: 16px;
+          margin-bottom: 24px;
+          color: #4a5568;
+          font-weight: 400;
         }
         .mission-card { 
           background: #f1f5f9; 
@@ -76,13 +84,14 @@ function generateEmailHTML(data: RFPNotificationData, salesRepName: string, plat
         .mission-title { 
           font-weight: 600; 
           color: #1e293b; 
-          font-size: 18px; 
+          font-size: 20px; 
           margin-bottom: 8px; 
         }
         .client-name { 
           color: #64748b; 
           font-size: 16px; 
-          font-weight: 500; 
+          font-weight: 400; 
+          margin-bottom: 4px;
         }
         .cta-section { 
           text-align: center; 
@@ -112,32 +121,35 @@ function generateEmailHTML(data: RFPNotificationData, salesRepName: string, plat
         .instructions-title { 
           font-weight: 600; 
           color: #92400e; 
+          font-size: 16px;
           margin-bottom: 8px; 
         }
         .instructions-text { 
           color: #92400e; 
-          font-size: 14px; 
+          font-size: 16px; 
           margin: 0; 
+          font-weight: 400;
+        }
+        .reminder-text {
+          font-size: 16px;
+          color: #64748b;
+          margin-top: 24px;
+          font-weight: 400;
         }
         .footer { 
           text-align: center; 
           color: #64748b; 
-          font-size: 12px; 
+          font-size: 14px; 
           padding: 24px; 
           border-top: 1px solid #e2e8f0; 
           background: #f8fafc; 
-        }
-        .logo { 
-          font-size: 20px; 
-          font-weight: bold; 
-          margin-bottom: 8px; 
+          font-weight: 400;
         }
       </style>
     </head>
     <body>
       <div class="container">
         <div class="header">
-          <div class="logo">HITO Digital</div>
           <h1>Nouvel AO assigné</h1>
           <p>Un appel d'offres vous attend</p>
         </div>
@@ -147,12 +159,12 @@ function generateEmailHTML(data: RFPNotificationData, salesRepName: string, plat
             Bonjour <strong>${salesRepName}</strong>,
           </div>
           
-          <p>Un nouvel appel d'offres vient d'être analysé et vous a été assigné automatiquement :</p>
+          <p class="intro-text">Un nouvel appel d'offres vient d'être analysé et vous a été assigné automatiquement :</p>
           
           <div class="mission-card">
             <div class="mission-title">${data.mission}</div>
-            <div class="client-name">Client: ${data.client}</div>
-            <div class="client-name">Localisation: ${data.location || 'Non spécifiée'}</div>
+            <div class="client-name">Client : ${data.client}</div>
+            <div class="client-name">Localisation : ${data.location || 'Non spécifiée'}</div>
           </div>
           
           <div class="instructions">
@@ -168,14 +180,14 @@ function generateEmailHTML(data: RFPNotificationData, salesRepName: string, plat
             </a>
           </div>
           
-          <p style="font-size: 14px; color: #64748b; margin-top: 24px;">
+          <p class="reminder-text">
             <strong>Rappel :</strong> Pensez à marquer l'AO comme "lu" une fois consulté pour optimiser le suivi.
           </p>
         </div>
         
         <div class="footer">
           <div>Email automatique • Ne pas répondre</div>
-          <div style="margin-top: 8px;">HITO Digital - Plateforme de gestion des AO</div>
+          <div style="margin-top: 8px;">Plateforme de gestion des AO</div>
         </div>
       </div>
     </body>
@@ -188,7 +200,7 @@ function generateEmailHTML(data: RFPNotificationData, salesRepName: string, plat
  */
 function generateEmailText(data: RFPNotificationData, salesRepName: string, platformUrl: string): string {
   return `
-HITO Digital - Nouvel AO assigné
+Nouvel AO assigné
 
 Bonjour ${salesRepName},
 
@@ -208,7 +220,7 @@ Rappel: Pensez à marquer l'AO comme "lu" une fois consulté.
 
 ---
 Email automatique - Ne pas répondre
-HITO Digital - Plateforme de gestion des AO
+Plateforme de gestion des AO
   `.trim()
 }
 
