@@ -239,54 +239,72 @@ async function getSalesRepEmail(assignedTo: string): Promise<string | null> {
 }
 
 /**
- * Envoie l'email via Resend
+ * Envoie l'email via SendGrid
  */
-async function sendEmail(to: string, subject: string, html: string, text: string): Promise<{ success: boolean; error?: string; messageId?: string }> {
-  // Utiliser la clé API fournie directement
-  const resendApiKey = 're_LtozHyN9_3ja5xMz6PFTWzf98ejsNbSaw'
+async function sendEmailWithSendGrid(to: string, subject: string, html: string, text: string): Promise<{ success: boolean; error?: string; messageId?: string }> {
+  const sendGridApiKey = Deno.env.get('SENDGRID_API_KEY')
   
-  if (!resendApiKey) {
-    const errorMsg = 'RESEND_API_KEY not configured'
+  if (!sendGridApiKey) {
+    const errorMsg = 'SENDGRID_API_KEY not configured'
     console.error(errorMsg)
     return { success: false, error: errorMsg }
   }
 
   try {
-    console.log(`Sending email to: ${to}`)
+    console.log(`Sending email via SendGrid to: ${to}`)
     
-    // Use a verified domain or fallback to resend's default domain
-    const fromEmail = 'onboarding@resend.dev' // Resend's verified domain for testing
+    // Utiliser l'adresse vérifiée dans SendGrid
+    const fromEmail = 'notifications@hito.digital'
     
-    const response = await fetch('https://api.resend.com/emails', {
+    const response = await fetch('https://api.sendgrid.com/v3/mail/send', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${resendApiKey}`,
+        'Authorization': `Bearer ${sendGridApiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: `HITO Digital <${fromEmail}>`,
-        to: [to],
-        subject,
-        html,
-        text,
-        reply_to: 'noreply@resend.dev', // Set a reply-to address
+        personalizations: [
+          {
+            to: [{ email: to }],
+            subject: subject
+          }
+        ],
+        from: {
+          email: fromEmail,
+          name: 'HITO Digital'
+        },
+        reply_to: {
+          email: 'noreply@hito.digital',
+          name: 'HITO Digital - Ne pas répondre'
+        },
+        content: [
+          {
+            type: 'text/plain',
+            value: text
+          },
+          {
+            type: 'text/html',
+            value: html
+          }
+        ]
       }),
     })
 
     const responseText = await response.text()
-    console.log(`Resend API response (${response.status}):`, responseText)
+    console.log(`SendGrid API response (${response.status}):`, responseText)
 
     if (!response.ok) {
-      const errorMsg = `Resend API error: ${response.status} - ${responseText}`
+      const errorMsg = `SendGrid API error: ${response.status} - ${responseText}`
       console.error(errorMsg)
       return { success: false, error: errorMsg }
     }
 
-    const result = JSON.parse(responseText)
-    console.log('Email sent successfully:', result.id)
-    return { success: true, messageId: result.id }
+    // SendGrid retourne un 202 avec un X-Message-Id header en cas de succès
+    const messageId = response.headers.get('X-Message-Id') || 'unknown'
+    console.log('Email sent successfully via SendGrid, Message ID:', messageId)
+    return { success: true, messageId }
   } catch (error) {
-    const errorMsg = `Email sending failed: ${error.message || 'Unknown error'}`
+    const errorMsg = `SendGrid email sending failed: ${error.message || 'Unknown error'}`
     console.error(errorMsg, error)
     return { success: false, error: errorMsg }
   }
@@ -358,7 +376,7 @@ Deno.serve(async (req) => {
       )
     }
 
-    // URL de la plateforme (vous pouvez la configurer via une variable d'environnement)
+    // URL de la plateforme
     const platformUrl = Deno.env.get('PLATFORM_URL') || 'https://onuznsfzlkguvfdeilff.supabase.co'
     
     // Génération du contenu email
@@ -368,11 +386,11 @@ Deno.serve(async (req) => {
 
     console.log(`Preparing to send email with subject: "${subject}"`)
 
-    // Envoi de l'email
-    const emailResult = await sendEmail(salesRepEmail, subject, html, text)
+    // Envoi de l'email via SendGrid
+    const emailResult = await sendEmailWithSendGrid(salesRepEmail, subject, html, text)
     
     if (!emailResult.success) {
-      console.error('Failed to send email:', emailResult.error)
+      console.error('Failed to send email via SendGrid:', emailResult.error)
       return new Response(
         JSON.stringify({ 
           error: 'Failed to send email',
@@ -385,14 +403,15 @@ Deno.serve(async (req) => {
       )
     }
 
-    console.log(`Email notification sent successfully to ${salesRepEmail}`)
+    console.log(`Email notification sent successfully to ${salesRepEmail} via SendGrid`)
     
     return new Response(
       JSON.stringify({ 
         success: true, 
-        message: 'Email sent successfully',
+        message: 'Email sent successfully via SendGrid',
         recipient: salesRepEmail,
-        messageId: emailResult.messageId
+        messageId: emailResult.messageId,
+        provider: 'SendGrid'
       }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
