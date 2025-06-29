@@ -280,33 +280,26 @@ function App() {
       try {
         const salesRepCode = await getSalesRepCode(assignedTo);
         if (salesRepCode) {
-          const emailSent = await sendRFPNotification({
+          // Programmer l'envoi avec un délai de 2 minutes
+          const emailScheduled = await sendRFPNotification({
             rfpId: newRFP.id,
             client: newRFP.client,
             mission: newRFP.mission,
+            location: newRFP.location,
             salesRepCode,
             assignedTo
-          });
+          }, 2); // 2 minutes de délai
           
-          if (emailSent) {
-            console.log('Email notification sent successfully');
+          if (emailScheduled) {
+            console.log('Email notification scheduled successfully (will be sent in 2 minutes)');
           } else {
-            console.log('Email notification was not sent (domain verification or configuration issue)');
-            // Show a non-blocking warning to the user
-            setTimeout(() => {
-              alert('AO créé avec succès ! Note: La notification email n\'a pas pu être envoyée (problème de configuration du domaine).');
-            }, 100);
+            console.log('Email notification could not be scheduled');
           }
         } else {
           console.warn('Could not send email: sales rep code not found');
         }
       } catch (emailError) {
-        console.warn('Email notification failed (non-blocking):', emailError);
-        // Show a non-blocking warning to the user
-        setTimeout(() => {
-          alert('AO créé avec succès ! Note: La notification email n\'a pas pu être envoyée.');
-        }, 100);
-        // L'erreur d'email ne doit pas empêcher la création de l'AO
+        console.warn('Email notification scheduling failed (non-blocking):', emailError);
       }
       
       setRfps((prev) => [newRFP, ...prev]);

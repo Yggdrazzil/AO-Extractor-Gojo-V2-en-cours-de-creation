@@ -4,6 +4,7 @@ interface RFPNotificationData {
   rfpId: string
   client: string
   mission: string
+  location?: string
   salesRepCode: string
   assignedTo: string
 }
@@ -17,7 +18,7 @@ const corsHeaders = {
 /**
  * Génère le contenu HTML de l'email
  */
-function generateEmailHTML(data: RFPNotificationData, platformUrl: string): string {
+function generateEmailHTML(data: RFPNotificationData, salesRepName: string, platformUrl: string): string {
   return `
     <!DOCTYPE html>
     <html lang="fr">
@@ -136,25 +137,26 @@ function generateEmailHTML(data: RFPNotificationData, platformUrl: string): stri
     <body>
       <div class="container">
         <div class="header">
-          <div class="logo">🚀 HITO Digital</div>
-          <h1>📋 Nouvel AO assigné</h1>
+          <div class="logo">HITO Digital</div>
+          <h1>Nouvel AO assigné</h1>
           <p>Un appel d'offres vous attend</p>
         </div>
         
         <div class="content">
           <div class="greeting">
-            Bonjour <strong>${data.salesRepCode}</strong>,
+            Bonjour <strong>${salesRepName}</strong>,
           </div>
           
           <p>Un nouvel appel d'offres vient d'être analysé et vous a été assigné automatiquement :</p>
           
           <div class="mission-card">
             <div class="mission-title">${data.mission}</div>
-            <div class="client-name">📍 ${data.client}</div>
+            <div class="client-name">Client: ${data.client}</div>
+            <div class="client-name">Localisation: ${data.location || 'Non spécifiée'}</div>
           </div>
           
           <div class="instructions">
-            <div class="instructions-title">⚡ Action requise</div>
+            <div class="instructions-title">Action requise</div>
             <p class="instructions-text">
               Connectez-vous à la plateforme pour consulter tous les détails de cet AO et commencer le traitement.
             </p>
@@ -162,7 +164,7 @@ function generateEmailHTML(data: RFPNotificationData, platformUrl: string): stri
           
           <div class="cta-section">
             <a href="${platformUrl}" class="cta-button">
-              🔍 Consulter l'AO
+              Consulter l'AO
             </a>
           </div>
           
@@ -172,7 +174,7 @@ function generateEmailHTML(data: RFPNotificationData, platformUrl: string): stri
         </div>
         
         <div class="footer">
-          <div>📧 Email automatique • Ne pas répondre</div>
+          <div>Email automatique • Ne pas répondre</div>
           <div style="margin-top: 8px;">HITO Digital - Plateforme de gestion des AO</div>
         </div>
       </div>
@@ -184,35 +186,36 @@ function generateEmailHTML(data: RFPNotificationData, platformUrl: string): stri
 /**
  * Génère le contenu texte de l'email
  */
-function generateEmailText(data: RFPNotificationData, platformUrl: string): string {
+function generateEmailText(data: RFPNotificationData, salesRepName: string, platformUrl: string): string {
   return `
-🚀 HITO Digital - Nouvel AO assigné
+HITO Digital - Nouvel AO assigné
 
-Bonjour ${data.salesRepCode},
+Bonjour ${salesRepName},
 
 Un nouvel appel d'offres vient d'être analysé et vous a été assigné :
 
-📋 Mission: ${data.mission}
-📍 Client: ${data.client}
+Mission: ${data.mission}
+Client: ${data.client}
+Localisation: ${data.location || 'Non spécifiée'}
 
-⚡ Action requise:
+Action requise:
 Connectez-vous à la plateforme pour consulter tous les détails et commencer le traitement.
 
-🔗 Lien vers la plateforme:
+Lien vers la plateforme:
 ${platformUrl}
 
 Rappel: Pensez à marquer l'AO comme "lu" une fois consulté.
 
 ---
-📧 Email automatique - Ne pas répondre
+Email automatique - Ne pas répondre
 HITO Digital - Plateforme de gestion des AO
   `.trim()
 }
 
 /**
- * Récupère l'email du commercial depuis la base de données
+ * Récupère les informations du commercial depuis la base de données
  */
-async function getSalesRepEmail(assignedTo: string): Promise<string | null> {
+async function getSalesRepInfo(assignedTo: string): Promise<{email: string, name: string} | null> {
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
@@ -226,14 +229,14 @@ async function getSalesRepEmail(assignedTo: string): Promise<string | null> {
       .single()
 
     if (error || !data) {
-      console.error('Error fetching sales rep email:', error)
+      console.error('Error fetching sales rep info:', error)
       return null
     }
 
     console.log(`Found sales rep: ${data.name} (${data.email})`)
-    return data.email
+    return { email: data.email, name: data.name }
   } catch (error) {
-    console.error('Failed to get sales rep email:', error)
+    console.error('Failed to get sales rep info:', error)
     return null
   }
 }
@@ -357,16 +360,16 @@ Deno.serve(async (req) => {
       )
     }
 
-    // Récupération de l'email du commercial
-    console.log(`Fetching email for sales rep ID: ${data.assignedTo}`)
-    const salesRepEmail = await getSalesRepEmail(data.assignedTo)
+    // Récupération des informations du commercial
+    console.log(`Fetching info for sales rep ID: ${data.assignedTo}`)
+    const salesRepInfo = await getSalesRepInfo(data.assignedTo)
     
-    if (!salesRepEmail) {
-      const errorMsg = `No email found for sales rep with ID: ${data.assignedTo}`
+    if (!salesRepInfo) {
+      const errorMsg = `No info found for sales rep with ID: ${data.assignedTo}`
       console.error(errorMsg)
       return new Response(
         JSON.stringify({ 
-          error: 'Sales rep email not found',
+          error: 'Sales rep info not found',
           details: errorMsg
         }),
         { 
@@ -376,18 +379,21 @@ Deno.serve(async (req) => {
       )
     }
 
+    // Extraire le prénom uniquement
+    const firstName = salesRepInfo.name.split(' ')[0]
+    
     // URL de la plateforme
     const platformUrl = Deno.env.get('PLATFORM_URL') || 'https://onuznsfzlkguvfdeilff.supabase.co'
     
     // Génération du contenu email
-    const subject = `📋 Nouvel AO assigné : ${data.mission}`
-    const html = generateEmailHTML(data, platformUrl)
-    const text = generateEmailText(data, platformUrl)
+    const subject = `Nouvel AO assigné : ${data.mission}`
+    const html = generateEmailHTML(data, firstName, platformUrl)
+    const text = generateEmailText(data, firstName, platformUrl)
 
     console.log(`Preparing to send email with subject: "${subject}"`)
 
     // Envoi de l'email via SendGrid
-    const emailResult = await sendEmailWithSendGrid(salesRepEmail, subject, html, text)
+    const emailResult = await sendEmailWithSendGrid(salesRepInfo.email, subject, html, text)
     
     if (!emailResult.success) {
       console.error('Failed to send email via SendGrid:', emailResult.error)
@@ -403,13 +409,13 @@ Deno.serve(async (req) => {
       )
     }
 
-    console.log(`Email notification sent successfully to ${salesRepEmail} via SendGrid`)
+    console.log(`Email notification sent successfully to ${salesRepInfo.email} via SendGrid`)
     
     return new Response(
       JSON.stringify({ 
         success: true, 
         message: 'Email sent successfully via SendGrid',
-        recipient: salesRepEmail,
+        recipient: salesRepInfo.email,
         messageId: emailResult.messageId,
         provider: 'SendGrid'
       }),
