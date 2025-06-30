@@ -16,7 +16,7 @@ const corsHeaders = {
 }
 
 /**
- * Génère le contenu HTML de l'email
+ * Génère le contenu HTML de l'email - Style Flat Design Apple
  */
 function generateEmailHTML(data: RFPNotificationData, salesRepName: string, platformUrl: string): string {
   return `
@@ -27,131 +27,206 @@ function generateEmailHTML(data: RFPNotificationData, salesRepName: string, plat
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <title>Nouvel AO assigné</title>
       <style>
+        * {
+          margin: 0;
+          padding: 0;
+          box-sizing: border-box;
+        }
+        
         body { 
-          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
-          line-height: 1.6; 
-          color: #333; 
+          font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', Arial, sans-serif; 
+          line-height: 1.5; 
+          color: #1d1d1f; 
           margin: 0; 
-          padding: 20px; 
-          background-color: #f8fafc; 
-          font-size: 16px;
+          padding: 32px 16px; 
+          background-color: #f5f5f7; 
+          font-size: 17px;
+          -webkit-font-smoothing: antialiased;
+          -moz-osx-font-smoothing: grayscale;
         }
-        .container { 
-          max-width: 700px; 
+        
+        .email-container { 
+          max-width: 600px; 
           margin: 0 auto; 
-          background: white; 
-          border-radius: 12px; 
-          box-shadow: 0 4px 6px rgba(0,0,0,0.05); 
+          background: #ffffff; 
+          border-radius: 18px; 
           overflow: hidden; 
+          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
         }
+        
         .header { 
-          background: linear-gradient(135deg, #1651EE 0%, #4F46E5 100%); 
-          color: white; 
-          padding: 40px 32px; 
+          background: #1d1d1f; 
+          color: #f5f5f7; 
+          padding: 48px 32px; 
           text-align: center; 
         }
+        
         .header h1 { 
-          margin: 0; 
-          font-size: 28px; 
+          font-size: 32px; 
           font-weight: 600; 
+          letter-spacing: -0.5px;
+          margin-bottom: 8px;
         }
+        
         .header p { 
-          margin: 12px 0 0 0; 
-          opacity: 0.9; 
-          font-size: 18px; 
+          font-size: 19px; 
+          opacity: 0.8; 
+          font-weight: 400;
         }
+        
         .content { 
-          padding: 40px 32px; 
+          padding: 48px 32px; 
         }
+        
         .greeting { 
-          font-size: 16px; 
-          margin-bottom: 24px; 
-          font-weight: 400;
+          font-size: 17px; 
+          margin-bottom: 32px; 
+          color: #1d1d1f;
         }
+        
         .intro-text {
-          font-size: 16px;
-          margin-bottom: 24px;
-          color: #4a5568;
-          font-weight: 400;
+          font-size: 17px;
+          margin-bottom: 32px;
+          color: #424245;
+          line-height: 1.6;
         }
+        
         .mission-card { 
-          background: #f1f5f9; 
-          border-left: 4px solid #1651EE; 
-          padding: 24px; 
-          border-radius: 8px; 
-          margin: 24px 0; 
-        }
-        .mission-title { 
-          font-weight: 600; 
-          color: #1e293b; 
-          font-size: 20px; 
-          margin-bottom: 8px; 
-        }
-        .client-name { 
-          color: #64748b; 
-          font-size: 16px; 
-          font-weight: 400; 
-          margin-bottom: 4px;
-        }
-        .cta-section { 
-          text-align: center; 
+          background: #f5f5f7; 
+          padding: 32px; 
+          border-radius: 16px; 
           margin: 32px 0; 
         }
+        
+        .mission-title { 
+          font-weight: 600; 
+          color: #1d1d1f; 
+          font-size: 22px; 
+          margin-bottom: 16px; 
+          line-height: 1.3;
+        }
+        
+        .mission-details { 
+          color: #6e6e73; 
+          font-size: 17px; 
+          line-height: 1.6;
+        }
+        
+        .mission-details div {
+          margin-bottom: 8px;
+        }
+        
+        .mission-details div:last-child {
+          margin-bottom: 0;
+        }
+        
+        .action-section { 
+          background: #f5f5f7; 
+          border-radius: 16px; 
+          padding: 32px; 
+          margin: 32px 0; 
+          text-align: center;
+        }
+        
+        .action-title { 
+          font-weight: 600; 
+          color: #1d1d1f; 
+          font-size: 19px;
+          margin-bottom: 16px; 
+        }
+        
+        .action-text { 
+          color: #6e6e73; 
+          font-size: 17px; 
+          margin-bottom: 32px;
+          line-height: 1.6;
+        }
+        
         .cta-button { 
           display: inline-block; 
-          background: #1651EE; 
-          color: white; 
-          padding: 18px 40px; 
+          background: #007aff !important; 
+          color: #ffffff !important; 
+          padding: 16px 32px; 
           text-decoration: none; 
-          border-radius: 8px; 
+          border-radius: 12px; 
           font-weight: 600; 
-          font-size: 16px; 
-          transition: background-color 0.2s; 
+          font-size: 17px; 
+          letter-spacing: -0.2px;
+          transition: all 0.2s ease;
           border: none;
           cursor: pointer;
+          box-shadow: 0 2px 8px rgba(0, 122, 255, 0.3);
         }
+        
         .cta-button:hover { 
-          background: #1e40af; 
-          color: white;
+          background: #0056cc !important;
+          color: #ffffff !important;
+          transform: translateY(-1px);
+          box-shadow: 0 4px 12px rgba(0, 122, 255, 0.4);
         }
-        .instructions { 
-          background: #f1f5f9; 
-          border: 1px solid #cbd5e1; 
-          border-radius: 8px; 
-          padding: 20px; 
-          margin: 24px 0; 
+        
+        .reminder-section {
+          margin-top: 32px;
+          padding: 24px;
+          background: #f5f5f7;
+          border-radius: 12px;
         }
-        .instructions-title { 
-          font-weight: 600; 
-          color: #334155; 
-          font-size: 16px;
-          margin-bottom: 8px; 
-        }
-        .instructions-text { 
-          color: #475569; 
-          font-size: 16px; 
-          margin: 0; 
-          font-weight: 400;
-        }
+        
         .reminder-text {
-          font-size: 16px;
-          color: #64748b;
-          margin-top: 24px;
-          font-weight: 400;
+          font-size: 15px;
+          color: #6e6e73;
+          line-height: 1.6;
         }
+        
         .footer { 
           text-align: center; 
-          color: #64748b; 
-          font-size: 14px; 
+          color: #86868b; 
+          font-size: 13px; 
           padding: 32px; 
-          border-top: 1px solid #e2e8f0; 
-          background: #f8fafc; 
-          font-weight: 400;
+          background: #f5f5f7; 
+          line-height: 1.6;
+        }
+        
+        .footer div {
+          margin-bottom: 4px;
+        }
+        
+        .footer div:last-child {
+          margin-bottom: 0;
+        }
+        
+        /* Responsive */
+        @media only screen and (max-width: 600px) {
+          body {
+            padding: 16px 8px;
+          }
+          
+          .header {
+            padding: 32px 24px;
+          }
+          
+          .header h1 {
+            font-size: 28px;
+          }
+          
+          .content {
+            padding: 32px 24px;
+          }
+          
+          .mission-card,
+          .action-section {
+            padding: 24px;
+          }
+          
+          .cta-button {
+            padding: 14px 28px;
+            font-size: 16px;
+          }
         }
       </style>
     </head>
     <body>
-      <div class="container">
+      <div class="email-container">
         <div class="header">
           <h1>Nouvel AO assigné</h1>
           <p>Un appel d'offres vous attend</p>
@@ -166,31 +241,32 @@ function generateEmailHTML(data: RFPNotificationData, salesRepName: string, plat
           
           <div class="mission-card">
             <div class="mission-title">${data.mission}</div>
-            <div class="client-name">Client : ${data.client}</div>
-            <div class="client-name">Localisation : ${data.location || 'Non spécifiée'}</div>
+            <div class="mission-details">
+              <div><strong>Client :</strong> ${data.client}</div>
+              <div><strong>Localisation :</strong> ${data.location || 'Non spécifiée'}</div>
+            </div>
           </div>
           
-          <div class="instructions">
-            <div class="instructions-title">Action requise</div>
-            <p class="instructions-text">
+          <div class="action-section">
+            <div class="action-title">Action requise</div>
+            <p class="action-text">
               Connectez-vous à la plateforme pour consulter tous les détails de cet AO et commencer le traitement.
             </p>
-          </div>
-          
-          <div class="cta-section">
             <a href="${platformUrl}" class="cta-button">
               Consulter l'AO
             </a>
           </div>
           
-          <p class="reminder-text">
-            <strong>Rappel :</strong> Pensez à marquer l'AO comme "lu" une fois consulté pour optimiser le suivi.
-          </p>
+          <div class="reminder-section">
+            <p class="reminder-text">
+              <strong>Rappel :</strong> Pensez à marquer l'AO comme "lu" une fois consulté pour optimiser le suivi.
+            </p>
+          </div>
         </div>
         
         <div class="footer">
           <div>Email automatique • Ne pas répondre</div>
-          <div style="margin-top: 8px;">Plateforme de gestion des AO</div>
+          <div>Plateforme de gestion des AO</div>
         </div>
       </div>
     </body>
@@ -400,7 +476,7 @@ Deno.serve(async (req) => {
     // URL de la plateforme
     const platformUrl = Deno.env.get('PLATFORM_URL') || 'https://onuznsfzlkguvfdeilff.supabase.co'
     
-    // Génération du contenu email
+    // Génération du contenu email avec le nom du client dans l'objet
     const subject = `Nouvel AO assigné : ${data.mission} - ${data.client}`
     const html = generateEmailHTML(data, firstName, platformUrl)
     const text = generateEmailText(data, firstName, platformUrl)
