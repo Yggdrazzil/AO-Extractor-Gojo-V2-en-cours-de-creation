@@ -286,7 +286,7 @@ function App() {
       try {
         const salesRepCode = await getSalesRepCode(assignedTo);
         if (salesRepCode) {
-          // Programmer l'envoi avec un délai de 2 minutes
+          // Programmer l'envoi avec un délai de 30 secondes
           const emailScheduled = await sendRFPNotification({
             rfpId: newRFP.id,
             client: newRFP.client,
@@ -294,10 +294,10 @@ function App() {
             location: newRFP.location,
             salesRepCode,
             assignedTo
-          }, 2); // 2 minutes de délai
+          }, 0.5); // 30 secondes de délai (0.5 minute)
           
           if (emailScheduled) {
-            console.log('Email notification scheduled successfully (will be sent in 2 minutes)');
+            console.log('Email notification scheduled successfully (will be sent in 30 seconds)');
           } else {
             console.log('Email notification could not be scheduled');
           }
