@@ -12,9 +12,10 @@ interface RFPNotificationData {
 /**
  * Envoie une notification email pour un nouvel AO avec délai
  */
-export async function sendRFPNotification(data: RFPNotificationData, delayMinutes: number = 2): Promise<boolean> {
+export async function sendRFPNotification(data: RFPNotificationData, delayMinutes: number = 0.5): Promise<boolean> {
   try {
-    console.log(`Scheduling RFP notification in ${delayMinutes} minutes:`, {
+    const delaySeconds = Math.round(delayMinutes * 60);
+    console.log(`Scheduling RFP notification in ${delaySeconds} seconds:`, {
       rfpId: data.rfpId,
       client: data.client,
       mission: data.mission,
@@ -26,7 +27,7 @@ export async function sendRFPNotification(data: RFPNotificationData, delayMinute
     // Programmer l'envoi avec un délai
     setTimeout(async () => {
       try {
-        console.log('Sending delayed RFP notification...');
+        console.log(`Sending delayed RFP notification after ${delaySeconds} seconds...`);
         
         // Récupérer les données actualisées de l'AO pour avoir le client correct
         const { data: rfpData, error: rfpError } = await supabase
