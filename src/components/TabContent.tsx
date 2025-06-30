@@ -3,6 +3,7 @@ import { RFPForm } from './RFPForm';
 import { RFPTable } from './RFPTable';
 import { ProspectsForm } from './ProspectsForm';
 import { ProspectsTable } from './ProspectsTable';
+import { DailySummaryTest } from './DailySummaryTest';
 import type { RFP, SalesRep } from '../types';
 import type { Prospect } from '../types';
 
@@ -156,10 +157,9 @@ export function TabContent({
 
     case 'tools':
       return (
-        <PlaceholderTab
-          title="Outils Additionnels"
-          description="Suite d'outils complémentaires pour optimiser votre workflow. Fonctionnalité en cours de développement."
-        />
+        <div className="p-6 space-y-6 h-full overflow-auto">
+          <DailySummaryTest />
+        </div>
       );
 
     default:
