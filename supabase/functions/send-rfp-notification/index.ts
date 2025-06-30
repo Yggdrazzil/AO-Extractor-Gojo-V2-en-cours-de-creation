@@ -37,7 +37,7 @@ function generateEmailHTML(data: RFPNotificationData, salesRepName: string, plat
           font-size: 16px;
         }
         .container { 
-          max-width: 600px; 
+          max-width: 700px; 
           margin: 0 auto; 
           background: white; 
           border-radius: 12px; 
@@ -47,7 +47,7 @@ function generateEmailHTML(data: RFPNotificationData, salesRepName: string, plat
         .header { 
           background: linear-gradient(135deg, #1651EE 0%, #4F46E5 100%); 
           color: white; 
-          padding: 40px 24px; 
+          padding: 40px 32px; 
           text-align: center; 
         }
         .header h1 { 
@@ -61,7 +61,7 @@ function generateEmailHTML(data: RFPNotificationData, salesRepName: string, plat
           font-size: 18px; 
         }
         .content { 
-          padding: 32px 24px; 
+          padding: 40px 32px; 
         }
         .greeting { 
           font-size: 16px; 
@@ -77,7 +77,7 @@ function generateEmailHTML(data: RFPNotificationData, salesRepName: string, plat
         .mission-card { 
           background: #f1f5f9; 
           border-left: 4px solid #1651EE; 
-          padding: 20px; 
+          padding: 24px; 
           border-radius: 8px; 
           margin: 24px 0; 
         }
@@ -101,31 +101,34 @@ function generateEmailHTML(data: RFPNotificationData, salesRepName: string, plat
           display: inline-block; 
           background: #1651EE; 
           color: white; 
-          padding: 16px 32px; 
+          padding: 18px 40px; 
           text-decoration: none; 
           border-radius: 8px; 
           font-weight: 600; 
           font-size: 16px; 
           transition: background-color 0.2s; 
+          border: none;
+          cursor: pointer;
         }
         .cta-button:hover { 
           background: #1e40af; 
+          color: white;
         }
         .instructions { 
-          background: #fef3c7; 
-          border: 1px solid #fbbf24; 
+          background: #f1f5f9; 
+          border: 1px solid #cbd5e1; 
           border-radius: 8px; 
-          padding: 16px; 
+          padding: 20px; 
           margin: 24px 0; 
         }
         .instructions-title { 
           font-weight: 600; 
-          color: #92400e; 
+          color: #334155; 
           font-size: 16px;
           margin-bottom: 8px; 
         }
         .instructions-text { 
-          color: #92400e; 
+          color: #475569; 
           font-size: 16px; 
           margin: 0; 
           font-weight: 400;
@@ -140,7 +143,7 @@ function generateEmailHTML(data: RFPNotificationData, salesRepName: string, plat
           text-align: center; 
           color: #64748b; 
           font-size: 14px; 
-          padding: 24px; 
+          padding: 32px; 
           border-top: 1px solid #e2e8f0; 
           background: #f8fafc; 
           font-weight: 400;
@@ -398,7 +401,7 @@ Deno.serve(async (req) => {
     const platformUrl = Deno.env.get('PLATFORM_URL') || 'https://onuznsfzlkguvfdeilff.supabase.co'
     
     // Génération du contenu email
-    const subject = `Nouvel AO assigné : ${data.mission}`
+    const subject = `Nouvel AO assigné : ${data.mission} - ${data.client}`
     const html = generateEmailHTML(data, firstName, platformUrl)
     const text = generateEmailText(data, firstName, platformUrl)
 
