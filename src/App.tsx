@@ -201,6 +201,12 @@ function App() {
     }
   }, [session, isConnected]);
 
+  const handleLoginSuccess = (session: Session) => {
+    setSession(session);
+    setError(null);
+    loadInitialData(session);
+  };
+
   // Affichage de l'état de chargement initial
   if (isLoading && !session) {
     return (
@@ -621,12 +627,6 @@ function App() {
       </ThemeProvider>
     );
   }
-
-  const handleLoginSuccess = (session: Session) => {
-    setSession(session);
-    setError(null);
-    loadInitialData(session);
-  };
 
   return (
     <ThemeProvider>
