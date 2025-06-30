@@ -112,7 +112,22 @@ Si une info n'est pas trouvée:
 }`;
 
 export async function analyzeRFP(content: string): Promise<Partial<RFP>> {
-  const apiKey = localStorage.getItem('openai-api-key');
+  // Essayer d'abord la clé spécifique à l'utilisateur, puis la clé globale
+  let apiKey = localStorage.getItem('openai-api-key');
+  
+  try {
+    const { supabase } = await import('../lib/supabase');
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session?.user?.email) {
+      const userApiKey = localStorage.getItem(`openai-api-key_${session.user.email}`);
+      if (userApiKey) {
+        apiKey = userApiKey;
+      }
+    }
+  } catch (error) {
+    console.warn('Could not get user session for API key:', error);
+  }
+  
   if (!apiKey) {
     throw new Error('Veuillez configurer votre clé API OpenAI dans les paramètres');
   }
@@ -170,7 +185,22 @@ export async function analyzeRFP(content: string): Promise<Partial<RFP>> {
 }
 
 export async function analyzeProspect(content: string, cvContent?: string): Promise<Partial<Prospect>> {
-  const apiKey = localStorage.getItem('openai-api-key');
+  // Essayer d'abord la clé spécifique à l'utilisateur, puis la clé globale
+  let apiKey = localStorage.getItem('openai-api-key');
+  
+  try {
+    const { supabase } = await import('../lib/supabase');
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session?.user?.email) {
+      const userApiKey = localStorage.getItem(`openai-api-key_${session.user.email}`);
+      if (userApiKey) {
+        apiKey = userApiKey;
+      }
+    }
+  } catch (error) {
+    console.warn('Could not get user session for API key:', error);
+  }
+  
   if (!apiKey) {
     throw new Error('Veuillez configurer votre clé API OpenAI dans les paramètres');
   }

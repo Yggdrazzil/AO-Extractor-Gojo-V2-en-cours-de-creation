@@ -13,7 +13,7 @@ type SettingsModalProps = {
 export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
   if (!isOpen) return null;
 
-  const [apiKey, setApiKey] = useState(() => localStorage.getItem('openai-api-key') || '');
+  const [apiKey, setApiKey] = useState('');
   const [showSuccess, setShowSuccess] = useState(false);
   const { theme, setTheme } = useTheme();
   const [userEmail, setUserEmail] = useState<string | null>(null);
@@ -23,6 +23,12 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
     const getUserInfo = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       setUserEmail(session?.user?.email || null);
+      
+      // Charger la clé API spécifique à l'utilisateur
+      if (session?.user?.email) {
+        const userApiKey = localStorage.getItem(`openai-api-key_${session.user.email}`);
+        setApiKey(userApiKey || '');
+      }
       
       // Vérifier les droits admin
       const adminRights = await checkAdminRights();
@@ -38,7 +44,12 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
   };
 
   const handleUpdateApiKey = () => {
-    localStorage.setItem('openai-api-key', apiKey);
+    if (userEmail) {
+      // Sauvegarder la clé API pour cet utilisateur spécifique
+      localStorage.setItem(`openai-api-key_${userEmail}`, apiKey);
+      // Maintenir aussi la clé globale pour la compatibilité
+      localStorage.setItem('openai-api-key', apiKey);
+    }
     setShowSuccess(true);
     setTimeout(() => {
       setShowSuccess(false);
