@@ -55,7 +55,7 @@ function generateEmailHTML(data: RFPNotificationData, salesRepName: string, plat
         }
         
         .header { 
-          background: #1d1d1f; 
+          background: #1651EE; 
           color: #f5f5f7; 
           padding: 48px 32px; 
           text-align: center; 
@@ -144,7 +144,7 @@ function generateEmailHTML(data: RFPNotificationData, salesRepName: string, plat
         
         .cta-button { 
           display: inline-block; 
-          background: #007aff !important; 
+          background: #1651EE !important; 
           color: #ffffff !important; 
           padding: 16px 32px; 
           text-decoration: none; 
@@ -155,14 +155,14 @@ function generateEmailHTML(data: RFPNotificationData, salesRepName: string, plat
           transition: all 0.2s ease;
           border: none;
           cursor: pointer;
-          box-shadow: 0 2px 8px rgba(0, 122, 255, 0.3);
+          box-shadow: 0 2px 8px rgba(22, 81, 238, 0.3);
         }
         
         .cta-button:hover { 
-          background: #0056cc !important;
+          background: #1240cc !important;
           color: #ffffff !important;
           transform: translateY(-1px);
-          box-shadow: 0 4px 12px rgba(0, 122, 255, 0.4);
+          box-shadow: 0 4px 12px rgba(22, 81, 238, 0.4);
         }
         
         .reminder-section {
@@ -474,7 +474,7 @@ Deno.serve(async (req) => {
     const firstName = salesRepInfo.name.split(' ')[0]
     
     // URL de la plateforme
-    const platformUrl = Deno.env.get('PLATFORM_URL') || 'https://onuznsfzlkguvfdeilff.supabase.co'
+    const platformUrl = Deno.env.get('PLATFORM_URL') || 'https://hito-gojo-platform.netlify.app/'
     
     // Génération du contenu email avec le nom du client dans l'objet
     const subject = `Nouvel AO assigné : ${data.mission} - ${data.client}`
