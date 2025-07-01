@@ -30,6 +30,8 @@ export interface Prospect {
   targetAccount: string;
   availability: string;
   dailyRate: number | null;
+  salaryExpectations: number | null;
+  rateExpectations: number | null;
   residence: string;
   mobility: string;
   phone: string;
