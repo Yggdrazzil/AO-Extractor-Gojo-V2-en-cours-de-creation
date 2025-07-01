@@ -4,6 +4,7 @@ import { RFPTable } from './RFPTable';
 import { ProspectsForm } from './ProspectsForm';
 import { ProspectsTable } from './ProspectsTable';
 import { DailySummaryTest } from './DailySummaryTest';
+import { DailyProspectsSummaryTest } from './DailyProspectsSummaryTest';
 import type { RFP, SalesRep } from '../types';
 import type { Prospect } from '../types';
 
@@ -159,6 +160,7 @@ export function TabContent({
       return (
         <div className="p-6 space-y-6 h-full overflow-auto">
           <DailySummaryTest />
+          <DailyProspectsSummaryTest />
         </div>
       );
 
