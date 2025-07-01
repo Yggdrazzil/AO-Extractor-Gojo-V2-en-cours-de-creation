@@ -99,11 +99,13 @@ export async function getSalesRepCode(salesRepId: string): Promise<string | null
       .from('sales_reps')
       .select('code')
       .eq('id', salesRepId)
+      .single();
+
     if (error || !data) {
       console.error('Error fetching sales rep code:', error);
       return null;
     }
-      .single();
+
     return data.code;
   } catch (error) {
     console.error('Failed to get sales rep code:', error);
