@@ -467,6 +467,8 @@ function App() {
           analysisResult = {
             availability: 'À définir',
             dailyRate: null,
+            salaryExpectations: null,
+            rateExpectations: null,
             residence: 'À définir',
             mobility: 'À définir',
             phone: 'À définir',
@@ -478,6 +480,8 @@ function App() {
         analysisResult = {
           availability: 'À définir',
           dailyRate: null,
+          salaryExpectations: null,
+          rateExpectations: null,
           residence: 'À définir',
           mobility: 'À définir',
           phone: 'À définir',
@@ -493,6 +497,8 @@ function App() {
         targetAccount: targetAccount || '',
         availability: analysisResult.availability || 'À définir',
         dailyRate: analysisResult.dailyRate || null,
+        salaryExpectations: analysisResult.salaryExpectations || null,
+        rateExpectations: analysisResult.rateExpectations || null,
         residence: analysisResult.residence || 'À définir',
         mobility: analysisResult.mobility || 'À définir',
         phone: analysisResult.phone || 'À définir',
@@ -559,6 +565,28 @@ function App() {
     } catch (error) {
       console.error('Failed to update prospect daily rate:', error);
       alert('Erreur lors de la mise à jour du TJM');
+    }
+  };
+
+  const handleProspectSalaryExpectationsChange = async (id: string, salaryExpectations: string) => {
+    try {
+      const numericSalary = salaryExpectations ? parseInt(salaryExpectations, 10) : null;
+      await updateProspectSalaryExpectations(id, numericSalary);
+      setProspects(prev => prev.map(prospect => prospect.id === id ? { ...prospect, salaryExpectations: numericSalary } : prospect));
+    } catch (error) {
+      console.error('Failed to update prospect salary expectations:', error);
+      alert('Erreur lors de la mise à jour des prétentions salariales');
+    }
+  };
+
+  const handleProspectRateExpectationsChange = async (id: string, rateExpectations: string) => {
+    try {
+      const numericRate = rateExpectations ? parseInt(rateExpectations, 10) : null;
+      await updateProspectRateExpectations(id, numericRate);
+      setProspects(prev => prev.map(prospect => prospect.id === id ? { ...prospect, rateExpectations: numericRate } : prospect));
+    } catch (error) {
+      console.error('Failed to update prospect rate expectations:', error);
+      alert('Erreur lors de la mise à jour des prétentions tarifaires');
     }
   };
 
@@ -678,6 +706,8 @@ function App() {
               onProspectTargetAccountChange={handleProspectTargetAccountChange}
               onProspectAvailabilityChange={handleProspectAvailabilityChange}
               onProspectDailyRateChange={handleProspectDailyRateChange}
+              onProspectSalaryExpectationsChange={handleProspectSalaryExpectationsChange}
+              onProspectRateExpectationsChange={handleProspectRateExpectationsChange}
               onProspectResidenceChange={handleProspectResidenceChange}
               onProspectMobilityChange={handleProspectMobilityChange}
               onProspectPhoneChange={handleProspectPhoneChange}
