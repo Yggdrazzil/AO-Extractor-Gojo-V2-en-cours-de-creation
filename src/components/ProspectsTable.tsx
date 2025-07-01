@@ -6,10 +6,10 @@ import { ProspectContentModal } from './ProspectContentModal';
 interface EditingField {
   id: string;
   value: string;
-  field: 'targetAccount' | 'availability' | 'dailyRate' | 'salaryExpectations' | 'rateExpectations' | 'residence' | 'mobility' | 'phone' | 'email';
+  field: 'targetAccount' | 'availability' | 'dailyRate' | 'residence' | 'mobility' | 'phone' | 'email';
 }
 
-type SortField = 'targetAccount' | 'availability' | 'dailyRate' | 'salaryExpectations' | 'rateExpectations' | 'residence' | 'mobility' | 'phone' | 'email';
+type SortField = 'targetAccount' | 'availability' | 'dailyRate' | 'residence' | 'mobility' | 'phone' | 'email';
 type SortDirection = 'asc' | 'desc' | null;
 
 interface SortState {
@@ -48,8 +48,6 @@ interface ProspectsTableProps {
   onTargetAccountChange: (id: string, targetAccount: string) => Promise<void>;
   onAvailabilityChange: (id: string, availability: string) => Promise<void>;
   onDailyRateChange: (id: string, dailyRate: string) => Promise<void>;
-  onSalaryExpectationsChange: (id: string, salaryExpectations: string) => Promise<void>;
-  onRateExpectationsChange: (id: string, rateExpectations: string) => Promise<void>;
   onResidenceChange: (id: string, residence: string) => Promise<void>;
   onMobilityChange: (id: string, mobility: string) => Promise<void>;
   onPhoneChange: (id: string, phone: string) => Promise<void>;
@@ -66,8 +64,6 @@ export function ProspectsTable({
   onTargetAccountChange,
   onAvailabilityChange,
   onDailyRateChange,
-  onSalaryExpectationsChange,
-  onRateExpectationsChange,
   onResidenceChange,
   onMobilityChange,
   onPhoneChange,
@@ -191,8 +187,6 @@ export function ProspectsTable({
 
       switch (sort.field) {
         case 'dailyRate':
-        case 'salaryExpectations':
-        case 'rateExpectations':
           const rateA = a.dailyRate || 0;
           const rateB = b.dailyRate || 0;
           return (rateA - rateB) * direction;
@@ -209,8 +203,6 @@ export function ProspectsTable({
     let value = '';
     switch (field) {
       case 'dailyRate':
-      case 'salaryExpectations':
-      case 'rateExpectations':
         value = prospect.dailyRate?.toString() || '';
         break;
       default:
@@ -237,12 +229,6 @@ export function ProspectsTable({
             break;
           case 'dailyRate':
             await onDailyRateChange(id, value);
-            break;
-          case 'salaryExpectations':
-            await onSalaryExpectationsChange(id, value);
-            break;
-          case 'rateExpectations':
-            await onRateExpectationsChange(id, value);
             break;
           case 'residence':
             await onResidenceChange(id, value);
@@ -409,26 +395,8 @@ export function ProspectsTable({
                   onClick={() => handleSort('dailyRate')}
                 >
                   <div className="flex items-center gap-1 sm:gap-2">
-                    <span className="text-xs sm:text-sm">TJM Actuel</span>
+                    <span className="text-xs sm:text-sm">TJM/Salaire</span>
                     {getSortIcon('dailyRate')}
-                  </div>
-                </th>
-                <th 
-                  className="p-2 sm:p-4 font-medium text-gray-600 dark:text-gray-200 cursor-pointer select-none min-w-[90px] bg-white dark:bg-gray-800"
-                  onClick={() => handleSort('salaryExpectations')}
-                >
-                  <div className="flex items-center gap-1 sm:gap-2">
-                    <span className="text-xs sm:text-sm">Prét. Salariales</span>
-                    {getSortIcon('salaryExpectations')}
-                  </div>
-                </th>
-                <th 
-                  className="p-2 sm:p-4 font-medium text-gray-600 dark:text-gray-200 cursor-pointer select-none min-w-[90px] bg-white dark:bg-gray-800"
-                  onClick={() => handleSort('rateExpectations')}
-                >
-                  <div className="flex items-center gap-1 sm:gap-2">
-                    <span className="text-xs sm:text-sm">Prét. Tarifaires</span>
-                    {getSortIcon('rateExpectations')}
                   </div>
                 </th>
                 <th 
@@ -579,65 +547,6 @@ export function ProspectsTable({
                     )}
                   </td>
 
-                  {/* Prétentions Salariales */}
-                  <td className="p-2 sm:p-4 text-gray-900 dark:text-gray-100">
-                    {editingField?.id === prospect.id && editingField.field === 'salaryExpectations' ? (
-                      <div className="flex items-center space-x-2">
-                        <input
-                          type="number"
-                          value={editingField.value}
-                          onChange={(e) => setEditingField({ ...editingField, value: e.target.value })}
-                          onKeyDown={handleKeyPress}
-                          className="w-full px-2 py-1 border border-blue-500 dark:border-blue-400 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-xs sm:text-sm"
-                          min="0"
-                          step="1000"
-                          autoFocus
-                        />
-                        <button onClick={handleSave} className="p-1 text-green-600 hover:text-green-700 dark:text-green-400 flex-shrink-0" title="Sauvegarder">
-                          <Check className="w-4 h-4" />
-                        </button>
-                        <button onClick={handleCancel} className="p-1 text-red-600 hover:text-red-700 dark:text-red-400 flex-shrink-0" title="Annuler">
-                          <X className="w-4 h-4" />
-                        </button>
-                      </div>
-                    ) : (
-                      <div onClick={() => handleEdit(prospect, 'salaryExpectations')} className="cursor-pointer hover:text-blue-600 dark:hover:text-blue-400 text-xs sm:text-sm" title="Cliquer pour modifier">
-                        {typeof prospect.salaryExpectations === 'number' ? 
-                          `${prospect.salaryExpectations.toLocaleString()}€`
-                          : '-'}
-                      </div>
-                    )}
-                  </td>
-
-                  {/* Prétentions Tarifaires */}
-                  <td className="p-2 sm:p-4 text-gray-900 dark:text-gray-100">
-                    {editingField?.id === prospect.id && editingField.field === 'rateExpectations' ? (
-                      <div className="flex items-center space-x-2">
-                        <input
-                          type="number"
-                          value={editingField.value}
-                          onChange={(e) => setEditingField({ ...editingField, value: e.target.value })}
-                          onKeyDown={handleKeyPress}
-                          className="w-full px-2 py-1 border border-blue-500 dark:border-blue-400 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-xs sm:text-sm"
-                          min="0"
-                          step="1"
-                          autoFocus
-                        />
-                        <button onClick={handleSave} className="p-1 text-green-600 hover:text-green-700 dark:text-green-400 flex-shrink-0" title="Sauvegarder">
-                          <Check className="w-4 h-4" />
-                        </button>
-                        <button onClick={handleCancel} className="p-1 text-red-600 hover:text-red-700 dark:text-red-400 flex-shrink-0" title="Annuler">
-                          <X className="w-4 h-4" />
-                        </button>
-                      </div>
-                    ) : (
-                      <div onClick={() => handleEdit(prospect, 'rateExpectations')} className="cursor-pointer hover:text-blue-600 dark:hover:text-blue-400 text-xs sm:text-sm" title="Cliquer pour modifier">
-                        {typeof prospect.rateExpectations === 'number' ? 
-                          `${prospect.rateExpectations}€`
-                          : '-'}
-                      </div>
-                    )}
-                  </td>
                   {/* Résidence */}
                   <td className="p-2 sm:p-4 text-gray-900 dark:text-gray-100">
                     {editingField?.id === prospect.id && editingField.field === 'residence' ? (

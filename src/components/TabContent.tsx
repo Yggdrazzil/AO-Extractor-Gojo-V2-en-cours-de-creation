@@ -35,8 +35,6 @@ interface TabContentProps {
   onProspectTargetAccountChange?: (id: string, targetAccount: string) => Promise<void>;
   onProspectAvailabilityChange?: (id: string, availability: string) => Promise<void>;
   onProspectDailyRateChange?: (id: string, dailyRate: string) => Promise<void>;
-  onProspectSalaryExpectationsChange?: (id: string, salaryExpectations: string) => Promise<void>;
-  onProspectRateExpectationsChange?: (id: string, rateExpectations: string) => Promise<void>;
   onProspectResidenceChange?: (id: string, residence: string) => Promise<void>;
   onProspectMobilityChange?: (id: string, mobility: string) => Promise<void>;
   onProspectPhoneChange?: (id: string, phone: string) => Promise<void>;
@@ -87,8 +85,6 @@ export function TabContent({
   onProspectTargetAccountChange,
   onProspectAvailabilityChange,
   onProspectDailyRateChange,
-  onProspectSalaryExpectationsChange,
-  onProspectRateExpectationsChange,
   onProspectResidenceChange,
   onProspectMobilityChange,
   onProspectPhoneChange,
@@ -142,8 +138,6 @@ export function TabContent({
             onTargetAccountChange={onProspectTargetAccountChange || (() => Promise.resolve())}
             onAvailabilityChange={onProspectAvailabilityChange || (() => Promise.resolve())}
             onDailyRateChange={onProspectDailyRateChange || (() => Promise.resolve())}
-            onSalaryExpectationsChange={onProspectSalaryExpectationsChange || (() => Promise.resolve())}
-            onRateExpectationsChange={onProspectRateExpectationsChange || (() => Promise.resolve())}
             onResidenceChange={onProspectResidenceChange || (() => Promise.resolve())}
             onMobilityChange={onProspectMobilityChange || (() => Promise.resolve())}
             onPhoneChange={onProspectPhoneChange || (() => Promise.resolve())}

@@ -53,8 +53,6 @@ const PROSPECT_SYSTEM_PROMPT = `Tu es un assistant spécialisé dans l'analyse d
 Ta tâche est d'extraire les informations clés suivantes à partir des informations textuelles fournies :
 - Disponibilité : quand le candidat est disponible
 - TJM/Salaire : le tarif journalier ou salaire en euros (nombre uniquement)
-- Prétentions tarifaires : TJM ou tarif journalier souhaité (nombre uniquement, sans €)
-- Prétentions salariales : salaire annuel souhaité (nombre uniquement, sans €)
 - Résidence : où habite le candidat
 - Mobilité : capacité de déplacement du candidat
 - Téléphone : numéro de téléphone mobile français (06, 07, +33)
@@ -92,17 +90,11 @@ RÈGLES STRICTES:
 - Pour téléphone: uniquement numéros mobiles français, sinon "-"
 - Pour email: format valide avec @, sinon "-"
 - Pour TJM: si pas trouvé, renvoyer null (pas de tiret pour les nombres)
-- Distinguer clairement entre prétentions tarifaires (TJM) et salariales (annuel)
-- Si seul un montant est mentionné, déterminer s'il s'agit de TJM ou salaire selon le contexte
-- Prétentions tarifaires : null si pas trouvé
-- Prétentions salariales : null si pas trouvé
 
 Exemple de réponse JSON:
 {
   "availability": "Immédiatement",
   "dailyRate": 650,
-  "salaryExpectations": 65000,
-  "rateExpectations": 650,
   "residence": "Paris",
   "mobility": "France entière",
   "phone": "06 12 34 56 78",
@@ -113,8 +105,6 @@ Si une info n'est pas trouvée:
 {
   "availability": "-",
   "dailyRate": null,
-  "salaryExpectations": null,
-  "rateExpectations": null,
   "residence": "-",
   "mobility": "-",
   "phone": "-",
@@ -253,8 +243,6 @@ export async function analyzeProspect(content: string, cvContent?: string): Prom
     return {
       availability: result.availability || '-',
       dailyRate: result.dailyRate || null,
-      salaryExpectations: result.salaryExpectations || null,
-      rateExpectations: result.rateExpectations || null,
       residence: result.residence || '-',
       mobility: result.mobility || '-',
       phone: result.phone || '-',

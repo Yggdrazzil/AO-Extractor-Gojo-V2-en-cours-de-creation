@@ -5,8 +5,6 @@ interface Prospect {
   target_account: string
   availability: string
   daily_rate: number | null
-  salary_expectations: number | null
-  rate_expectations: number | null
   residence: string
   mobility: string
   phone: string
@@ -65,12 +63,6 @@ function generateProspectsTable(prospects: Prospect[]): string {
         ${prospect.daily_rate ? `${prospect.daily_rate}€` : '-'}
       </td>
       <td style="padding: 16px 12px; font-size: 15px; color: #6e6e73; text-align: center;">
-        ${prospect.salary_expectations ? `${prospect.salary_expectations.toLocaleString()}€` : '-'}
-      </td>
-      <td style="padding: 16px 12px; font-size: 15px; color: #6e6e73; text-align: center;">
-        ${prospect.rate_expectations ? `${prospect.rate_expectations}€` : '-'}
-      </td>
-      <td style="padding: 16px 12px; font-size: 15px; color: #6e6e73; text-align: center;">
         ${prospect.file_name ? '✅ CV' : '📝 Texte'}
       </td>
       <td style="padding: 16px 12px; font-size: 15px; color: #6e6e73; text-align: center;">
@@ -93,13 +85,7 @@ function generateProspectsTable(prospects: Prospect[]): string {
             Résidence
           </th>
           <th style="padding: 20px 12px; text-align: center; font-size: 14px; font-weight: 600; color: #374151; text-transform: uppercase; letter-spacing: 0.5px;">
-            TJM Actuel
-          </th>
-          <th style="padding: 20px 12px; text-align: center; font-size: 14px; font-weight: 600; color: #374151; text-transform: uppercase; letter-spacing: 0.5px;">
-            Prét. Salariales
-          </th>
-          <th style="padding: 20px 12px; text-align: center; font-size: 14px; font-weight: 600; color: #374151; text-transform: uppercase; letter-spacing: 0.5px;">
-            Prét. Tarifaires
+            TJM
           </th>
           <th style="padding: 20px 12px; text-align: center; font-size: 14px; font-weight: 600; color: #374151; text-transform: uppercase; letter-spacing: 0.5px;">
             Type
@@ -434,7 +420,7 @@ async function getPendingProspectsForSalesRep(salesRepId: string): Promise<Prosp
     
     const { data, error } = await supabase
       .from('prospects')
-      .select('id, target_account, availability, daily_rate, salary_expectations, rate_expectations, residence, mobility, phone, email, created_at, file_name')
+      .select('id, target_account, availability, daily_rate, residence, mobility, phone, email, created_at, file_name')
       .eq('assigned_to', salesRepId)
       .eq('status', 'À traiter')
       .order('created_at', { ascending: false })
