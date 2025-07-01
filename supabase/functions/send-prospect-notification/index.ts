@@ -55,8 +55,8 @@ function generateEmailHTML(data: ProspectNotificationData, salesRepName: string,
         }
         
         .header { 
-          background: #a8fff9; 
-          color: #1d1d1f; 
+          background: #063970; 
+          color: #ffffff; 
           padding: 48px 32px; 
           text-align: center; 
         }
@@ -144,8 +144,8 @@ function generateEmailHTML(data: ProspectNotificationData, salesRepName: string,
         
         .cta-button { 
           display: inline-block; 
-          background: #a8fff9 !important; 
-          color: #1d1d1f !important; 
+          background: #063970 !important; 
+          color: #ffffff !important; 
           padding: 16px 32px; 
           text-decoration: none; 
           border-radius: 12px; 
@@ -155,26 +155,26 @@ function generateEmailHTML(data: ProspectNotificationData, salesRepName: string,
           transition: all 0.2s ease;
           border: none;
           cursor: pointer;
-          box-shadow: 0 2px 8px rgba(168, 255, 249, 0.3);
+          box-shadow: 0 2px 8px rgba(6, 57, 112, 0.3);
         }
         
         .cta-button:hover { 
-          background: #8ef5ef !important;
-          color: #1d1d1f !important;
+          background: #0a4a8a !important;
+          color: #ffffff !important;
           transform: translateY(-1px);
-          box-shadow: 0 4px 12px rgba(168, 255, 249, 0.4);
+          box-shadow: 0 4px 12px rgba(6, 57, 112, 0.4);
         }
         
         .cta-button:visited {
-          color: #1d1d1f !important;
+          color: #ffffff !important;
         }
         
         .cta-button:active {
-          color: #1d1d1f !important;
+          color: #ffffff !important;
         }
         
         .cta-button:link {
-          color: #1d1d1f !important;
+          color: #ffffff !important;
         }
         
         .reminder-section {
