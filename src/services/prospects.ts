@@ -1,6 +1,7 @@
 import { supabase } from '../lib/supabase';
 import type { Prospect } from '../types';
 import { uploadFile, deleteFile } from './fileUpload';
+import { sendProspectNotification, getSalesRepCode } from './prospectNotification';
 
 function convertFrenchDateToISO(dateStr: string | null): string | null {
   if (!dateStr) return null;
@@ -165,6 +166,32 @@ export async function createProspect(prospect: Omit<Prospect, 'id'>, file?: File
     }
     
     console.log('Successfully created prospect:', data);
+
+    // Envoi de la notification email (non bloquant)
+    try {
+      const salesRepCode = await getSalesRepCode(prospect.assignedTo);
+      if (salesRepCode) {
+        // Programmer l'envoi avec un délai de 30 secondes
+        const emailScheduled = await sendProspectNotification({
+          prospectId: data.id,
+          targetAccount: data.target_account || '',
+          salesRepCode,
+          assignedTo: data.assigned_to,
+          hasCV: !!data.file_name,
+          fileName: data.file_name || undefined
+        }, 0.5); // 30 secondes de délai (0.5 minute)
+        
+        if (emailScheduled) {
+          console.log('Prospect email notification scheduled successfully (will be sent in 30 seconds)');
+        } else {
+          console.log('Prospect email notification could not be scheduled');
+        }
+      } else {
+        console.warn('Could not send prospect email: sales rep code not found');
+      }
+    } catch (emailError) {
+      console.warn('Prospect email notification scheduling failed (non-blocking):', emailError);
+    }
     
     return {
       id: data.id,
