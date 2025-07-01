@@ -55,7 +55,7 @@ function generateEmailHTML(data: ProspectNotificationData, salesRepName: string,
         }
         
         .header { 
-          background: #34C759; 
+          background: #228B22; 
           color: #f5f5f7; 
           padding: 48px 32px; 
           text-align: center; 
@@ -144,7 +144,7 @@ function generateEmailHTML(data: ProspectNotificationData, salesRepName: string,
         
         .cta-button { 
           display: inline-block; 
-          background: #34C759 !important; 
+          background: #228B22 !important; 
           color: #ffffff !important; 
           padding: 16px 32px; 
           text-decoration: none; 
@@ -155,14 +155,14 @@ function generateEmailHTML(data: ProspectNotificationData, salesRepName: string,
           transition: all 0.2s ease;
           border: none;
           cursor: pointer;
-          box-shadow: 0 2px 8px rgba(52, 199, 89, 0.3);
+          box-shadow: 0 2px 8px rgba(34, 139, 34, 0.3);
         }
         
         .cta-button:hover { 
-          background: #30B454 !important;
+          background: #1F7A1F !important;
           color: #ffffff !important;
           transform: translateY(-1px);
-          box-shadow: 0 4px 12px rgba(52, 199, 89, 0.4);
+          box-shadow: 0 4px 12px rgba(34, 139, 34, 0.4);
         }
         
         .reminder-section {
@@ -242,7 +242,7 @@ function generateEmailHTML(data: ProspectNotificationData, salesRepName: string,
           <div class="prospect-card">
             <div class="prospect-title">🎯 Compte ciblé : ${data.targetAccount}</div>
             <div class="prospect-details">
-              ${data.hasCV ? `<div><strong>CV joint :</strong> ${data.fileName || 'Fichier disponible'}</div>` : '<div><strong>Type :</strong> Informations textuelles uniquement</div>'}
+              ${data.hasCV ? '<div><strong>Type :</strong> CV disponible pour analyse</div>' : '<div><strong>Type :</strong> Informations textuelles uniquement</div>'}
               <div><strong>Objectif :</strong> Prise de références client</div>
             </div>
           </div>
@@ -286,7 +286,7 @@ Bonjour ${salesRepName},
 Une nouvelle opportunité de prise de références vient d'être identifiée et vous a été assignée :
 
 🎯 Compte ciblé : ${data.targetAccount}
-${data.hasCV ? `CV joint : ${data.fileName || 'Fichier disponible'}` : 'Type : Informations textuelles uniquement'}
+${data.hasCV ? 'Type : CV disponible pour analyse' : 'Type : Informations textuelles uniquement'}
 Objectif : Prise de références client
 
 Action requise :
