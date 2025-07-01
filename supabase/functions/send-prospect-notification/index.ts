@@ -46,7 +46,7 @@ function generateEmailHTML(data: ProspectNotificationData, salesRepName: string,
         }
         
         .email-container { 
-          max-width: 600px; 
+          max-width: 800px; 
           margin: 0 auto; 
           background: #ffffff; 
           border-radius: 18px; 
@@ -55,8 +55,8 @@ function generateEmailHTML(data: ProspectNotificationData, salesRepName: string,
         }
         
         .header { 
-          background: #184b48; 
-          color: #f5f5f7; 
+          background: #a8fff9; 
+          color: #1d1d1f; 
           padding: 48px 32px; 
           text-align: center; 
         }
@@ -144,8 +144,8 @@ function generateEmailHTML(data: ProspectNotificationData, salesRepName: string,
         
         .cta-button { 
           display: inline-block; 
-          background: #184b48 !important; 
-          color: #ffffff !important; 
+          background: #a8fff9 !important; 
+          color: #1d1d1f !important; 
           padding: 16px 32px; 
           text-decoration: none; 
           border-radius: 12px; 
@@ -155,22 +155,26 @@ function generateEmailHTML(data: ProspectNotificationData, salesRepName: string,
           transition: all 0.2s ease;
           border: none;
           cursor: pointer;
-          box-shadow: 0 2px 8px rgba(24, 75, 72, 0.3);
+          box-shadow: 0 2px 8px rgba(168, 255, 249, 0.3);
         }
         
         .cta-button:hover { 
-          background: #123a37 !important;
-          color: #ffffff !important;
+          background: #8ef5ef !important;
+          color: #1d1d1f !important;
           transform: translateY(-1px);
-          box-shadow: 0 4px 12px rgba(24, 75, 72, 0.4);
+          box-shadow: 0 4px 12px rgba(168, 255, 249, 0.4);
         }
         
         .cta-button:visited {
-          color: #ffffff !important;
+          color: #1d1d1f !important;
         }
         
         .cta-button:active {
-          color: #ffffff !important;
+          color: #1d1d1f !important;
+        }
+        
+        .cta-button:link {
+          color: #1d1d1f !important;
         }
         
         .reminder-section {
@@ -207,6 +211,10 @@ function generateEmailHTML(data: ProspectNotificationData, salesRepName: string,
         @media only screen and (max-width: 600px) {
           body {
             padding: 16px 8px;
+          }
+          
+          .email-container {
+            max-width: 100%;
           }
           
           .header {
