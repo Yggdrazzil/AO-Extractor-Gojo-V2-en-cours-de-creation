@@ -1,9 +1,7 @@
 /**
  * Service pour l'intégration avec l'API Boondmanager
- * Utilise la méthode X-Jwt-Client-BoondManager via Edge Function proxy
+ * Utilise l'authentification Basic (username/password)
  */
-
-import { supabase } from '../lib/supabase';
 
 export interface BoondmanagerNeed {
   id: string;
@@ -16,9 +14,8 @@ export interface BoondmanagerNeed {
 }
 
 export interface BoondmanagerApiConfig {
-  clientToken: string;
-  clientKey: string;
-  userToken: string;
+  username: string;
+  password: string;
 }
 
 /**
@@ -26,20 +23,17 @@ export interface BoondmanagerApiConfig {
  */
 function getBoondmanagerConfig(): BoondmanagerApiConfig | null {
   // Essayer d'abord les clés spécifiques à l'utilisateur
-  let clientToken = localStorage.getItem('boondmanager-client-token');
-  let clientKey = localStorage.getItem('boondmanager-client-key');
-  let userToken = localStorage.getItem('boondmanager-user-token');
+  let username = localStorage.getItem('boondmanager-username');
+  let password = localStorage.getItem('boondmanager-password');
 
   // Si pas trouvé, essayer les clés utilisateur spécifiques
-  if (!clientToken || !clientKey || !userToken) {
+  if (!username || !password) {
     try {
-      const { data: { session } } = supabase.auth.getSession();
-      const userEmail = session?.user?.email;
+      const userEmail = JSON.parse(localStorage.getItem('supabase.auth.token') || '{}')?.user?.email;
       if (userEmail) {
         const userPrefix = `boondmanager_${userEmail}_`;
-        clientToken = clientToken || localStorage.getItem(`${userPrefix}client-token`);
-        clientKey = clientKey || localStorage.getItem(`${userPrefix}client-key`);
-        userToken = userToken || localStorage.getItem(`${userPrefix}user-token`);
+        username = username || localStorage.getItem(`${userPrefix}username`);
+        password = password || localStorage.getItem(`${userPrefix}password`);
       }
     } catch (e) {
       console.warn('Could not get user-specific config:', e);
@@ -47,66 +41,89 @@ function getBoondmanagerConfig(): BoondmanagerApiConfig | null {
   }
 
   console.log('🔧 Boondmanager config check:', { 
-    hasClientToken: !!clientToken,
-    hasClientKey: !!clientKey,
-    hasUserToken: !!userToken
+    hasUsername: !!username,
+    hasPassword: !!password
   });
 
-  if (!clientToken || !clientKey || !userToken) {
+  if (!username || !password) {
     console.error('❌ Configuration Boondmanager incomplète');
     return null;
   }
 
   return {
-    clientToken: clientToken.trim(),
-    clientKey: clientKey.trim(),
-    userToken: userToken.trim()
+    username: username.trim(),
+    password: password.trim()
   };
 }
 
 /**
- * Effectue un appel à l'API Boondmanager via Edge Function proxy
+ * Effectue un appel à l'API Boondmanager avec authentification Basic
  */
-async function callBoondmanagerAPI(endpoint: string): Promise<any> {
+async function callBoondmanagerAPI(endpoint: string, options: RequestInit = {}): Promise<any> {
   const config = getBoondmanagerConfig();
   
   if (!config) {
-    throw new Error('Configuration Boondmanager manquante. Veuillez configurer le Client Token, Client Key et User Token dans les paramètres.');
+    throw new Error('Configuration Boondmanager manquante. Veuillez configurer votre nom d\'utilisateur et mot de passe dans les paramètres.');
   }
 
-  console.log('🔗 Calling Boondmanager API via proxy:', endpoint);
+  // URL de base de l'API Boondmanager
+  const baseUrl = 'https://api.boondmanager.com';
+  const url = `${baseUrl}${endpoint}`;
   
+  console.log('🔗 Calling Boondmanager API:', url);
+  
+  // Créer l'en-tête d'authentification Basic
+  const credentials = btoa(`${config.username}:${config.password}`);
+  
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+    'Accept': 'application/json',
+    'Authorization': `Basic ${credentials}`,
+    ...((options.headers as Record<string, string>) || {})
+  };
+
+  console.log('📤 Request details:', { 
+    url,
+    method: options.method || 'GET',
+    hasAuth: true
+  });
+
   try {
-    // Vérifier d'abord si la fonction existe
-    console.log('📡 Invoking boondmanager-proxy function...');
-    
-    const { data, error } = await supabase.functions.invoke('boondmanager-proxy', {
-      body: {
-        endpoint,
-        config
-      }
+    const response = await fetch(url, {
+      ...options,
+      headers,
+      mode: 'cors',
+      credentials: 'omit'
     });
 
-    if (error) {
-      console.error('❌ Edge Function error:', error);
+    console.log('📥 Response status:', response.status);
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('❌ API Error Response:', errorText);
       
-      // Si la fonction n'existe pas, donner des instructions claires
-      if (error.message?.includes('Function not found') || error.message?.includes('404')) {
-        throw new Error('La fonction proxy Boondmanager n\'est pas encore déployée. Contactez l\'administrateur pour déployer la fonction Edge.');
+      if (response.status === 401) {
+        throw new Error('Authentification échouée. Vérifiez votre nom d\'utilisateur et mot de passe Boondmanager.');
+      } else if (response.status === 403) {
+        throw new Error('Accès refusé. Vérifiez les permissions de votre compte Boondmanager.');
+      } else if (response.status === 404) {
+        throw new Error('Endpoint non trouvé. L\'API Boondmanager pourrait avoir changé.');
+      } else if (response.status === 0) {
+        throw new Error('Problème CORS : L\'API Boondmanager bloque les requêtes depuis le navigateur. Contactez votre administrateur Boondmanager pour configurer les CORS.');
+      } else {
+        throw new Error(`Erreur API Boondmanager (${response.status}): ${errorText}`);
       }
-      
-      throw new Error(`Erreur du proxy Supabase: ${error.message}`);
     }
 
-    if (!data?.success) {
-      console.error('❌ API call failed:', data);
-      throw new Error(data?.error || 'Erreur lors de l\'appel à l\'API Boondmanager');
-    }
-
-    console.log('✅ Boondmanager API call successful via proxy');
-    return data.data;
+    const data = await response.json();
+    console.log('✅ API Response data received');
+    return data;
   } catch (error) {
     console.error('💥 Erreur lors de l\'appel à l\'API Boondmanager:', error);
+    
+    if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
+      throw new Error('❌ PROBLÈME DE CONNEXION :\n\n1. Vérifiez votre connexion internet\n2. L\'API Boondmanager pourrait bloquer les requêtes depuis le navigateur (CORS)\n3. Contactez votre administrateur Boondmanager\n\nL\'API doit autoriser les requêtes depuis ' + window.location.origin);
+    }
     
     if (error instanceof Error) {
       throw error;
@@ -169,7 +186,7 @@ export async function fetchOpenNeeds(): Promise<BoondmanagerNeed[]> {
     
     if (!Array.isArray(opportunities)) {
       console.error('❌ No valid endpoint found. Last response:', response);
-      throw lastError || new Error('Aucun endpoint valide trouvé. Vérifiez votre configuration Boondmanager.');
+      throw lastError || new Error('Aucun endpoint valide trouvé pour récupérer les besoins. Vérifiez la configuration de l\'API.');
     }
     
     // Filtrer côté client si nécessaire
@@ -214,7 +231,7 @@ export async function testBoondmanagerConnection(): Promise<boolean> {
     }
     
     console.log('🧪 Testing with config:', {
-      hasTokens: !!(config.clientToken && config.clientKey && config.userToken)
+      hasCredentials: !!(config.username && config.password)
     });
     
     // Essayer plusieurs endpoints pour tester la connexion
@@ -229,12 +246,19 @@ export async function testBoondmanagerConnection(): Promise<boolean> {
     
     for (const endpoint of testEndpoints) {
       try {
-        console.log(`🧪 Testing endpoint: ${endpoint}`);
+        console.log(`🧪 Testing endpoint: https://api.boondmanager.com${endpoint}`);
         await callBoondmanagerAPI(endpoint);
         console.log(`✅ Connection test successful with ${endpoint}`);
         return true;
       } catch (error) {
         console.log(`❌ Test failed for ${endpoint}:`, error.message);
+        
+        // Si c'est un problème CORS, on arrête les tests
+        if (error.message.includes('CORS') || error.message.includes('Failed to fetch')) {
+          console.error('❌ CORS issue detected, stopping tests');
+          return false;
+        }
+        
         continue;
       }
     }

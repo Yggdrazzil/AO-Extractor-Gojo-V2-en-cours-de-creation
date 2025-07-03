@@ -55,7 +55,7 @@ export function BoondmanagerProspectsForm({ salesReps, onSubmit, isLoading = fal
       // Vérifier d'abord la connexion
       const isConnected = await testBoondmanagerConnection();
       if (!isConnected) {
-        throw new Error('Impossible de se connecter à Boondmanager. Vérifiez la configuration dans les paramètres et assurez-vous que la fonction Edge est déployée.');
+        throw new Error('Impossible de se connecter à Boondmanager. Vérifiez votre nom d\'utilisateur et mot de passe dans les paramètres.');
       }
       
       const needs = await fetchOpenNeeds();
