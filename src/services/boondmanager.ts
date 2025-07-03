@@ -207,35 +207,8 @@ export async function testBoondmanagerConnection(): Promise<boolean> {
   try {
     console.log('🧪 Testing Boondmanager connection...');
     
-    const config = getBoondmanagerConfig();
-    if (!config) {
-      console.error('❌ No configuration found');
-      return false;
-    }
-    
-    // Essayer plusieurs endpoints pour tester la connexion
-    const testEndpoints = [
-      '/opportunities?limit=1',
-      '/opportunities',
-      '/needs?limit=1', 
-      '/needs',
-      '/projects?limit=1',
-      '/projects'
-    ];
-    
-    for (const endpoint of testEndpoints) {
-      try {
-        console.log(`🧪 Testing endpoint: ${endpoint}`);
-        await callBoondmanagerAPI(endpoint);
-        console.log(`✅ Connection test successful with ${endpoint}`);
-        return true;
-      } catch (error) {
-        console.log(`❌ Test failed for ${endpoint}:`, error.message);
-        continue;
-      }
-    }
-    
-    console.error('❌ All connection tests failed');
+    // Mode démo temporaire
+    console.log('🔧 Mode démo - Fonction proxy non déployée');
     return false;
   } catch (error) {
     console.error('💥 Boondmanager connection test failed:', error);

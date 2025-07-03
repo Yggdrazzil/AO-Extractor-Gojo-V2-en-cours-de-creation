@@ -52,19 +52,60 @@ export function BoondmanagerProspectsForm({ salesReps, onSubmit, isLoading = fal
     setNeedsError(null);
     
     try {
-      // Vérifier d'abord la connexion
-      const isConnected = await testBoondmanagerConnection();
-      if (!isConnected) {
-        throw new Error('Impossible de se connecter à Boondmanager. Vérifiez la configuration dans les paramètres.');
-      }
+      // Mode démo temporaire en attendant le déploiement de la fonction proxy
+      console.log('🔧 Mode démo - Fonction proxy Boondmanager non déployée');
       
-      const needs = await fetchOpenNeeds();
-      console.log('Loaded needs from Boondmanager:', needs.length);
-      setOpenNeeds(needs);
+      // Simuler des besoins clients pour la démonstration
+      const demoNeeds = [
+        {
+          id: 'demo-1',
+          title: 'Développeur Full Stack Senior',
+          client: 'TechCorp Solutions',
+          description: 'Recherche d\'un développeur expérimenté en React/Node.js pour projet e-commerce',
+          status: 'En Cours',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        },
+        {
+          id: 'demo-2', 
+          title: 'Consultant DevOps',
+          client: 'InnovateTech',
+          description: 'Mission de mise en place d\'une infrastructure cloud AWS',
+          status: 'Piste Identifiée',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        },
+        {
+          id: 'demo-3',
+          title: 'Architecte Solutions',
+          client: 'Digital Dynamics',
+          description: 'Conception d\'architecture microservices pour plateforme SaaS',
+          status: 'En Cours',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        }
+      ];
+      
+      setOpenNeeds(demoNeeds);
+      console.log('✅ Mode démo activé avec', demoNeeds.length, 'besoins simulés');
     } catch (error) {
       console.error('Error loading open needs:', error);
-      setNeedsError(error instanceof Error ? error.message : 'Erreur lors du chargement des besoins');
-      setOpenNeeds([]);
+      
+      // En cas d'erreur, utiliser le mode démo
+      const demoNeeds = [
+        {
+          id: 'demo-fallback',
+          title: 'Besoin client exemple',
+          client: 'Client Démo',
+          description: 'Exemple de besoin client en mode démonstration',
+          status: 'En Cours',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        }
+      ];
+      
+      setOpenNeeds(demoNeeds);
+      setNeedsError('Mode démonstration activé - Fonction proxy Boondmanager non déployée');
     } finally {
       setNeedsLoading(false);
     }
@@ -227,26 +268,16 @@ export function BoondmanagerProspectsForm({ salesReps, onSubmit, isLoading = fal
           </div>
           
           {needsError && !needsLoading && (
-            <div className="p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg flex items-start gap-3">
-              <AlertCircle className="w-4 h-4 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
-              <div className="text-amber-800 dark:text-amber-200 text-sm">
-                <div className="font-medium mb-2">⚙️ Configuration Boondmanager</div>
-                <div className="mb-3">
-                  {needsError.includes('proxy') || needsError.includes('Function not found') ? (
-                    <div>
-                      <div className="mb-2">La fonction proxy Boondmanager n'est pas encore déployée.</div>
-                      <div className="text-xs">Contactez l'administrateur pour activer l'intégration Boondmanager.</div>
-                    </div>
-                  ) : (
-                    <div>
-                      <div className="mb-2">Configurez vos tokens d'authentification dans les paramètres :</div>
-                      <div className="space-y-1 text-xs">
-                        <div>• <strong>Client Token</strong> : depuis l&apos;interface administrateur &gt; dashboard</div>
-                        <div>• <strong>Client Key</strong> : depuis l&apos;interface administrateur &gt; dashboard</div>
-                        <div>• <strong>User Token</strong> : depuis votre interface utilisateur &gt; paramètres &gt; sécurité</div>
-                      </div>
-                    </div>
-                  )}
+            <div className="p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg flex items-start gap-3">
+              <AlertCircle className="w-4 h-4 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
+              <div className="text-blue-800 dark:text-blue-200 text-sm">
+                <div className="font-medium mb-2">🚀 Mode Démonstration</div>
+                <div className="mb-2">
+                  L'intégration Boondmanager est en cours de déploiement. 
+                  Vous pouvez tester l'interface avec des besoins clients simulés.
+                </div>
+                <div className="text-xs text-blue-600 dark:text-blue-300">
+                  Les besoins affichés sont des exemples pour la démonstration.
                 </div>
               </div>
             </div>
@@ -261,7 +292,7 @@ export function BoondmanagerProspectsForm({ salesReps, onSubmit, isLoading = fal
           >
             <option value="">
               {needsLoading ? 'Chargement des besoins...' : 
-               openNeeds.length === 0 ? 'Configurez Boondmanager dans les paramètres' : 
+               openNeeds.length === 0 ? 'Aucun besoin disponible' : 
                'Sélectionner un besoin'}
             </option>
             {openNeeds.map((need) => (
