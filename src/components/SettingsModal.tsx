@@ -18,6 +18,12 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
   const { theme, setTheme } = useTheme();
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [boondmanagerConfig, setBoondmanagerConfig] = useState({
+    baseUrl: '',
+    apiKey: '',
+    username: '',
+    password: ''
+  });
 
   useEffect(() => {
     const getUserInfo = async () => {
@@ -33,6 +39,17 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
       // Vérifier les droits admin
       const adminRights = await checkAdminRights();
       setIsAdmin(adminRights);
+      
+      // Charger la configuration Boondmanager spécifique à l'utilisateur
+      if (session?.user?.email) {
+        const userPrefix = `boondmanager_${session.user.email}_`;
+        setBoondmanagerConfig({
+          baseUrl: localStorage.getItem(`${userPrefix}base-url`) || '',
+          apiKey: localStorage.getItem(`${userPrefix}api-key`) || '',
+          username: localStorage.getItem(`${userPrefix}username`) || '',
+          password: localStorage.getItem(`${userPrefix}password`) || ''
+        });
+      }
     };
     getUserInfo();
   }, []);
@@ -54,6 +71,26 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
     setTimeout(() => {
       setShowSuccess(false);
       onClose();
+    }, 1500);
+  };
+
+  const handleUpdateBoondmanagerConfig = () => {
+    if (userEmail) {
+      const userPrefix = `boondmanager_${userEmail}_`;
+      localStorage.setItem(`${userPrefix}base-url`, boondmanagerConfig.baseUrl);
+      localStorage.setItem(`${userPrefix}api-key`, boondmanagerConfig.apiKey);
+      localStorage.setItem(`${userPrefix}username`, boondmanagerConfig.username);
+      localStorage.setItem(`${userPrefix}password`, boondmanagerConfig.password);
+      
+      // Maintenir aussi les clés globales pour la compatibilité
+      localStorage.setItem('boondmanager-base-url', boondmanagerConfig.baseUrl);
+      localStorage.setItem('boondmanager-api-key', boondmanagerConfig.apiKey);
+      localStorage.setItem('boondmanager-username', boondmanagerConfig.username);
+      localStorage.setItem('boondmanager-password', boondmanagerConfig.password);
+    }
+    setShowSuccess(true);
+    setTimeout(() => {
+      setShowSuccess(false);
     }, 1500);
   };
 
@@ -152,6 +189,75 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
             </div>
           </div>
           )}
+
+          <div>
+            <h3 className="text-gray-600 dark:text-gray-400 mb-3 flex items-center gap-2">
+              <KeyRound className="w-4 h-4" />
+              Configuration Boondmanager
+            </h3>
+            <div className="space-y-3">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  URL de base
+                </label>
+                <input
+                  type="url"
+                  value={boondmanagerConfig.baseUrl}
+                  onChange={(e) => setBoondmanagerConfig(prev => ({ ...prev, baseUrl: e.target.value }))}
+                  placeholder="https://votre-instance.boondmanager.com"
+                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-[#1651EE] focus:border-transparent"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Clé API
+                </label>
+                <input
+                  type="password"
+                  value={boondmanagerConfig.apiKey}
+                  onChange={(e) => setBoondmanagerConfig(prev => ({ ...prev, apiKey: e.target.value }))}
+                  placeholder="••••••••"
+                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-[#1651EE] focus:border-transparent"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Nom d'utilisateur (optionnel)
+                  </label>
+                  <input
+                    type="text"
+                    value={boondmanagerConfig.username}
+                    onChange={(e) => setBoondmanagerConfig(prev => ({ ...prev, username: e.target.value }))}
+                    placeholder="username"
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-[#1651EE] focus:border-transparent"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Mot de passe (optionnel)
+                  </label>
+                  <input
+                    type="password"
+                    value={boondmanagerConfig.password}
+                    onChange={(e) => setBoondmanagerConfig(prev => ({ ...prev, password: e.target.value }))}
+                    placeholder="••••••••"
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-[#1651EE] focus:border-transparent"
+                  />
+                </div>
+              </div>
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                Votre configuration est stockée uniquement dans votre navigateur et n'est jamais partagée.
+              </p>
+              <button
+                onClick={handleUpdateBoondmanagerConfig}
+                className="w-full px-4 py-2 bg-[#1651EE] text-white rounded-lg hover:bg-[#1651EE]/90 transition-colors"
+                disabled={showSuccess}
+              >
+                {showSuccess ? '✓ Configuration mise à jour' : 'Mettre à jour la configuration'}
+              </button>
+            </div>
+          </div>
 
           <button
             onClick={handleLogout}

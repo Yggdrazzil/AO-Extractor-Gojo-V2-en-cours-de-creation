@@ -3,10 +3,12 @@ import { RFPForm } from './RFPForm';
 import { RFPTable } from './RFPTable';
 import { ProspectsForm } from './ProspectsForm';
 import { ProspectsTable } from './ProspectsTable';
+import { BoondmanagerProspectsForm } from './BoondmanagerProspectsForm';
 import { DailySummaryTest } from './DailySummaryTest';
 import { DailyProspectsSummaryTest } from './DailyProspectsSummaryTest';
 import type { RFP, SalesRep } from '../types';
 import type { Prospect } from '../types';
+import type { BoondmanagerProspect } from '../types';
 
 interface TabContentProps {
   activeTab: string;
@@ -28,8 +30,11 @@ interface TabContentProps {
   
   // Props pour les prospects
   prospects?: Prospect[];
+  boondmanagerProspects?: BoondmanagerProspect[];
   onAnalyzeProspect?: (textContent: string, targetAccount: string, file: File | null, assignedTo: string) => Promise<void>;
+  onAnalyzeBoondmanagerProspect?: (textContent: string, selectedNeedId: string, selectedNeedTitle: string, file: File | null, assignedTo: string) => Promise<void>;
   isAnalyzingProspect?: boolean;
+  isAnalyzingBoondmanagerProspect?: boolean;
   onProspectStatusChange?: (id: string, status: Prospect['status']) => Promise<void>;
   onProspectAssigneeChange?: (id: string, assignedTo: string) => Promise<void>;
   onProspectTargetAccountChange?: (id: string, targetAccount: string) => Promise<void>;
@@ -41,6 +46,19 @@ interface TabContentProps {
   onProspectEmailChange?: (id: string, email: string) => Promise<void>;
   onProspectView?: (prospect: Prospect) => Promise<void>;
   onProspectDelete?: (id: string) => Promise<void>;
+  
+  // Props pour les prospects Boondmanager
+  onBoondmanagerProspectStatusChange?: (id: string, status: BoondmanagerProspect['status']) => Promise<void>;
+  onBoondmanagerProspectAssigneeChange?: (id: string, assignedTo: string) => Promise<void>;
+  onBoondmanagerProspectSelectedNeedChange?: (id: string, selectedNeedId: string, selectedNeedTitle: string) => Promise<void>;
+  onBoondmanagerProspectAvailabilityChange?: (id: string, availability: string) => Promise<void>;
+  onBoondmanagerProspectDailyRateChange?: (id: string, dailyRate: string) => Promise<void>;
+  onBoondmanagerProspectResidenceChange?: (id: string, residence: string) => Promise<void>;
+  onBoondmanagerProspectMobilityChange?: (id: string, mobility: string) => Promise<void>;
+  onBoondmanagerProspectPhoneChange?: (id: string, phone: string) => Promise<void>;
+  onBoondmanagerProspectEmailChange?: (id: string, email: string) => Promise<void>;
+  onBoondmanagerProspectView?: (prospect: BoondmanagerProspect) => Promise<void>;
+  onBoondmanagerProspectDelete?: (id: string) => Promise<void>;
 }
 
 function PlaceholderTab({ title, description }: { title: string; description: string }) {
@@ -65,6 +83,7 @@ export function TabContent({
   activeTab, 
   rfps = [], 
   prospects = [],
+  boondmanagerProspects = [],
   salesReps = [], 
   onAnalyzeRFP,
   isAnalyzing = false,
@@ -79,7 +98,9 @@ export function TabContent({
   onView,
   onDelete,
   onAnalyzeProspect,
+  onAnalyzeBoondmanagerProspect,
   isAnalyzingProspect = false,
+  isAnalyzingBoondmanagerProspect = false,
   onProspectStatusChange,
   onProspectAssigneeChange,
   onProspectTargetAccountChange,
@@ -90,7 +111,18 @@ export function TabContent({
   onProspectPhoneChange,
   onProspectEmailChange,
   onProspectView,
-  onProspectDelete
+  onProspectDelete,
+  onBoondmanagerProspectStatusChange,
+  onBoondmanagerProspectAssigneeChange,
+  onBoondmanagerProspectSelectedNeedChange,
+  onBoondmanagerProspectAvailabilityChange,
+  onBoondmanagerProspectDailyRateChange,
+  onBoondmanagerProspectResidenceChange,
+  onBoondmanagerProspectMobilityChange,
+  onBoondmanagerProspectPhoneChange,
+  onBoondmanagerProspectEmailChange,
+  onBoondmanagerProspectView,
+  onBoondmanagerProspectDelete
 }: TabContentProps) {
   switch (activeTab) {
     case 'rfp-extractor':
@@ -144,6 +176,23 @@ export function TabContent({
             onEmailChange={onProspectEmailChange || (() => Promise.resolve())}
             onView={onProspectView || (() => Promise.resolve())}
             onDelete={onProspectDelete || (() => Promise.resolve())}
+          />
+        </div>
+      );
+
+    case 'boondmanager-prospects':
+      return (
+        <div className="p-6 space-y-6 h-full overflow-auto">
+          {onAnalyzeBoondmanagerProspect && (
+            <BoondmanagerProspectsForm
+              salesReps={salesReps}
+              onSubmit={onAnalyzeBoondmanagerProspect}
+              isLoading={isAnalyzingBoondmanagerProspect}
+            />
+          )}
+          <PlaceholderTab
+            title="Tableau des profils Boondmanager"
+            description="Le tableau pour afficher les profils liés aux besoins Boondmanager sera implémenté prochainement."
           />
         </div>
       );

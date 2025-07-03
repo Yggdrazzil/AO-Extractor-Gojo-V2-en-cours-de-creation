@@ -20,6 +20,12 @@ const tabs = [
     description: 'Analyse de profils pour références'
   },
   {
+    id: 'boondmanager-prospects',
+    label: 'Profils pour besoins Boondmanager',
+    icon: Users,
+    description: 'Analyse de profils pour besoins clients'
+  },
+  {
     id: 'analytics',
     label: 'Analytics',
     icon: BarChart3,

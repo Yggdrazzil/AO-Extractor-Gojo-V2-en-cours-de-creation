@@ -43,3 +43,22 @@ export interface RFPFormData {
   content: string;
   assignedTo: string;
 }
+
+export interface BoondmanagerProspect {
+  id: string;
+  textContent?: string;
+  fileName?: string;
+  fileUrl?: string;
+  fileContent?: string;
+  selectedNeedId: string;
+  selectedNeedTitle: string;
+  availability: string;
+  dailyRate: number | null;
+  residence: string;
+  mobility: string;
+  phone: string;
+  email: string;
+  status: 'À traiter' | 'Traité';
+  assignedTo: string;
+  isRead: boolean;
+}
