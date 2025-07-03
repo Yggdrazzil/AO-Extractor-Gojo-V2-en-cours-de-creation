@@ -55,10 +55,11 @@ export function BoondmanagerProspectsForm({ salesReps, onSubmit, isLoading = fal
       // Vérifier d'abord la connexion
       const isConnected = await testBoondmanagerConnection();
       if (!isConnected) {
-        throw new Error('Impossible de se connecter à Boondmanager. Vérifiez la configuration dans les paramètres.');
+        throw new Error('Impossible de se connecter à Boondmanager. Vérifiez la configuration dans les paramètres. Assurez-vous que l\'URL de base et la clé API sont correctes.');
       }
       
       const needs = await fetchOpenNeeds();
+      console.log('Loaded needs from Boondmanager:', needs.length);
       setOpenNeeds(needs);
     } catch (error) {
       console.error('Error loading open needs:', error);

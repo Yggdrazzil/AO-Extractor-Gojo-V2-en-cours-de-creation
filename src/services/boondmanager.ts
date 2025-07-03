@@ -84,27 +84,32 @@ async function callBoondmanagerAPI(endpoint: string, options: RequestInit = {}):
 }
 
 /**
- * Récupère tous les besoins ouverts depuis Boondmanager
+ * Récupère tous les besoins avec les statuts "En Cours" et "Piste Identifiée"
  */
 export async function fetchOpenNeeds(): Promise<BoondmanagerNeed[]> {
   try {
     console.log('Fetching open needs from Boondmanager...');
     
-    // Endpoint pour récupérer les besoins/opportunités ouvertes
-    // L'endpoint exact peut varier selon la version de l'API Boondmanager
-    const response = await callBoondmanagerAPI('/api/v1/needs?status=open');
+    // Selon la documentation Boondmanager, l'endpoint pour les opportunités est /api/opportunities
+    // On filtre par statut "En Cours" et "Piste Identifiée"
+    const response = await callBoondmanagerAPI('/api/opportunities?state[]=En%20Cours&state[]=Piste%20Identifi%C3%A9e');
     
-    // Adapter la structure de données selon la réponse de l'API
-    const needs = response.data || response.needs || response;
+    // La réponse contient généralement un tableau d'opportunités
+    const opportunities = response.data || response.opportunities || response;
     
-    return needs.map((need: any) => ({
-      id: need.id || need.uuid,
-      title: need.title || need.name || need.subject,
-      client: need.client?.name || need.company?.name || need.client_name || 'Client non spécifié',
-      description: need.description || need.details,
-      status: need.status || 'open',
-      created_at: need.created_at || need.createdAt,
-      updated_at: need.updated_at || need.updatedAt
+    if (!Array.isArray(opportunities)) {
+      console.error('Unexpected response format:', response);
+      throw new Error('Format de réponse inattendu de l\'API Boondmanager');
+    }
+    
+    return opportunities.map((opportunity: any) => ({
+      id: opportunity.id?.toString() || opportunity.uuid,
+      title: opportunity.title || opportunity.name || opportunity.subject || 'Titre non spécifié',
+      client: opportunity.company?.name || opportunity.client?.name || opportunity.account?.name || 'Client non spécifié',
+      description: opportunity.description || opportunity.details || opportunity.comment,
+      status: opportunity.state || opportunity.status || 'En Cours',
+      created_at: opportunity.createdAt || opportunity.created_at || opportunity.dateCreated,
+      updated_at: opportunity.updatedAt || opportunity.updated_at || opportunity.dateUpdated
     }));
   } catch (error) {
     console.error('Failed to fetch open needs from Boondmanager:', error);
@@ -117,8 +122,8 @@ export async function fetchOpenNeeds(): Promise<BoondmanagerNeed[]> {
  */
 export async function testBoondmanagerConnection(): Promise<boolean> {
   try {
-    // Test simple avec un endpoint de base (peut varier selon l'API)
-    await callBoondmanagerAPI('/api/v1/ping');
+    // Test simple avec l'endpoint des opportunités
+    await callBoondmanagerAPI('/api/opportunities?limit=1');
     return true;
   } catch (error) {
     console.error('Boondmanager connection test failed:', error);
@@ -131,17 +136,17 @@ export async function testBoondmanagerConnection(): Promise<boolean> {
  */
 export async function fetchNeedDetails(needId: string): Promise<BoondmanagerNeed | null> {
   try {
-    const response = await callBoondmanagerAPI(`/api/v1/needs/${needId}`);
-    const need = response.data || response;
+    const response = await callBoondmanagerAPI(`/api/opportunities/${needId}`);
+    const opportunity = response.data || response;
     
     return {
-      id: need.id || need.uuid,
-      title: need.title || need.name || need.subject,
-      client: need.client?.name || need.company?.name || need.client_name || 'Client non spécifié',
-      description: need.description || need.details,
-      status: need.status || 'open',
-      created_at: need.created_at || need.createdAt,
-      updated_at: need.updated_at || need.updatedAt
+      id: opportunity.id?.toString() || opportunity.uuid,
+      title: opportunity.title || opportunity.name || opportunity.subject || 'Titre non spécifié',
+      client: opportunity.company?.name || opportunity.client?.name || opportunity.account?.name || 'Client non spécifié',
+      description: opportunity.description || opportunity.details || opportunity.comment,
+      status: opportunity.state || opportunity.status || 'En Cours',
+      created_at: opportunity.createdAt || opportunity.created_at || opportunity.dateCreated,
+      updated_at: opportunity.updatedAt || opportunity.updated_at || opportunity.dateUpdated
     };
   } catch (error) {
     console.error('Failed to fetch need details:', error);
