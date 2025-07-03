@@ -19,10 +19,9 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [boondmanagerConfig, setBoondmanagerConfig] = useState({
-    baseUrl: '',
-    apiKey: '',
     username: '',
-    password: ''
+    password: '',
+    baseUrl: ''
   });
 
   useEffect(() => {
@@ -45,7 +44,8 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
         const userPrefix = `boondmanager_${session.user.email}_`;
         setBoondmanagerConfig({
           username: localStorage.getItem(`${userPrefix}username`) || localStorage.getItem('boondmanager-username') || '',
-          password: localStorage.getItem(`${userPrefix}password`) || localStorage.getItem('boondmanager-password') || ''
+          password: localStorage.getItem(`${userPrefix}password`) || localStorage.getItem('boondmanager-password') || '',
+          baseUrl: localStorage.getItem(`${userPrefix}base-url`) || localStorage.getItem('boondmanager-base-url') || ''
         });
       }
     };
@@ -77,10 +77,12 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
       const userPrefix = `boondmanager_${userEmail}_`;
       localStorage.setItem(`${userPrefix}username`, boondmanagerConfig.username);
       localStorage.setItem(`${userPrefix}password`, boondmanagerConfig.password);
+      localStorage.setItem(`${userPrefix}base-url`, boondmanagerConfig.baseUrl);
       
       // Maintenir aussi les clés globales pour la compatibilité
       localStorage.setItem('boondmanager-username', boondmanagerConfig.username);
       localStorage.setItem('boondmanager-password', boondmanagerConfig.password);
+      localStorage.setItem('boondmanager-base-url', boondmanagerConfig.baseUrl);
     }
     setShowSuccess(true);
     setTimeout(() => {
@@ -192,6 +194,18 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
             <div className="space-y-3">
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  URL de votre instance (optionnel)
+                </label>
+                <input
+                  type="url"
+                  value={boondmanagerConfig.baseUrl}
+                  onChange={(e) => setBoondmanagerConfig(prev => ({ ...prev, baseUrl: e.target.value }))}
+                  placeholder="https://votre-entreprise.boondmanager.com"
+                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-[#1651EE] focus:border-transparent"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Email / Nom d'utilisateur
                 </label>
                 <input
@@ -215,8 +229,11 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                 />
               </div>
               <p className="text-sm text-gray-500 dark:text-gray-400">
-                <strong>Authentification Basic :</strong> Utilisez vos identifiants de connexion Boondmanager (email + mot de passe)<br/>
-                <em>Connexion directe à l'API via https://api.boondmanager.com</em>
+                <strong>Configuration requise :</strong><br/>
+                • <strong>Email/Username :</strong> Vos identifiants Boondmanager<br/>
+                • <strong>Mot de passe :</strong> Votre mot de passe Boondmanager<br/>
+                • <strong>URL (optionnel) :</strong> Si vous avez une instance privée<br/>
+                <em>Le système testera automatiquement plusieurs URLs d'API</em>
               </p>
               <button
                 onClick={handleUpdateBoondmanagerConfig}
