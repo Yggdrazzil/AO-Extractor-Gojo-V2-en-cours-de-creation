@@ -22,35 +22,6 @@ export function BoondmanagerProspectsForm({ salesReps, onSubmit, isLoading = fal
   const [openNeeds, setOpenNeeds] = useState<BoondmanagerNeed[]>([]);
   const [needsLoading, setNeedsLoading] = useState(false);
   const [needsError, setNeedsError] = useState<string | null>(null);
-  const [isRealMode, setIsRealMode] = useState(false);
-
-  // Besoins simulés pour le mode démo
-  const mockNeeds = [
-    {
-      id: 'need-1',
-      title: 'Développeur Full Stack React/Node.js',
-      client: 'TechCorp Solutions',
-      description: 'Recherche d\'un développeur expérimenté pour projet e-commerce'
-    },
-    {
-      id: 'need-2', 
-      title: 'Consultant SAP Finance',
-      client: 'Global Industries',
-      description: 'Mission de 6 mois pour implémentation module FI/CO'
-    },
-    {
-      id: 'need-3',
-      title: 'Chef de Projet Digital',
-      client: 'Innovation Labs',
-      description: 'Pilotage transformation digitale secteur bancaire'
-    },
-    {
-      id: 'need-4',
-      title: 'Architecte Cloud AWS',
-      client: 'CloudFirst Inc',
-      description: 'Migration infrastructure vers AWS et formation équipes'
-    }
-  ];
 
   useEffect(() => {
     const initializeExpansionState = async () => {
@@ -73,15 +44,7 @@ export function BoondmanagerProspectsForm({ salesReps, onSubmit, isLoading = fal
   }, []);
 
   useEffect(() => {
-    // Vérifier si on a une configuration Boondmanager
-    const hasConfig = localStorage.getItem('boondmanager-client-token') && 
-                     localStorage.getItem('boondmanager-client-key') && 
-                     localStorage.getItem('boondmanager-user-token');
-    
-    if (hasConfig) {
-      setIsRealMode(true);
-      loadOpenNeeds();
-    }
+    loadOpenNeeds();
   }, []);
 
   const loadOpenNeeds = async () => {
@@ -98,12 +61,10 @@ export function BoondmanagerProspectsForm({ salesReps, onSubmit, isLoading = fal
       const needs = await fetchOpenNeeds();
       console.log('Loaded needs from Boondmanager:', needs.length);
       setOpenNeeds(needs);
-      setIsRealMode(true);
     } catch (error) {
       console.error('Error loading open needs:', error);
       setNeedsError(error instanceof Error ? error.message : 'Erreur lors du chargement des besoins');
       setOpenNeeds([]);
-      setIsRealMode(false);
     } finally {
       setNeedsLoading(false);
     }
@@ -193,8 +154,7 @@ export function BoondmanagerProspectsForm({ salesReps, onSubmit, isLoading = fal
         return;
       }
       
-      const needsList = isRealMode ? openNeeds : mockNeeds;
-      const selectedNeed = needsList.find(need => need.id === selectedNeedId);
+      const selectedNeed = openNeeds.find(need => need.id === selectedNeedId);
       const selectedNeedTitle = selectedNeed ? `${selectedNeed.client} - ${selectedNeed.title}` : 'Besoin non trouvé';
       
       await onSubmit(textContent, selectedNeedId, selectedNeedTitle, selectedFile, assignedTo);
@@ -208,8 +168,7 @@ export function BoondmanagerProspectsForm({ salesReps, onSubmit, isLoading = fal
     }
   };
 
-  const needsList = isRealMode ? openNeeds : mockNeeds;
-  const selectedNeed = needsList.find(need => need.id === selectedNeedId);
+  const selectedNeed = openNeeds.find(need => need.id === selectedNeedId);
 
   return (
     <form onSubmit={handleSubmit} className="bg-white dark:bg-gray-800 rounded-lg shadow-sm">
@@ -236,17 +195,6 @@ export function BoondmanagerProspectsForm({ salesReps, onSubmit, isLoading = fal
       <div className={`p-6 space-y-6 transition-all duration-200 ease-in-out ${
         isExpanded ? 'block' : 'hidden'
       }`}>
-        {/* Indicateur de mode */}
-        {!isRealMode && (
-          <div className="p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg flex items-start gap-3">
-            <AlertCircle className="w-5 h-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
-            <div className="text-amber-800 dark:text-amber-200 text-sm">
-              <div className="font-medium mb-1">Mode démonstration</div>
-              <div>Configurez vos tokens Boondmanager dans les paramètres pour accéder aux vrais besoins.</div>
-            </div>
-          </div>
-        )}
-
         {/* Champ texte */}
         <div className="space-y-2">
           <label htmlFor="text-content" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -265,26 +213,30 @@ export function BoondmanagerProspectsForm({ salesReps, onSubmit, isLoading = fal
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <label htmlFor="selected-need" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-              {isRealMode ? 'Besoin Boondmanager' : 'Besoin client (exemples)'}
+              Besoin client
             </label>
-            {isRealMode && (
-              <button
-                type="button"
-                onClick={loadOpenNeeds}
-                disabled={needsLoading}
-                className="flex items-center gap-1 px-2 py-1 text-xs text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 disabled:opacity-50"
-              >
-                <RefreshCw className={`w-3 h-3 ${needsLoading ? 'animate-spin' : ''}`} />
-                Actualiser
-              </button>
-            )}
+            <button
+              type="button"
+              onClick={loadOpenNeeds}
+              disabled={needsLoading}
+              className="flex items-center gap-1 px-2 py-1 text-xs text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 disabled:opacity-50"
+            >
+              <RefreshCw className={`w-3 h-3 ${needsLoading ? 'animate-spin' : ''}`} />
+              Actualiser
+            </button>
           </div>
           
-          {needsError && (
-            <div className="p-3 bg-red-100 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg flex items-start gap-2">
+          {needsError && !needsLoading && (
+            <div className="p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg flex items-start gap-3">
               <AlertCircle className="w-4 h-4 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
-              <div className="text-red-700 dark:text-red-300 text-sm">
-                {needsError}
+              <div className="text-blue-800 dark:text-blue-200 text-sm">
+                <div className="font-medium mb-2">Configuration Boondmanager requise</div>
+                <div className="mb-3">Pour accéder aux besoins clients de votre instance Boondmanager, configurez vos tokens d'authentification dans les paramètres :</div>
+                <div className="space-y-1 text-xs">
+                  <div>• <strong>Client Token</strong> : depuis l'interface administrateur &gt; dashboard</div>
+                  <div>• <strong>Client Key</strong> : depuis l'interface administrateur &gt; dashboard</div>
+                  <div>• <strong>User Token</strong> : depuis votre interface utilisateur &gt; paramètres &gt; sécurité</div>
+                </div>
               </div>
             </div>
           )}
@@ -293,15 +245,15 @@ export function BoondmanagerProspectsForm({ salesReps, onSubmit, isLoading = fal
             id="selected-need"
             value={selectedNeedId}
             onChange={(e) => setSelectedNeedId(e.target.value)}
-            disabled={needsLoading || (isRealMode && openNeeds.length === 0)}
+            disabled={needsLoading || openNeeds.length === 0}
             className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors disabled:opacity-50"
           >
             <option value="">
               {needsLoading ? 'Chargement des besoins...' : 
-               (isRealMode && openNeeds.length === 0) ? 'Aucun besoin disponible' : 
+               openNeeds.length === 0 ? 'Configurez Boondmanager dans les paramètres' : 
                'Sélectionner un besoin'}
             </option>
-            {needsList.map((need) => (
+            {openNeeds.map((need) => (
               <option key={need.id} value={need.id}>
                 {need.client} - {need.title}
               </option>
