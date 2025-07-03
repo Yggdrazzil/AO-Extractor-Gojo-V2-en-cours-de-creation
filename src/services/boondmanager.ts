@@ -69,76 +69,84 @@ function getBoondmanagerConfig(): BoondmanagerApiConfig | null {
 }
 
 /**
- * Effectue un appel à l'API Boondmanager via proxy CORS
+ * Effectue un appel à l'API Boondmanager via fonction Edge Supabase
  */
 async function callBoondmanagerAPI(endpoint: string, options: RequestInit = {}): Promise<any> {
   const config = getBoondmanagerConfig();
   
   if (!config) {
-    throw new Error('Configuration Boondmanager manquante. Veuillez configurer le Client Token, Client Key et User Token dans les paramètres.');
+    throw new Error('Configuration Boondmanager manquante. Veuillez configurer les tokens dans les paramètres.');
   }
 
-  // URL de base de l'API Boondmanager avec proxy CORS
-  const baseUrl = 'https://api.boondmanager.com';
-  const proxyUrl = 'https://api.allorigins.win/raw?url=';
-  const url = `${proxyUrl}${encodeURIComponent(baseUrl + endpoint)}`;
+  // Utiliser la fonction Edge Supabase comme proxy
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+  const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
   
-  console.log('🔗 Calling Boondmanager API via proxy:', endpoint);
+  if (!supabaseUrl || !supabaseKey) {
+    throw new Error('Configuration Supabase manquante');
+  }
   
-  // Construire le JWT selon la documentation
-  const jwtToken = `${config.clientToken}.${config.clientKey}.${config.userToken}`;
+  const proxyUrl = `${supabaseUrl}/functions/v1/boondmanager-proxy`;
   
-  const headers: Record<string, string> = {
+  console.log('🔗 Calling Boondmanager API via Supabase proxy:', endpoint);
+  
+  const headers = {
     'Content-Type': 'application/json',
-    'Accept': 'application/json',
-    'X-Jwt-Client-BoondManager': jwtToken,
-    ...((options.headers as Record<string, string>) || {})
+    'Authorization': `Bearer ${supabaseKey}`
   };
 
-  console.log('📤 Request details:', { 
-    url,
-    method: options.method || 'GET',
-    headers: { 
-      ...headers, 
-      'X-Jwt-Client-BoondManager': `${config.clientToken.substring(0, 4)}...${config.clientKey.substring(0, 4)}...${config.userToken.substring(0, 4)}...` 
-    }
+  console.log('📤 Proxy request:', { 
+    endpoint,
+    hasConfig: !!(config.clientToken && config.clientKey && config.userToken)
   });
 
   try {
-    const response = await fetch(url, {
-      ...options,
+    const response = await fetch(proxyUrl, {
+      method: 'POST',
       headers,
-      mode: 'cors'
+      body: JSON.stringify({
+        endpoint,
+        config: {
+          clientToken: config.clientToken,
+          clientKey: config.clientKey,
+          userToken: config.userToken
+        }
+      })
     });
 
     console.log('📥 Response status:', response.status);
 
     if (!response.ok) {
-      const errorText = await response.text();
-      console.error('❌ API Error Response:', errorText);
+      const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+      console.error('❌ Proxy Error Response:', errorData);
       
       if (response.status === 401) {
-        throw new Error('Authentification échouée. Vérifiez vos tokens Boondmanager :\n• Client Token et Client Key : disponibles dans l\'interface administrateur > dashboard\n• User Token : disponible dans votre interface utilisateur > paramètres > sécurité');
+        throw new Error('Authentification échouée. Vérifiez vos tokens Boondmanager dans les paramètres.');
       } else if (response.status === 403) {
         throw new Error('Accès refusé. Vérifiez les permissions de votre User Token.');
       } else if (response.status === 404) {
-        throw new Error('Endpoint non trouvé. L\'API Boondmanager pourrait avoir changé.');
+        throw new Error('Endpoint non trouvé.');
       } else {
-        throw new Error(`Erreur API Boondmanager (${response.status}): ${errorText}`);
+        throw new Error(errorData.error || `Erreur proxy (${response.status})`);
       }
     }
 
     const data = await response.json();
-    console.log('✅ API Response data:', data);
-    return data;
+    console.log('✅ Proxy Response:', data.success ? 'Success' : 'Error');
+    
+    if (!data.success) {
+      throw new Error(data.error || 'Erreur inconnue du proxy');
+    }
+    
+    return data.data;
   } catch (error) {
-    console.error('💥 Erreur lors de l\'appel à l\'API Boondmanager:', error);
+    console.error('💥 Erreur proxy Boondmanager:', error);
     
     if (error instanceof Error) {
       throw error;
     }
     
-    throw new Error('Erreur inconnue lors de l\'appel à l\'API Boondmanager');
+    throw new Error('Erreur inconnue du proxy Boondmanager');
   }
 }
 
