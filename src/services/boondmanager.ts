@@ -157,69 +157,39 @@ export async function fetchOpenNeeds(): Promise<BoondmanagerNeed[]> {
   try {
     console.log('🔍 Fetching open needs from Boondmanager...');
     
-    // Liste des endpoints à essayer selon la documentation Boondmanager
-    const endpointsToTry = [
-      '/opportunities?state[]=En%20Cours&state[]=Piste%20Identifi%C3%A9e&limit=50',
-      '/opportunities?limit=50',
-      '/opportunities',
-      '/needs?limit=50',
-      '/needs',
-      '/projects?limit=50',
-      '/projects'
-    ];
-    
+    // Essayer d'abord les opportunités avec filtres
     let response;
     let opportunities;
-    let lastError;
     
-    for (const endpoint of endpointsToTry) {
+    try {
+      response = await callBoondmanagerAPI('/opportunities?state[]=En%20Cours&state[]=Piste%20Identifi%C3%A9e&limit=50');
+      opportunities = response.data || response.opportunities || response;
+    } catch (error) {
+      console.log('❌ Filtered opportunities failed, trying basic endpoint:', error.message);
       try {
-        console.log(`🔄 Trying endpoint: ${endpoint}`);
-        response = await callBoondmanagerAPI(endpoint);
-        
-        // Essayer différentes structures de réponse
-        opportunities = response.data || response.opportunities || response.needs || response.projects || response;
-        
-        if (Array.isArray(opportunities)) {
-          console.log(`✅ Success with ${endpoint}, found ${opportunities.length} items`);
-          break;
-        } else if (opportunities && typeof opportunities === 'object') {
-          // Chercher un tableau dans l'objet
-          const possibleArrays = Object.values(opportunities).filter(Array.isArray);
-          if (possibleArrays.length > 0) {
-            opportunities = possibleArrays[0];
-            console.log(`✅ Success with ${endpoint}, found array with ${opportunities.length} items`);
-            break;
-          }
-        }
-        
-        console.log(`⚠️ ${endpoint} returned non-array data:`, typeof opportunities);
-      } catch (error) {
-        console.log(`❌ ${endpoint} failed:`, error.message);
-        lastError = error;
-        continue;
+        response = await callBoondmanagerAPI('/opportunities?limit=50');
+        opportunities = response.data || response.opportunities || response;
+      } catch (error2) {
+        console.log('❌ Basic opportunities failed, trying projects:', error2.message);
+        response = await callBoondmanagerAPI('/projects?limit=50');
+        opportunities = response.data || response.projects || response;
       }
     }
     
     if (!Array.isArray(opportunities)) {
-      console.error('❌ No valid endpoint found. Last response:', response);
-      throw lastError || new Error('Aucun endpoint valide trouvé pour récupérer les besoins. Vérifiez la configuration de l\'API.');
+      console.error('❌ No array data found in response:', response);
+      throw new Error('Format de réponse inattendu de l\'API Boondmanager');
     }
     
-    // Filtrer côté client si nécessaire
-    const filteredOpportunities = opportunities.filter((opp: any) => {
-      const state = opp.state || opp.status || '';
-      return !state || state === 'En Cours' || state === 'Piste Identifiée' || state === 'Open' || state === 'Active';
-    });
+    console.log(`✅ Found ${opportunities.length} items from Boondmanager`);
     
-    console.log(`🔍 Filtered ${opportunities.length} items to ${filteredOpportunities.length} open needs`);
-    
-    const mappedNeeds = filteredOpportunities.map((opportunity: any, index: number) => {
-      console.log(`📝 Mapping opportunity ${index}:`, {
-        id: opportunity.id,
-        title: opportunity.title || opportunity.name,
-        client: opportunity.company?.name || opportunity.client?.name
-      });
+    const mappedNeeds = opportunities.map((opportunity: any, index: number) => {
+      const state = opportunity.state || opportunity.status || '';
+      
+      // Filtrer seulement les besoins ouverts
+      if (state && !['En Cours', 'Piste Identifiée', 'Open', 'Active', ''].includes(state)) {
+        return null;
+      }
       
       return {
         id: opportunity.id?.toString() || opportunity.uuid || `temp-${Date.now()}-${index}`,
@@ -230,7 +200,7 @@ export async function fetchOpenNeeds(): Promise<BoondmanagerNeed[]> {
         created_at: opportunity.createdAt || opportunity.created_at || opportunity.dateCreated || new Date().toISOString(),
         updated_at: opportunity.updatedAt || opportunity.updated_at || opportunity.dateUpdated || new Date().toISOString()
       };
-    });
+    }).filter(Boolean); // Supprimer les éléments null
     
     console.log(`✅ Successfully mapped ${mappedNeeds.length} needs:`, mappedNeeds);
     return mappedNeeds;
@@ -253,41 +223,15 @@ export async function testBoondmanagerConnection(): Promise<boolean> {
       return false;
     }
     
-    console.log('🧪 Testing with config:', {
-      hasTokens: !!(config.clientToken && config.clientKey && config.userToken)
-    });
-    
-    // Essayer plusieurs endpoints pour tester la connexion
-    const testEndpoints = [
-      '/opportunities?limit=1',
-      '/opportunities',
-      '/needs?limit=1', 
-      '/needs',
-      '/projects?limit=1',
-      '/projects'
-    ];
-    
-    for (const endpoint of testEndpoints) {
-      try {
-        console.log(`🧪 Testing endpoint: https://api.boondmanager.com${endpoint}`);
-        await callBoondmanagerAPI(endpoint);
-        console.log(`✅ Connection test successful with ${endpoint}`);
-        return true;
-      } catch (error) {
-        console.log(`❌ Test failed for ${endpoint}:`, error.message);
-        
-        // Si c'est un problème CORS, on arrête les tests
-        if (error.message.includes('CORS') || error.message.includes('Failed to fetch')) {
-          console.error('❌ CORS issue detected, stopping tests');
-          return false;
-        }
-        
-        continue;
-      }
+    // Test simple avec un endpoint basique
+    try {
+      await callBoondmanagerAPI('/opportunities?limit=1');
+      console.log('✅ Connection test successful');
+      return true;
+    } catch (error) {
+      console.log('❌ Connection test failed:', error.message);
+      return false;
     }
-    
-    console.error('❌ All connection tests failed');
-    return false;
   } catch (error) {
     console.error('💥 Boondmanager connection test failed:', error);
     return false;
@@ -301,30 +245,8 @@ export async function fetchNeedDetails(needId: string): Promise<BoondmanagerNeed
   try {
     console.log(`🔍 Fetching details for need: ${needId}`);
     
-    let response;
-    let opportunity;
-    
-    const detailEndpoints = [
-      `/opportunities/${needId}`,
-      `/needs/${needId}`,
-      `/projects/${needId}`
-    ];
-    
-    for (const endpoint of detailEndpoints) {
-      try {
-        console.log(`🔄 Trying detail endpoint: ${endpoint}`);
-        response = await callBoondmanagerAPI(endpoint);
-        opportunity = response.data || response;
-        
-        if (opportunity && opportunity.id) {
-          console.log(`✅ Found details with ${endpoint}`);
-          break;
-        }
-      } catch (error) {
-        console.log(`❌ Detail endpoint ${endpoint} failed:`, error.message);
-        continue;
-      }
-    }
+    const response = await callBoondmanagerAPI(`/opportunities/${needId}`);
+    const opportunity = response.data || response;
     
     if (!opportunity || !opportunity.id) {
       console.error('❌ No details found for need:', needId);
