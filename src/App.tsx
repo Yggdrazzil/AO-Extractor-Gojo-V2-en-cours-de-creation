@@ -12,7 +12,7 @@ import { updateProspectTargetAccount } from './services/prospects';
 import { ThemeProvider } from './context/ThemeContext';
 import { supabase, checkSupabaseConnection } from './lib/supabase';
 import { LoginForm } from './components/LoginForm';
-import type { RFP, SalesRep, Prospect } from './types';
+import type { RFP, SalesRep, Prospect, BoondmanagerProspect } from './types';
 import type { Session } from '@supabase/supabase-js';
 import { Settings } from 'lucide-react';
 
@@ -67,9 +67,11 @@ async function fetchSalesReps(): Promise<SalesRep[]> {
 function App() {
   const [rfps, setRfps] = useState<RFP[]>([]);
   const [prospects, setProspects] = useState<Prospect[]>([]);
+  const [boondmanagerProspects, setBoondmanagerProspects] = useState<BoondmanagerProspect[]>([]);
   const [salesReps, setSalesReps] = useState<SalesRep[]>([]);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isAnalyzingProspect, setIsAnalyzingProspect] = useState(false);
+  const [isAnalyzingBoondmanagerProspect, setIsAnalyzingBoondmanagerProspect] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [session, setSession] = useState<Session | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -511,6 +513,54 @@ function App() {
     }
   };
 
+  const handleAnalyzeBoondmanagerProspect = async (textContent: string, selectedNeedId: string, selectedNeedTitle: string, file: File | null, assignedTo: string) => {
+    setIsAnalyzingBoondmanagerProspect(true);
+    try {
+      const selectedRep = salesReps.find(rep => rep.id === assignedTo);
+
+      if (!textContent.trim() && !file) {
+        throw new Error("Veuillez saisir du texte ou joindre un fichier");
+      }
+      if (!selectedNeedId) {
+        throw new Error("Veuillez sélectionner un besoin");
+      }
+      if (!selectedRep) {
+        throw new Error("Veuillez sélectionner un commercial valide");
+      }
+
+      // Pour l'instant, on simule la création d'un prospect Boondmanager
+      // En attendant la création de la table et des services correspondants
+      const newBoondmanagerProspect: BoondmanagerProspect = {
+        id: `temp-${Date.now()}`,
+        textContent: textContent || '',
+        fileName: file?.name || undefined,
+        fileUrl: undefined,
+        fileContent: undefined,
+        selectedNeedId,
+        selectedNeedTitle,
+        availability: 'À définir',
+        dailyRate: null,
+        residence: 'À définir',
+        mobility: 'À définir',
+        phone: 'À définir',
+        email: 'À définir',
+        status: 'À traiter',
+        assignedTo,
+        isRead: false
+      };
+
+      setBoondmanagerProspects((prev) => [newBoondmanagerProspect, ...prev]);
+      
+      // TODO: Implémenter la création réelle en base de données
+      console.log('Boondmanager prospect created (simulation):', newBoondmanagerProspect);
+    } catch (error) {
+      console.error('Failed to analyze Boondmanager prospect:', error);
+      alert((error as Error).message);
+    } finally {
+      setIsAnalyzingBoondmanagerProspect(false);
+    }
+  };
+
   const handleProspectStatusChange = async (id: string, status: Prospect['status']) => {
     try {
       await updateProspectStatus(id, status);
@@ -636,6 +686,7 @@ function App() {
           onTabChange={setActiveTab}
           rfps={rfps}
           prospects={prospects}
+          boondmanagerProspects={boondmanagerProspects}
         />
         <div className="flex-1 flex flex-col">
           <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 sm:px-6 py-4 flex flex-col sm:flex-row sm:justify-between sm:items-center space-y-2 sm:space-y-0">
@@ -643,6 +694,7 @@ function App() {
               {activeTab === 'rfp-extractor' ? 'Extracteur d\'AO' : 
                activeTab === 'rfp-list' ? 'Liste des AO' :
                activeTab === 'prospects-extractor' ? 'Extracteur de Prospects' :
+               activeTab === 'boondmanager-prospects' ? 'Profils pour besoins Boondmanager' :
                'Liste des Prospects'}
             </h1>
             <button
@@ -658,11 +710,14 @@ function App() {
               activeTab={activeTab}
               rfps={rfps}
               prospects={prospects}
+              boondmanagerProspects={boondmanagerProspects}
               salesReps={salesReps}
               isAnalyzing={isAnalyzing}
               isAnalyzingProspect={isAnalyzingProspect}
+              isAnalyzingBoondmanagerProspect={isAnalyzingBoondmanagerProspect}
               onAnalyzeRFP={handleAnalyzeRFP}
               onAnalyzeProspect={handleAnalyzeProspect}
+              onAnalyzeBoondmanagerProspect={handleAnalyzeBoondmanagerProspect}
               onStatusChange={handleStatusChange}
               onAssigneeChange={handleAssigneeChange}
               onClientChange={handleClientChange}
@@ -684,6 +739,17 @@ function App() {
               onProspectEmailChange={handleProspectEmailChange}
               onProspectDelete={handleProspectDelete}
               onProspectView={handleViewProspect}
+              onBoondmanagerProspectStatusChange={() => Promise.resolve()}
+              onBoondmanagerProspectAssigneeChange={() => Promise.resolve()}
+              onBoondmanagerProspectSelectedNeedChange={() => Promise.resolve()}
+              onBoondmanagerProspectAvailabilityChange={() => Promise.resolve()}
+              onBoondmanagerProspectDailyRateChange={() => Promise.resolve()}
+              onBoondmanagerProspectResidenceChange={() => Promise.resolve()}
+              onBoondmanagerProspectMobilityChange={() => Promise.resolve()}
+              onBoondmanagerProspectPhoneChange={() => Promise.resolve()}
+              onBoondmanagerProspectEmailChange={() => Promise.resolve()}
+              onBoondmanagerProspectView={() => Promise.resolve()}
+              onBoondmanagerProspectDelete={() => Promise.resolve()}
             />
           </div>
         </div>

@@ -4,6 +4,9 @@ import { FileText, Users, BarChart3, Settings } from 'lucide-react';
 interface SidebarProps {
   activeTab: string;
   onTabChange: (tab: string) => void;
+  rfps?: any[];
+  prospects?: any[];
+  boondmanagerProspects?: any[];
 }
 
 const tabs = [
@@ -39,7 +42,7 @@ const tabs = [
   }
 ];
 
-export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
+export function Sidebar({ activeTab, onTabChange, rfps = [], prospects = [], boondmanagerProspects = [] }: SidebarProps) {
   return (
     <div className="w-16 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col">
       {/* Header */}
