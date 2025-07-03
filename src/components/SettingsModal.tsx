@@ -233,8 +233,8 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                 </div>
               </div>
               <p className="text-sm text-gray-500 dark:text-gray-400">
-                <strong>Client Token et Client Key :</strong> disponibles dans l'interface administrateur > dashboard<br/>
-                <strong>User Token :</strong> disponible dans votre interface utilisateur > paramètres > sécurité<br/>
+                <strong>Client Token et Client Key :</strong> disponibles dans l'interface administrateur &gt; dashboard<br/>
+                <strong>User Token :</strong> disponible dans votre interface utilisateur &gt; paramètres &gt; sécurité<br/>
                 <em>Utilise la méthode X-Jwt-Client-BoondManager via proxy Supabase</em>
               </p>
               <button
