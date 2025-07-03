@@ -227,15 +227,26 @@ export function BoondmanagerProspectsForm({ salesReps, onSubmit, isLoading = fal
           </div>
           
           {needsError && !needsLoading && (
-            <div className="p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg flex items-start gap-3">
-              <AlertCircle className="w-4 h-4 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
-              <div className="text-blue-800 dark:text-blue-200 text-sm">
-                <div className="font-medium mb-2">Configuration Boondmanager requise</div>
-                <div className="mb-3">Pour accéder aux besoins clients de votre instance Boondmanager, configurez vos tokens d'authentification dans les paramètres :</div>
-                <div className="space-y-1 text-xs">
-                  <div>• <strong>Client Token</strong> : depuis l'interface administrateur &gt; dashboard</div>
-                  <div>• <strong>Client Key</strong> : depuis l'interface administrateur &gt; dashboard</div>
-                  <div>• <strong>User Token</strong> : depuis votre interface utilisateur &gt; paramètres &gt; sécurité</div>
+            <div className="p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg flex items-start gap-3">
+              <AlertCircle className="w-4 h-4 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
+              <div className="text-amber-800 dark:text-amber-200 text-sm">
+                <div className="font-medium mb-2">⚙️ Configuration Boondmanager</div>
+                <div className="mb-3">
+                  {needsError.includes('proxy') || needsError.includes('Function not found') ? (
+                    <div>
+                      <div className="mb-2">La fonction proxy Boondmanager n'est pas encore déployée.</div>
+                      <div className="text-xs">Contactez l'administrateur pour activer l'intégration Boondmanager.</div>
+                    </div>
+                  ) : (
+                    <div>
+                      <div className="mb-2">Configurez vos tokens d'authentification dans les paramètres :</div>
+                      <div className="space-y-1 text-xs">
+                        <div>• <strong>Client Token</strong> : depuis l'interface administrateur > dashboard</div>
+                        <div>• <strong>Client Key</strong> : depuis l'interface administrateur > dashboard</div>
+                        <div>• <strong>User Token</strong> : depuis votre interface utilisateur > paramètres > sécurité</div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

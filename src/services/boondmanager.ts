@@ -1,6 +1,6 @@
 /**
  * Service pour l'intégration avec l'API Boondmanager
- * Utilise une Edge Function Supabase comme proxy pour contourner les CORS
+ * Utilise la méthode X-Jwt-Client-BoondManager via Edge Function proxy
  */
 
 import { supabase } from '../lib/supabase';
@@ -65,7 +65,7 @@ function getBoondmanagerConfig(): BoondmanagerApiConfig | null {
 }
 
 /**
- * Effectue un appel à l'API Boondmanager via notre proxy Edge Function
+ * Effectue un appel à l'API Boondmanager via Edge Function proxy
  */
 async function callBoondmanagerAPI(endpoint: string): Promise<any> {
   const config = getBoondmanagerConfig();
@@ -77,6 +77,9 @@ async function callBoondmanagerAPI(endpoint: string): Promise<any> {
   console.log('🔗 Calling Boondmanager API via proxy:', endpoint);
   
   try {
+    // Vérifier d'abord si la fonction existe
+    console.log('📡 Invoking boondmanager-proxy function...');
+    
     const { data, error } = await supabase.functions.invoke('boondmanager-proxy', {
       body: {
         endpoint,
@@ -85,16 +88,22 @@ async function callBoondmanagerAPI(endpoint: string): Promise<any> {
     });
 
     if (error) {
-      console.error('❌ Proxy function error:', error);
-      throw new Error(`Erreur du proxy: ${error.message}`);
+      console.error('❌ Edge Function error:', error);
+      
+      // Si la fonction n'existe pas, donner des instructions claires
+      if (error.message?.includes('Function not found') || error.message?.includes('404')) {
+        throw new Error('La fonction proxy Boondmanager n\'est pas encore déployée. Contactez l\'administrateur pour déployer la fonction Edge.');
+      }
+      
+      throw new Error(`Erreur du proxy Supabase: ${error.message}`);
     }
 
     if (!data?.success) {
       console.error('❌ API call failed:', data);
-      throw new Error(data?.error || 'Erreur lors de l\'appel API');
+      throw new Error(data?.error || 'Erreur lors de l\'appel à l\'API Boondmanager');
     }
 
-    console.log('✅ API call successful');
+    console.log('✅ Boondmanager API call successful via proxy');
     return data.data;
   } catch (error) {
     console.error('💥 Erreur lors de l\'appel à l\'API Boondmanager:', error);
@@ -160,7 +169,7 @@ export async function fetchOpenNeeds(): Promise<BoondmanagerNeed[]> {
     
     if (!Array.isArray(opportunities)) {
       console.error('❌ No valid endpoint found. Last response:', response);
-      throw lastError || new Error('Aucun endpoint valide trouvé pour récupérer les besoins. Vérifiez la configuration de l\'API.');
+      throw lastError || new Error('Aucun endpoint valide trouvé. Vérifiez votre configuration Boondmanager.');
     }
     
     // Filtrer côté client si nécessaire
