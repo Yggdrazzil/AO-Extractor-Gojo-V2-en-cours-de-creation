@@ -44,7 +44,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
       if (session?.user?.email) {
         const userPrefix = `boondmanager_${session.user.email}_`;
         setBoondmanagerConfig({
-          baseUrl: localStorage.getItem(`${userPrefix}base-url`) || '',
+          baseUrl: '', // Plus besoin de l'URL de base
           apiKey: localStorage.getItem(`${userPrefix}client-token`) || '',
           username: localStorage.getItem(`${userPrefix}client-key`) || '',
           password: localStorage.getItem(`${userPrefix}user-token`) || ''
@@ -77,13 +77,11 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
   const handleUpdateBoondmanagerConfig = () => {
     if (userEmail) {
       const userPrefix = `boondmanager_${userEmail}_`;
-      localStorage.setItem(`${userPrefix}base-url`, boondmanagerConfig.baseUrl);
       localStorage.setItem(`${userPrefix}client-token`, boondmanagerConfig.apiKey);
       localStorage.setItem(`${userPrefix}client-key`, boondmanagerConfig.username);
       localStorage.setItem(`${userPrefix}user-token`, boondmanagerConfig.password);
       
       // Maintenir aussi les clés globales pour la compatibilité
-      localStorage.setItem('boondmanager-base-url', boondmanagerConfig.baseUrl);
       localStorage.setItem('boondmanager-client-token', boondmanagerConfig.apiKey);
       localStorage.setItem('boondmanager-client-key', boondmanagerConfig.username);
       localStorage.setItem('boondmanager-user-token', boondmanagerConfig.password);
@@ -198,18 +196,6 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
             <div className="space-y-3">
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  URL de base de l'API
-                </label>
-                <input
-                  type="url"
-                  value={boondmanagerConfig.baseUrl}
-                  onChange={(e) => setBoondmanagerConfig(prev => ({ ...prev, baseUrl: e.target.value }))}
-                  placeholder="https://api.boondmanager.com"
-                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-[#1651EE] focus:border-transparent"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Client Token
                 </label>
                 <input
@@ -248,7 +234,8 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
               </div>
               <p className="text-sm text-gray-500 dark:text-gray-400">
                 <strong>Client Token et Client Key :</strong> disponibles dans l'interface administrateur &gt; dashboard<br/>
-                <strong>User Token :</strong> disponible dans votre interface utilisateur &gt; paramètres &gt; sécurité
+                <strong>User Token :</strong> disponible dans votre interface utilisateur > paramètres > sécurité<br/>
+                <em>L'API utilise automatiquement https://api.boondmanager.com</em>
               </p>
               <button
                 onClick={handleUpdateBoondmanagerConfig}

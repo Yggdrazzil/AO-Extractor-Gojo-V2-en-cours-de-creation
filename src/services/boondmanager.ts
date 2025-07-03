@@ -13,7 +13,6 @@ export interface BoondmanagerNeed {
 }
 
 export interface BoondmanagerApiConfig {
-  baseUrl: string;
   clientToken: string;
   clientKey: string;
   userToken: string;
@@ -25,18 +24,16 @@ export interface BoondmanagerApiConfig {
  */
 function getBoondmanagerConfig(): BoondmanagerApiConfig | null {
   // Essayer d'abord les clés spécifiques à l'utilisateur
-  let baseUrl = localStorage.getItem('boondmanager-base-url');
   let clientToken = localStorage.getItem('boondmanager-client-token');
   let clientKey = localStorage.getItem('boondmanager-client-key');
   let userToken = localStorage.getItem('boondmanager-user-token');
 
   // Si pas trouvé, essayer les clés utilisateur spécifiques
-  if (!baseUrl || !clientToken || !clientKey || !userToken) {
+  if (!clientToken || !clientKey || !userToken) {
     try {
       const userEmail = JSON.parse(localStorage.getItem('supabase.auth.token') || '{}')?.user?.email;
       if (userEmail) {
         const userPrefix = `boondmanager_${userEmail}_`;
-        baseUrl = baseUrl || localStorage.getItem(`${userPrefix}base-url`);
         clientToken = clientToken || localStorage.getItem(`${userPrefix}client-token`);
         clientKey = clientKey || localStorage.getItem(`${userPrefix}client-key`);
         userToken = userToken || localStorage.getItem(`${userPrefix}user-token`);
@@ -47,19 +44,16 @@ function getBoondmanagerConfig(): BoondmanagerApiConfig | null {
   }
 
   console.log('🔧 Boondmanager config check:', { 
-    hasBaseUrl: !!baseUrl, 
     hasClientToken: !!clientToken,
     hasClientKey: !!clientKey,
     hasUserToken: !!userToken,
-    baseUrl: baseUrl,
     clientTokenPreview: clientToken ? `${clientToken.substring(0, 8)}...` : 'none',
     clientKeyPreview: clientKey ? `${clientKey.substring(0, 8)}...` : 'none',
     userTokenPreview: userToken ? `${userToken.substring(0, 8)}...` : 'none'
   });
 
-  if (!baseUrl || !clientToken || !clientKey || !userToken) {
+  if (!clientToken || !clientKey || !userToken) {
     console.error('❌ Configuration Boondmanager incomplète:', {
-      baseUrl: !!baseUrl,
       clientToken: !!clientToken,
       clientKey: !!clientKey,
       userToken: !!userToken
@@ -67,19 +61,7 @@ function getBoondmanagerConfig(): BoondmanagerApiConfig | null {
     return null;
   }
 
-  // Nettoyer l'URL de base
-  let cleanBaseUrl = baseUrl.trim();
-  if (cleanBaseUrl.endsWith('/')) {
-    cleanBaseUrl = cleanBaseUrl.slice(0, -1);
-  }
-  
-  // Ajouter /api si ce n'est pas déjà présent
-  if (!cleanBaseUrl.includes('/api')) {
-    cleanBaseUrl += '/api';
-  }
-
   return {
-    baseUrl: cleanBaseUrl,
     clientToken: clientToken.trim(),
     clientKey: clientKey.trim(),
     userToken: userToken.trim()
@@ -96,8 +78,10 @@ async function callBoondmanagerAPI(endpoint: string, options: RequestInit = {}):
     throw new Error('Configuration Boondmanager manquante. Veuillez configurer le Client Token, Client Key et User Token dans les paramètres.');
   }
 
-  // Construire l'URL complète
-  const url = `${config.baseUrl}${endpoint}`;
+  // URL de base de l'API Boondmanager (selon la documentation)
+  const baseUrl = 'https://api.boondmanager.com';
+  const url = `${baseUrl}${endpoint}`;
+  
   console.log('🔗 Calling Boondmanager API:', url);
   
   // Construire le JWT selon la documentation
@@ -135,11 +119,11 @@ async function callBoondmanagerAPI(endpoint: string, options: RequestInit = {}):
       console.error('❌ API Error Response:', errorText);
       
       if (response.status === 401) {
-        throw new Error('Authentification échouée. Vérifiez vos tokens Boondmanager (Client Token, Client Key, User Token).');
+        throw new Error('Authentification échouée. Vérifiez vos tokens Boondmanager :\n• Client Token et Client Key : disponibles dans l\'interface administrateur > dashboard\n• User Token : disponible dans votre interface utilisateur > paramètres > sécurité');
       } else if (response.status === 403) {
         throw new Error('Accès refusé. Vérifiez les permissions de votre User Token.');
       } else if (response.status === 404) {
-        throw new Error('Endpoint non trouvé. Vérifiez l\'URL de base de l\'API. Essayez avec votre URL d\'instance : https://votre-entreprise.boondmanager.com');
+        throw new Error('Endpoint non trouvé. L\'API Boondmanager pourrait avoir changé.');
       } else if (response.status === 0) {
         throw new Error('Problème CORS : L\'API Boondmanager bloque les requêtes depuis le navigateur. Contactez votre administrateur Boondmanager pour configurer les CORS.');
       } else {
@@ -154,7 +138,7 @@ async function callBoondmanagerAPI(endpoint: string, options: RequestInit = {}):
     console.error('💥 Erreur lors de l\'appel à l\'API Boondmanager:', error);
     
     if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
-      throw new Error('❌ PROBLÈME CORS : L\'API Boondmanager bloque les requêtes depuis le navigateur. Solutions possibles :\n\n1. Vérifiez que l\'URL est correcte (ex: https://votre-entreprise.boondmanager.com)\n2. Contactez votre administrateur Boondmanager pour configurer les CORS\n3. L\'API doit autoriser les requêtes depuis ' + window.location.origin);
+      throw new Error('❌ PROBLÈME DE CONNEXION :\n\n1. Vérifiez votre connexion internet\n2. L\'API Boondmanager pourrait bloquer les requêtes depuis le navigateur (CORS)\n3. Contactez votre administrateur Boondmanager\n\nL\'API doit autoriser les requêtes depuis ' + window.location.origin);
     }
     
     if (error instanceof Error) {
@@ -180,11 +164,7 @@ export async function fetchOpenNeeds(): Promise<BoondmanagerNeed[]> {
       '/needs?limit=50',
       '/needs',
       '/projects?limit=50',
-      '/projects',
-      '/v1/opportunities?limit=50',
-      '/v1/opportunities',
-      '/v1/needs?limit=50',
-      '/v1/needs'
+      '/projects'
     ];
     
     let response;
@@ -273,7 +253,6 @@ export async function testBoondmanagerConnection(): Promise<boolean> {
     }
     
     console.log('🧪 Testing with config:', {
-      baseUrl: config.baseUrl,
       hasTokens: !!(config.clientToken && config.clientKey && config.userToken)
     });
     
@@ -284,15 +263,12 @@ export async function testBoondmanagerConnection(): Promise<boolean> {
       '/needs?limit=1', 
       '/needs',
       '/projects?limit=1',
-      '/projects',
-      '',  // Test de l'endpoint racine
-      '/v1/opportunities?limit=1',
-      '/v1/opportunities'
+      '/projects'
     ];
     
     for (const endpoint of testEndpoints) {
       try {
-        console.log(`🧪 Testing endpoint: ${config.baseUrl}${endpoint}`);
+        console.log(`🧪 Testing endpoint: https://api.boondmanager.com${endpoint}`);
         await callBoondmanagerAPI(endpoint);
         console.log(`✅ Connection test successful with ${endpoint}`);
         return true;
@@ -330,9 +306,7 @@ export async function fetchNeedDetails(needId: string): Promise<BoondmanagerNeed
     const detailEndpoints = [
       `/opportunities/${needId}`,
       `/needs/${needId}`,
-      `/projects/${needId}`,
-      `/v1/opportunities/${needId}`,
-      `/v1/needs/${needId}`
+      `/projects/${needId}`
     ];
     
     for (const endpoint of detailEndpoints) {
