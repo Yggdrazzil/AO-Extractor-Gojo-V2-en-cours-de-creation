@@ -1,6 +1,6 @@
 /**
  * Service pour l'intégration avec l'API Boondmanager
- * Authentification Basic avec email/password
+ * Authentification Basic spécifique pour Hito (customerCode=hito)
  */
 
 export interface BoondmanagerNeed {
@@ -53,8 +53,7 @@ function getBoondmanagerConfig(): BoondmanagerApiConfig | null {
     hasUsername: !!username,
     hasPassword: !!password,
     hasBaseUrl: !!baseUrl,
-    usernamePreview: username ? username.substring(0, 8) + '...' : 'none',
-    baseUrlPreview: baseUrl || 'none'
+    usernamePreview: username ? username.substring(0, 8) + '...' : 'none'
   });
 
   if (!username || !password) {
@@ -70,90 +69,133 @@ function getBoondmanagerConfig(): BoondmanagerApiConfig | null {
 }
 
 /**
- * Détermine les URLs possibles pour l'API
+ * URLs spécifiques pour Hito (customerCode=hito)
  */
-function getPossibleApiUrls(config: BoondmanagerApiConfig): string[] {
+function getHitoApiUrls(config: BoondmanagerApiConfig): string[] {
   const urls: string[] = [];
   
   // 1. URL personnalisée si fournie
   if (config.baseUrl) {
-    const customUrl = config.baseUrl.replace(/\/$/, ''); // Supprimer / final
+    const customUrl = config.baseUrl.replace(/\/$/, '');
     urls.push(`${customUrl}/api`);
     urls.push(customUrl);
   }
   
-  // 2. Déduction depuis l'email si c'est un domaine personnalisé
-  if (config.username.includes('@') && !config.username.includes('@boondmanager.com')) {
-    const domain = config.username.split('@')[1];
-    // Essayer différents formats pour les domaines personnalisés
-    urls.push(`https://${domain}/api`);
-    urls.push(`https://app.${domain}/api`);
-    urls.push(`https://${domain.replace('.', '-')}.boondmanager.com/api`);
-  }
-  
-  // 3. URLs standards connues (rarement accessibles directement)
+  // 2. URLs spécifiques pour Hito
   urls.push(
-    'https://app.boondmanager.com/api',
+    // API standard avec customer code
+    'https://api.boondmanager.com/hito',
     'https://api.boondmanager.com',
-    'https://www.boondmanager.com/api'
+    
+    // Sous-domaine Hito
+    'https://hito.boondmanager.com/api',
+    'https://hito.boondmanager.com',
+    
+    // Autres variants possibles
+    'https://api.hito.boondmanager.com',
+    'https://hito-api.boondmanager.com'
   );
   
   return [...new Set(urls)]; // Supprimer les doublons
 }
 
 /**
- * Test une URL spécifique
+ * Test une URL spécifique avec différents endpoints
  */
-async function testApiUrl(url: string, config: BoondmanagerApiConfig): Promise<boolean> {
-  try {
-    console.log(`🧪 Testing: ${url}`);
-    
-    const credentials = btoa(`${config.username}:${config.password}`);
-    
-    const response = await fetch(`${url}/opportunities?limit=1`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        'Authorization': `Basic ${credentials}`,
-      },
-      mode: 'cors',
-      credentials: 'omit'
-    });
+async function testApiUrl(baseUrl: string, config: BoondmanagerApiConfig): Promise<{ success: boolean; workingEndpoint?: string }> {
+  const credentials = btoa(`${config.username}:${config.password}`);
+  
+  // Endpoints à tester dans l'ordre de priorité
+  const endpointsToTest = [
+    '/opportunities?limit=1',
+    '/opportunity?limit=1', 
+    '/projects?limit=1',
+    '/needs?limit=1',
+    '/api/opportunities?limit=1',
+    '/api/opportunity?limit=1'
+  ];
+  
+  // Paramètres à essayer (pour Hito)
+  const customerParams = [
+    '?customerCode=hito',
+    '?customer=hito',
+    '?client=hito',
+    ''
+  ];
+  
+  for (const endpoint of endpointsToTest) {
+    for (const customerParam of customerParams) {
+      const finalEndpoint = endpoint + (endpoint.includes('?') ? '&' : '') + customerParam;
+      const url = `${baseUrl}${finalEndpoint}`;
+      
+      try {
+        console.log(`🧪 Testing: ${url}`);
+        
+        const response = await fetch(url, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': `Basic ${credentials}`,
+            'User-Agent': 'Hito-API-Client/1.0'
+          },
+          mode: 'cors',
+          credentials: 'omit'
+        });
 
-    console.log(`📊 ${url} → Status: ${response.status}`);
-    
-    if (response.ok) {
-      // Sauvegarder l'URL qui fonctionne
-      localStorage.setItem('boondmanager-working-url', url);
-      console.log(`✅ Working URL found: ${url}`);
-      return true;
+        console.log(`📊 ${url} → Status: ${response.status}`);
+        
+        if (response.ok) {
+          const data = await response.json();
+          console.log(`✅ SUCCESS! Working URL: ${baseUrl}, Endpoint: ${finalEndpoint}`);
+          console.log(`📋 Response preview:`, {
+            type: typeof data,
+            isArray: Array.isArray(data),
+            keys: data && typeof data === 'object' ? Object.keys(data).slice(0, 5) : []
+          });
+          
+          // Sauvegarder la configuration qui fonctionne
+          localStorage.setItem('boondmanager-working-url', baseUrl);
+          localStorage.setItem('boondmanager-working-endpoint', finalEndpoint);
+          
+          return { success: true, workingEndpoint: finalEndpoint };
+        }
+        
+      } catch (error) {
+        console.log(`❌ ${url} → ${error.message}`);
+        continue;
+      }
     }
-    
-    return false;
-  } catch (error) {
-    console.log(`❌ ${url} → ${error.message}`);
-    return false;
   }
+  
+  return { success: false };
 }
 
 /**
- * Trouve l'URL API qui fonctionne
+ * Trouve l'URL API qui fonctionne pour Hito
  */
-async function findWorkingApiUrl(config: BoondmanagerApiConfig): Promise<string | null> {
+async function findWorkingApiUrl(config: BoondmanagerApiConfig): Promise<{ baseUrl: string; endpoint: string } | null> {
   // Vérifier d'abord s'il y a une URL qui fonctionnait déjà
   const savedUrl = localStorage.getItem('boondmanager-working-url');
-  if (savedUrl) {
-    const works = await testApiUrl(savedUrl, config);
-    if (works) return savedUrl;
+  const savedEndpoint = localStorage.getItem('boondmanager-working-endpoint');
+  
+  if (savedUrl && savedEndpoint) {
+    console.log(`🔄 Testing saved configuration: ${savedUrl}${savedEndpoint}`);
+    const result = await testApiUrl(savedUrl, config);
+    if (result.success) {
+      return { baseUrl: savedUrl, endpoint: savedEndpoint };
+    }
   }
   
-  // Tester toutes les URLs possibles
-  const possibleUrls = getPossibleApiUrls(config);
+  // Tester toutes les URLs possibles pour Hito
+  const possibleUrls = getHitoApiUrls(config);
+  console.log(`🔍 Testing ${possibleUrls.length} possible URLs for Hito...`);
   
   for (const url of possibleUrls) {
-    const works = await testApiUrl(url, config);
-    if (works) return url;
+    const result = await testApiUrl(url, config);
+    if (result.success && result.workingEndpoint) {
+      return { baseUrl: url, endpoint: result.workingEndpoint };
+    }
   }
   
   return null;
@@ -166,18 +208,21 @@ async function callBoondmanagerAPI(endpoint: string, options: RequestInit = {}):
   const config = getBoondmanagerConfig();
   
   if (!config) {
-    throw new Error('❌ CONFIGURATION MANQUANTE\n\nVeuillez configurer votre nom d\'utilisateur et mot de passe Boondmanager dans les paramètres.\n\n💡 Astuce : Si vous avez un domaine personnalisé, ajoutez aussi l\'URL de base.');
+    throw new Error('❌ CONFIGURATION MANQUANTE\n\nVeuillez configurer votre email et mot de passe Boondmanager dans les paramètres ⚙️\n\n💡 Vos identifiants sont les mêmes que pour vous connecter sur https://ui.boondmanager.com');
   }
 
-  // Trouver l'URL qui fonctionne
-  const workingUrl = await findWorkingApiUrl(config);
+  console.log('🔍 Searching for working Hito API URL...');
   
-  if (!workingUrl) {
-    throw new Error(`❌ AUCUNE URL API ACCESSIBLE\n\nAucune URL ne répond avec vos identifiants.\n\n🔍 URLs testées :\n${getPossibleApiUrls(config).map(url => `• ${url}`).join('\n')}\n\n💡 Vérifiez :\n• Vos identifiants dans les paramètres\n• L'URL de votre instance Boondmanager\n• Que votre compte a accès à l'API`);
+  // Trouver l'URL qui fonctionne
+  const workingConfig = await findWorkingApiUrl(config);
+  
+  if (!workingConfig) {
+    const possibleUrls = getHitoApiUrls(config);
+    throw new Error(`❌ AUCUNE URL API ACCESSIBLE POUR HITO\n\n🔍 URLs testées :\n${possibleUrls.map(url => `• ${url}`).join('\n')}\n\n💡 Vérifications :\n• ✅ Email/mot de passe dans les paramètres ⚙️\n• ✅ Même identifiants que ui.boondmanager.com\n• ✅ Votre compte a accès à l'API\n• ✅ Essayez d'ajouter une URL personnalisée\n\n🏢 Code client détecté : hito`);
   }
   
-  const url = `${workingUrl}${endpoint}`;
-  console.log(`🔗 Calling: ${url}`);
+  const fullUrl = `${workingConfig.baseUrl}${endpoint}`;
+  console.log(`🔗 Making API call to: ${fullUrl}`);
   
   const credentials = btoa(`${config.username}:${config.password}`);
   
@@ -185,11 +230,12 @@ async function callBoondmanagerAPI(endpoint: string, options: RequestInit = {}):
     'Content-Type': 'application/json',
     'Accept': 'application/json',
     'Authorization': `Basic ${credentials}`,
+    'User-Agent': 'Hito-API-Client/1.0',
     ...((options.headers as Record<string, string>) || {})
   };
 
   try {
-    const response = await fetch(url, {
+    const response = await fetch(fullUrl, {
       ...options,
       headers,
       mode: 'cors',
@@ -200,11 +246,14 @@ async function callBoondmanagerAPI(endpoint: string, options: RequestInit = {}):
       const errorText = await response.text();
       
       if (response.status === 401) {
-        throw new Error(`❌ AUTHENTIFICATION ÉCHOUÉE\n\nVos identifiants sont incorrects.\nVérifiez votre email et mot de passe dans les paramètres.`);
+        // Supprimer la config sauvegardée si l'auth échoue
+        localStorage.removeItem('boondmanager-working-url');
+        localStorage.removeItem('boondmanager-working-endpoint');
+        throw new Error(`❌ AUTHENTIFICATION ÉCHOUÉE\n\nVos identifiants Hito sont incorrects.\n✅ Vérifiez votre email et mot de passe dans les paramètres ⚙️\n💡 Utilisez les mêmes que pour ui.boondmanager.com`);
       } else if (response.status === 403) {
-        throw new Error(`❌ ACCÈS REFUSÉ\n\nVotre compte n'a pas les permissions API.\nContactez votre administrateur Boondmanager.`);
+        throw new Error(`❌ ACCÈS REFUSÉ\n\nVotre compte Hito n'a pas accès à l'API.\n💡 Contactez votre administrateur Boondmanager.`);
       } else {
-        throw new Error(`❌ ERREUR API (${response.status})\n\n${errorText.substring(0, 200)}`);
+        throw new Error(`❌ ERREUR API HITO (${response.status})\n\n${errorText.substring(0, 200)}`);
       }
     }
 
@@ -212,22 +261,25 @@ async function callBoondmanagerAPI(endpoint: string, options: RequestInit = {}):
     return data;
   } catch (error) {
     if (error.message.includes('Failed to fetch') || error.message.includes('ERR_NAME_NOT_RESOLVED')) {
-      throw new Error(`❌ PROBLÈME DE CONNEXION\n\nL'URL ${workingUrl} n'est pas accessible.\n\n💡 Vérifiez l'URL de votre instance Boondmanager dans les paramètres.`);
+      // Supprimer la config sauvegardée si l'URL ne fonctionne plus
+      localStorage.removeItem('boondmanager-working-url');
+      localStorage.removeItem('boondmanager-working-endpoint');
+      throw new Error(`❌ PROBLÈME DE CONNEXION\n\nL'API Hito n'est pas accessible.\n\n🔧 Solutions :\n• Vérifiez votre connexion internet\n• Essayez une URL personnalisée dans les paramètres\n• L'API Hito pourrait être temporairement indisponible`);
     }
     throw error;
   }
 }
 
 /**
- * Récupère tous les besoins actifs
+ * Récupère tous les besoins actifs pour Hito
  */
 export async function fetchOpenNeeds(): Promise<BoondmanagerNeed[]> {
   try {
-    console.log('🔍 Fetching open needs from Boondmanager...');
+    console.log('🔍 Fetching Hito opportunities...');
     
-    const response = await callBoondmanagerAPI('/opportunities?limit=20');
+    const response = await callBoondmanagerAPI(''); // Utilise l'endpoint déjà trouvé
     
-    console.log('📊 Response structure:', {
+    console.log('📊 Hito API Response structure:', {
       type: typeof response,
       isArray: Array.isArray(response),
       keys: response && typeof response === 'object' ? Object.keys(response) : []
@@ -242,42 +294,43 @@ export async function fetchOpenNeeds(): Promise<BoondmanagerNeed[]> {
         const possibleArrays = Object.values(response).filter(Array.isArray);
         if (possibleArrays.length > 0) {
           opportunities = possibleArrays[0];
+          console.log(`📋 Found array in response: ${opportunities.length} items`);
         } else {
-          console.log('⚠️ No array found in response, returning empty list');
+          console.log('⚠️ No array found in Hito response, returning empty list');
           return [];
         }
       } else {
-        console.log('⚠️ Response is not an array or object');
+        console.log('⚠️ Hito response is not an array or object');
         return [];
       }
     }
     
     // Mapper les données au format attendu
     const mappedNeeds = opportunities.slice(0, 20).map((item: any, index: number) => ({
-      id: item.id?.toString() || item.uuid || `need-${index}`,
-      title: item.title || item.name || item.label || `Besoin ${index + 1}`,
-      client: item.company?.name || item.client?.name || item.account?.name || 'Client non spécifié',
-      description: item.description || item.comment || item.notes || '',
+      id: item.id?.toString() || item.uuid || `hito-need-${index}`,
+      title: item.title || item.name || item.label || item.subject || `Besoin ${index + 1}`,
+      client: item.company?.name || item.client?.name || item.account?.name || item.customer || 'Client non spécifié',
+      description: item.description || item.comment || item.notes || item.details || '',
       status: item.state || item.status || 'En cours',
       created_at: item.createdAt || item.created_at || item.dateCreated || new Date().toISOString(),
       updated_at: item.updatedAt || item.updated_at || item.dateUpdated || new Date().toISOString()
     }));
     
-    console.log(`✅ Successfully mapped ${mappedNeeds.length} needs`);
+    console.log(`✅ Successfully mapped ${mappedNeeds.length} Hito needs`);
     return mappedNeeds;
     
   } catch (error) {
-    console.error('💥 Failed to fetch open needs:', error);
+    console.error('💥 Failed to fetch Hito needs:', error);
     throw error;
   }
 }
 
 /**
- * Teste la connexion à l'API Boondmanager
+ * Teste la connexion à l'API Boondmanager pour Hito
  */
 export async function testBoondmanagerConnection(): Promise<boolean> {
   try {
-    console.log('🧪 Testing Boondmanager connection...');
+    console.log('🧪 Testing Hito Boondmanager connection...');
     
     const config = getBoondmanagerConfig();
     if (!config) {
@@ -285,11 +338,18 @@ export async function testBoondmanagerConnection(): Promise<boolean> {
       return false;
     }
     
-    // Essayer de trouver une URL qui fonctionne
-    const workingUrl = await findWorkingApiUrl(config);
-    return !!workingUrl;
+    // Essayer de trouver une URL qui fonctionne pour Hito
+    const workingConfig = await findWorkingApiUrl(config);
+    
+    if (workingConfig) {
+      console.log(`✅ Hito connection successful: ${workingConfig.baseUrl}`);
+      return true;
+    } else {
+      console.log('❌ No working Hito API URL found');
+      return false;
+    }
   } catch (error) {
-    console.error('💥 Connection test failed:', error);
+    console.error('💥 Hito connection test failed:', error);
     return false;
   }
 }
@@ -299,7 +359,7 @@ export async function testBoondmanagerConnection(): Promise<boolean> {
  */
 export async function fetchNeedDetails(needId: string): Promise<BoondmanagerNeed | null> {
   try {
-    const response = await callBoondmanagerAPI(`/opportunities/${needId}`);
+    const response = await callBoondmanagerAPI(`/${needId}`); // Utilisera le bon endpoint
     const opportunity = response.data || response;
     
     if (opportunity && opportunity.id) {
@@ -316,7 +376,7 @@ export async function fetchNeedDetails(needId: string): Promise<BoondmanagerNeed
     
     return null;
   } catch (error) {
-    console.error('💥 Failed to fetch need details:', error);
+    console.error('💥 Failed to fetch Hito need details:', error);
     return null;
   }
 }
