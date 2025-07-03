@@ -241,9 +241,9 @@ export function BoondmanagerProspectsForm({ salesReps, onSubmit, isLoading = fal
                     <div>
                       <div className="mb-2">Configurez vos tokens d'authentification dans les paramètres :</div>
                       <div className="space-y-1 text-xs">
-                        <div>• <strong>Client Token</strong> : depuis l'interface administrateur > dashboard</div>
-                        <div>• <strong>Client Key</strong> : depuis l'interface administrateur > dashboard</div>
-                        <div>• <strong>User Token</strong> : depuis votre interface utilisateur > paramètres > sécurité</div>
+                        <div>• <strong>Client Token</strong> : depuis l&apos;interface administrateur &gt; dashboard</div>
+                        <div>• <strong>Client Key</strong> : depuis l&apos;interface administrateur &gt; dashboard</div>
+                        <div>• <strong>User Token</strong> : depuis votre interface utilisateur &gt; paramètres &gt; sécurité</div>
                       </div>
                     </div>
                   )}
