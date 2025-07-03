@@ -69,83 +69,52 @@ function getBoondmanagerConfig(): BoondmanagerApiConfig | null {
 }
 
 /**
- * Effectue un appel à l'API Boondmanager
+ * Effectue un appel à l'API Boondmanager via la fonction Edge (contourne CORS)
  */
-async function callBoondmanagerAPI(endpoint: string, options: RequestInit = {}): Promise<any> {
+async function callBoondmanagerAPI(endpoint: string): Promise<any> {
   const config = getBoondmanagerConfig();
   
   if (!config) {
     throw new Error('Configuration Boondmanager manquante. Veuillez configurer le Client Token, Client Key et User Token dans les paramètres.');
   }
 
-  // IMPORTANT: Problème CORS détecté !
-  // L'API Boondmanager bloque les requêtes directes depuis le navigateur
-  // Solution temporaire : utiliser un proxy CORS
-  const baseUrl = 'https://cors-anywhere.herokuapp.com/https://api.boondmanager.com';
-  const url = `${baseUrl}${endpoint}`;
-  
-  console.log('🔗 Calling Boondmanager API:', url);
-  
-  // Construire le JWT selon la documentation
-  const jwtToken = `${config.clientToken}.${config.clientKey}.${config.userToken}`;
-  
-  const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
-    'Accept': 'application/json',
-    'X-Jwt-Client-BoondManager': jwtToken,
-    'X-Requested-With': 'XMLHttpRequest',
-    ...((options.headers as Record<string, string>) || {})
-  };
-
-  console.log('📤 Request details:', { 
-    url,
-    method: options.method || 'GET',
-    headers: { 
-      ...headers, 
-      'X-Jwt-Client-BoondManager': `${config.clientToken.substring(0, 4)}...${config.clientKey.substring(0, 4)}...${config.userToken.substring(0, 4)}...` 
-    }
-  });
+  console.log('🔗 Calling Boondmanager API via Edge Function:', endpoint);
 
   try {
-    const response = await fetch(url, {
-      ...options,
-      headers,
-      mode: 'cors'
+    // Utiliser la fonction Edge pour contourner CORS
+    const { supabase } = await import('../lib/supabase');
+    
+    const { data, error } = await supabase.functions.invoke('boondmanager-proxy', {
+      body: {
+        endpoint,
+        config: {
+          clientToken: config.clientToken,
+          clientKey: config.clientKey,
+          userToken: config.userToken
+        }
+      }
     });
 
-    console.log('📥 Response status:', response.status);
-    console.log('📥 Response headers:', Object.fromEntries(response.headers.entries()));
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('❌ API Error Response:', errorText);
-      
-      if (response.status === 401) {
-        throw new Error('Authentification échouée. Vérifiez vos tokens Boondmanager :\n• Client Token et Client Key : disponibles dans l\'interface administrateur > dashboard\n• User Token : disponible dans votre interface utilisateur > paramètres > sécurité');
-      } else if (response.status === 403) {
-        throw new Error('Accès refusé. Vérifiez les permissions de votre User Token.');
-      } else if (response.status === 404) {
-        throw new Error('Endpoint non trouvé. L\'API Boondmanager pourrait avoir changé.');
-      } else {
-        throw new Error(`Erreur API Boondmanager (${response.status}): ${errorText}`);
-      }
+    if (error) {
+      console.error('❌ Edge Function Error:', error);
+      throw new Error(`Erreur fonction Edge: ${error.message}`);
     }
 
-    const data = await response.json();
-    console.log('✅ API Response data:', data);
-    return data;
+    if (!data?.success) {
+      console.error('❌ API Error:', data);
+      throw new Error(data?.error || 'Erreur API Boondmanager');
+    }
+
+    console.log('✅ API Response via Edge Function:', data.data);
+    return data.data;
   } catch (error) {
-    console.error('💥 Erreur lors de l\'appel à l\'API Boondmanager:', error);
-    
-    if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
-      throw new Error('❌ PROBLÈME CORS DÉTECTÉ :\n\n1. L\'API Boondmanager bloque les requêtes depuis le navigateur\n2. Solution temporaire : proxy CORS activé\n3. Pour une solution permanente, contactez votre administrateur Boondmanager\n\nL\'API doit autoriser les requêtes depuis ' + window.location.origin);
-    }
+    console.error('💥 Erreur lors de l\'appel via Edge Function:', error);
     
     if (error instanceof Error) {
       throw error;
     }
     
-    throw new Error('Erreur inconnue lors de l\'appel à l\'API Boondmanager');
+    throw new Error('Erreur inconnue lors de l\'appel via Edge Function');
   }
 }
 

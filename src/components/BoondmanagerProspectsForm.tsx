@@ -230,19 +230,8 @@ export function BoondmanagerProspectsForm({ salesReps, onSubmit, isLoading = fal
             <div className="p-3 bg-red-100 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg flex items-start gap-2">
               <AlertCircle className="w-4 h-4 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
               <div className="text-red-700 dark:text-red-300 text-sm">
-                <div className="font-medium mb-1">Problème de connexion Boondmanager</div>
-                <div className="text-xs">
-                  {needsError.includes('CORS') ? (
-                    <>
-                      L'API Boondmanager bloque les requêtes depuis le navigateur. 
-                      <br />Solutions possibles :
-                      <br />• Contactez votre administrateur Boondmanager pour configurer les CORS
-                      <br />• Vérifiez que vos tokens sont corrects dans les paramètres
-                    </>
-                  ) : (
-                    needsError
-                  )}
-                </div>
+                <div className="font-medium mb-1">Erreur Boondmanager</div>
+                <div className="text-xs">{needsError}</div>
               </div>
             </div>
           )}
