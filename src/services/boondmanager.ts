@@ -1,6 +1,6 @@
 /**
  * Service pour l'intégration avec l'API Boondmanager
- * Basé sur la documentation officielle : https://doc.boondmanager.com/api-externe/
+ * Utilise la fonction Edge pour contourner les problèmes CORS
  */
 
 export interface BoondmanagerNeed {
@@ -17,15 +17,17 @@ export interface BoondmanagerApiConfig {
   username: string;
   password: string;
   customerCode?: string;
+  baseUrl?: string;
 }
 
 /**
- * Configuration de l'API Boondmanager selon la documentation officielle
+ * Configuration de l'API Boondmanager
  */
 function getBoondmanagerConfig(): BoondmanagerApiConfig | null {
   // Essayer d'abord les clés globales
   let username = localStorage.getItem('boondmanager-username');
   let password = localStorage.getItem('boondmanager-password');
+  let baseUrl = localStorage.getItem('boondmanager-base-url');
 
   // Si pas trouvé, essayer les clés utilisateur spécifiques
   if (!username || !password) {
@@ -40,6 +42,7 @@ function getBoondmanagerConfig(): BoondmanagerApiConfig | null {
           const userPrefix = `boondmanager_${userEmail}_`;
           username = username || localStorage.getItem(`${userPrefix}username`);
           password = password || localStorage.getItem(`${userPrefix}password`);
+          baseUrl = baseUrl || localStorage.getItem(`${userPrefix}base-url`);
         }
       }
     } catch (e) {
@@ -50,6 +53,7 @@ function getBoondmanagerConfig(): BoondmanagerApiConfig | null {
   console.log('🔧 Boondmanager config check:', { 
     hasUsername: !!username,
     hasPassword: !!password,
+    hasBaseUrl: !!baseUrl,
     usernamePreview: username ? username.substring(0, 8) + '...' : 'none'
   });
 
@@ -61,107 +65,83 @@ function getBoondmanagerConfig(): BoondmanagerApiConfig | null {
   return {
     username: username.trim(),
     password: password.trim(),
-    customerCode: 'hito' // Code client spécifique pour votre entreprise
+    customerCode: 'hito', // Code client spécifique pour votre entreprise
+    baseUrl: baseUrl?.trim() || undefined
   };
 }
 
 /**
- * Effectue un appel à l'API Boondmanager selon la documentation officielle
- * URL de base : https://api.boondmanager.com
- * Authentification : Basic Auth avec customerCode
+ * Effectue un appel à l'API Boondmanager via la fonction Edge
  */
-async function callBoondmanagerAPI(endpoint: string, config: BoondmanagerApiConfig): Promise<any> {
-  // URL de base selon la documentation officielle
-  const baseUrl = 'https://api.boondmanager.com';
+async function callBoondmanagerAPI(endpoint: string): Promise<any> {
+  const config = getBoondmanagerConfig();
   
-  // Construire l'URL avec le customerCode si nécessaire
-  let url = `${baseUrl}${endpoint}`;
-  
-  // Ajouter le customerCode selon la documentation
-  if (config.customerCode) {
-    const separator = endpoint.includes('?') ? '&' : '?';
-    url += `${separator}customerCode=${config.customerCode}`;
+  if (!config) {
+    throw new Error('❌ CONFIGURATION MANQUANTE\n\nVeuillez configurer votre email et mot de passe Boondmanager dans les paramètres ⚙️');
   }
-  
-  console.log('🔗 Calling Boondmanager API:', url);
-  
-  // Authentification Basic selon la documentation
-  const credentials = btoa(`${config.username}:${config.password}`);
-  
-  const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
-    'Accept': 'application/json',
-    'Authorization': `Basic ${credentials}`,
-    'User-Agent': 'Hito-API-Client/1.0'
-  };
 
-  console.log('📤 Request headers:', { 
-    ...headers, 
-    'Authorization': `Basic ${config.username.substring(0, 4)}...` 
-  });
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+  const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+  
+  if (!supabaseUrl || !supabaseKey) {
+    throw new Error('Configuration Supabase manquante');
+  }
+
+  console.log('🔗 Calling Boondmanager via Edge Function:', endpoint);
 
   try {
-    const response = await fetch(url, {
-      method: 'GET',
-      headers,
-      mode: 'cors',
-      credentials: 'omit'
+    const response = await fetch(`${supabaseUrl}/functions/v1/boondmanager-proxy`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${supabaseKey}`,
+      },
+      body: JSON.stringify({
+        endpoint,
+        config
+      })
     });
 
-    console.log('📥 Response status:', response.status);
-    console.log('📥 Response headers:', Object.fromEntries(response.headers.entries()));
-
     if (!response.ok) {
-      const errorText = await response.text();
-      console.error('❌ API Error Response:', errorText);
-      
-      if (response.status === 401) {
-        throw new Error(`❌ AUTHENTIFICATION ÉCHOUÉE\n\nVos identifiants Boondmanager sont incorrects.\n✅ Vérifiez votre email et mot de passe dans les paramètres ⚙️\n💡 Utilisez les mêmes que pour ui.boondmanager.com/login?customerCode=hito`);
-      } else if (response.status === 403) {
-        throw new Error(`❌ ACCÈS REFUSÉ\n\nVotre compte n'a pas accès à l'API.\n💡 Contactez votre administrateur Boondmanager.`);
-      } else if (response.status === 404) {
-        throw new Error(`❌ ENDPOINT NON TROUVÉ\n\nL'endpoint ${endpoint} n'existe pas.\nVérifiez la documentation API.`);
-      } else {
-        throw new Error(`❌ ERREUR API BOONDMANAGER (${response.status})\n\n${errorText}`);
-      }
+      const errorData = await response.json();
+      console.error('❌ Edge Function error:', errorData);
+      throw new Error(errorData.error || `Erreur Edge Function (${response.status})`);
     }
 
-    const data = await response.json();
-    console.log('✅ API Response data:', data);
-    return data;
+    const result = await response.json();
+    
+    if (!result.success) {
+      throw new Error(result.error || 'Erreur inconnue de l\'API');
+    }
+
+    console.log('✅ Edge Function response received');
+    return result.data;
   } catch (error) {
-    console.error('💥 Erreur lors de l\'appel à l\'API Boondmanager:', error);
+    console.error('💥 Error calling Edge Function:', error);
     
     if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
-      throw new Error(`❌ PROBLÈME DE CONNEXION\n\n1. Vérifiez votre connexion internet\n2. L'API Boondmanager pourrait bloquer les requêtes CORS\n3. Essayez de vous connecter à ${baseUrl} dans votre navigateur\n\n💡 Si le problème persiste, l'API pourrait ne pas supporter les requêtes depuis le navigateur.`);
+      throw new Error('❌ PROBLÈME DE CONNEXION\n\nImpossible de contacter le serveur Edge Function.\nVérifiez votre connexion internet.');
     }
     
-    if (error instanceof Error) {
-      throw error;
-    }
-    
-    throw new Error('Erreur inconnue lors de l\'appel à l\'API Boondmanager');
+    throw error;
   }
 }
 
 /**
- * Récupère les opportunités ouvertes selon la documentation officielle
+ * Récupère les opportunités ouvertes
  */
 export async function fetchOpenNeeds(): Promise<BoondmanagerNeed[]> {
   try {
     console.log('🔍 Fetching opportunities from Boondmanager...');
     
-    const config = getBoondmanagerConfig();
-    if (!config) {
-      throw new Error('❌ CONFIGURATION MANQUANTE\n\nVeuillez configurer votre email et mot de passe Boondmanager dans les paramètres ⚙️');
-    }
-
     // Endpoints à essayer selon la documentation
     const endpointsToTry = [
       '/opportunities',
       '/opportunities?limit=50',
       '/api/opportunities',
-      '/api/opportunities?limit=50'
+      '/api/opportunities?limit=50',
+      '/api/v1/opportunities',
+      '/api/v1/opportunities?limit=50'
     ];
     
     let opportunities;
@@ -170,7 +150,7 @@ export async function fetchOpenNeeds(): Promise<BoondmanagerNeed[]> {
     for (const endpoint of endpointsToTry) {
       try {
         console.log(`🔄 Trying endpoint: ${endpoint}`);
-        const response = await callBoondmanagerAPI(endpoint, config);
+        const response = await callBoondmanagerAPI(endpoint);
         
         // Extraire les données selon différents formats possibles
         opportunities = response.data || response.opportunities || response.results || response;
@@ -198,13 +178,12 @@ export async function fetchOpenNeeds(): Promise<BoondmanagerNeed[]> {
     
     if (!Array.isArray(opportunities)) {
       console.error('❌ No valid endpoint found. Last response:', opportunities);
-      throw lastError || new Error('Aucun endpoint valide trouvé pour récupérer les opportunités. Vérifiez la configuration de l\'API.');
+      throw lastError || new Error('Aucun endpoint valide trouvé pour récupérer les opportunités.');
     }
     
     // Filtrer les opportunités ouvertes
     const openOpportunities = opportunities.filter((opp: any) => {
       const state = opp.state || opp.status || '';
-      // Selon la documentation, les états peuvent varier
       return !state || ['En Cours', 'Piste Identifiée', 'Open', 'Active', 'Ouvert'].includes(state);
     });
     
@@ -245,7 +224,7 @@ export async function testBoondmanagerConnection(): Promise<boolean> {
     }
     
     // Test simple avec l'endpoint de base
-    await callBoondmanagerAPI('/opportunities?limit=1', config);
+    await callBoondmanagerAPI('/opportunities?limit=1');
     console.log('✅ Connection test successful');
     return true;
   } catch (error) {
@@ -261,12 +240,7 @@ export async function fetchNeedDetails(needId: string): Promise<BoondmanagerNeed
   try {
     console.log(`🔍 Fetching details for opportunity: ${needId}`);
     
-    const config = getBoondmanagerConfig();
-    if (!config) {
-      return null;
-    }
-    
-    const response = await callBoondmanagerAPI(`/opportunities/${needId}`, config);
+    const response = await callBoondmanagerAPI(`/opportunities/${needId}`);
     const opportunity = response.data || response;
     
     if (!opportunity || !opportunity.id) {

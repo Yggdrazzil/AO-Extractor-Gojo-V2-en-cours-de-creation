@@ -5,13 +5,15 @@ const corsHeaders = {
 }
 
 interface BoondmanagerConfig {
-  clientToken: string
-  clientKey: string
-  userToken: string
+  username: string
+  password: string
+  customerCode?: string
+  baseUrl?: string
 }
 
 /**
  * Fonction Edge pour contourner les problèmes CORS avec l'API Boondmanager
+ * Utilise l'authentification Basic Auth selon la documentation officielle
  */
 Deno.serve(async (req) => {
   // Gestion CORS
@@ -44,11 +46,11 @@ Deno.serve(async (req) => {
       )
     }
 
-    const { clientToken, clientKey, userToken } = config as BoondmanagerConfig
+    const { username, password, customerCode, baseUrl } = config as BoondmanagerConfig
     
-    if (!clientToken || !clientKey || !userToken) {
+    if (!username || !password) {
       return new Response(
-        JSON.stringify({ error: 'Missing required tokens' }),
+        JSON.stringify({ error: 'Missing username or password' }),
         { 
           status: 400, 
           headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
@@ -56,21 +58,34 @@ Deno.serve(async (req) => {
       )
     }
 
-    // Construire le JWT selon la documentation Boondmanager
-    const jwtToken = `${clientToken}.${clientKey}.${userToken}`
+    // URL de base - essayer l'URL personnalisée d'abord, puis l'API officielle
+    const apiBaseUrl = baseUrl || 'https://api.boondmanager.com'
     
-    // URL de base de l'API Boondmanager
-    const baseUrl = 'https://api.boondmanager.com'
-    const url = `${baseUrl}${endpoint}`
+    // Construire l'URL complète
+    let url = `${apiBaseUrl}${endpoint}`
+    
+    // Ajouter le customerCode si fourni
+    if (customerCode) {
+      const separator = endpoint.includes('?') ? '&' : '?'
+      url += `${separator}customerCode=${customerCode}`
+    }
     
     console.log(`📤 Calling Boondmanager API: ${url}`)
+    
+    // Authentification Basic Auth selon la documentation
+    const credentials = btoa(`${username}:${password}`)
     
     const headers = {
       'Content-Type': 'application/json',
       'Accept': 'application/json',
-      'X-Jwt-Client-BoondManager': jwtToken,
-      'User-Agent': 'Supabase-Edge-Function/1.0'
+      'Authorization': `Basic ${credentials}`,
+      'User-Agent': 'Hito-API-Client/1.0'
     }
+
+    console.log('📤 Request headers:', {
+      ...headers,
+      'Authorization': `Basic ${username.substring(0, 4)}...`
+    })
 
     const response = await fetch(url, {
       method: 'GET',
@@ -78,6 +93,7 @@ Deno.serve(async (req) => {
     })
 
     console.log(`📥 Response status: ${response.status}`)
+    console.log(`📥 Response headers:`, Object.fromEntries(response.headers.entries()))
     
     if (!response.ok) {
       const errorText = await response.text()
@@ -86,18 +102,21 @@ Deno.serve(async (req) => {
       let errorMessage = `Erreur API Boondmanager (${response.status})`
       
       if (response.status === 401) {
-        errorMessage = 'Authentification échouée. Vérifiez vos tokens Boondmanager'
+        errorMessage = 'Authentification échouée. Vérifiez votre email et mot de passe Boondmanager'
       } else if (response.status === 403) {
-        errorMessage = 'Accès refusé. Vérifiez les permissions de votre User Token'
+        errorMessage = 'Accès refusé. Votre compte n\'a peut-être pas accès à l\'API'
       } else if (response.status === 404) {
-        errorMessage = 'Endpoint non trouvé'
+        errorMessage = `Endpoint non trouvé: ${endpoint}`
+      } else if (response.status === 0 || errorText.includes('CORS')) {
+        errorMessage = 'Problème CORS. L\'API Boondmanager bloque les requêtes'
       }
       
       return new Response(
         JSON.stringify({ 
           error: errorMessage,
           details: errorText,
-          status: response.status
+          status: response.status,
+          url: url
         }),
         { 
           status: response.status, 
@@ -107,7 +126,7 @@ Deno.serve(async (req) => {
     }
 
     const data = await response.json()
-    console.log('✅ API Response received')
+    console.log('✅ API Response received successfully')
     
     return new Response(
       JSON.stringify({ success: true, data }),
@@ -118,9 +137,16 @@ Deno.serve(async (req) => {
 
   } catch (error) {
     console.error('💥 Function error:', error)
+    
+    let errorMessage = 'Erreur interne du serveur'
+    
+    if (error instanceof TypeError && error.message.includes('fetch')) {
+      errorMessage = 'Impossible de contacter l\'API Boondmanager. Vérifiez l\'URL de base.'
+    }
+    
     return new Response(
       JSON.stringify({ 
-        error: 'Internal server error',
+        error: errorMessage,
         details: error.message || 'Unknown error occurred'
       }),
       { 
