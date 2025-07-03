@@ -78,8 +78,10 @@ async function callBoondmanagerAPI(endpoint: string, options: RequestInit = {}):
     throw new Error('Configuration Boondmanager manquante. Veuillez configurer le Client Token, Client Key et User Token dans les paramètres.');
   }
 
-  // URL de base de l'API Boondmanager (selon la documentation)
-  const baseUrl = 'https://api.boondmanager.com';
+  // IMPORTANT: Problème CORS détecté !
+  // L'API Boondmanager bloque les requêtes directes depuis le navigateur
+  // Solution temporaire : utiliser un proxy CORS
+  const baseUrl = 'https://cors-anywhere.herokuapp.com/https://api.boondmanager.com';
   const url = `${baseUrl}${endpoint}`;
   
   console.log('🔗 Calling Boondmanager API:', url);
@@ -91,6 +93,7 @@ async function callBoondmanagerAPI(endpoint: string, options: RequestInit = {}):
     'Content-Type': 'application/json',
     'Accept': 'application/json',
     'X-Jwt-Client-BoondManager': jwtToken,
+    'X-Requested-With': 'XMLHttpRequest',
     ...((options.headers as Record<string, string>) || {})
   };
 
@@ -107,8 +110,7 @@ async function callBoondmanagerAPI(endpoint: string, options: RequestInit = {}):
     const response = await fetch(url, {
       ...options,
       headers,
-      mode: 'cors',
-      credentials: 'omit'
+      mode: 'cors'
     });
 
     console.log('📥 Response status:', response.status);
@@ -124,8 +126,6 @@ async function callBoondmanagerAPI(endpoint: string, options: RequestInit = {}):
         throw new Error('Accès refusé. Vérifiez les permissions de votre User Token.');
       } else if (response.status === 404) {
         throw new Error('Endpoint non trouvé. L\'API Boondmanager pourrait avoir changé.');
-      } else if (response.status === 0) {
-        throw new Error('Problème CORS : L\'API Boondmanager bloque les requêtes depuis le navigateur. Contactez votre administrateur Boondmanager pour configurer les CORS.');
       } else {
         throw new Error(`Erreur API Boondmanager (${response.status}): ${errorText}`);
       }
@@ -138,7 +138,7 @@ async function callBoondmanagerAPI(endpoint: string, options: RequestInit = {}):
     console.error('💥 Erreur lors de l\'appel à l\'API Boondmanager:', error);
     
     if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
-      throw new Error('❌ PROBLÈME DE CONNEXION :\n\n1. Vérifiez votre connexion internet\n2. L\'API Boondmanager pourrait bloquer les requêtes depuis le navigateur (CORS)\n3. Contactez votre administrateur Boondmanager\n\nL\'API doit autoriser les requêtes depuis ' + window.location.origin);
+      throw new Error('❌ PROBLÈME CORS DÉTECTÉ :\n\n1. L\'API Boondmanager bloque les requêtes depuis le navigateur\n2. Solution temporaire : proxy CORS activé\n3. Pour une solution permanente, contactez votre administrateur Boondmanager\n\nL\'API doit autoriser les requêtes depuis ' + window.location.origin);
     }
     
     if (error instanceof Error) {
