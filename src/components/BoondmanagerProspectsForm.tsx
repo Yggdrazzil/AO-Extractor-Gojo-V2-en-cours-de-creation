@@ -52,60 +52,19 @@ export function BoondmanagerProspectsForm({ salesReps, onSubmit, isLoading = fal
     setNeedsError(null);
     
     try {
-      // Mode démo temporaire en attendant le déploiement de la fonction proxy
-      console.log('🔧 Mode démo - Fonction proxy Boondmanager non déployée');
+      // Vérifier d'abord la connexion
+      const isConnected = await testBoondmanagerConnection();
+      if (!isConnected) {
+        throw new Error('Impossible de se connecter à Boondmanager. Vérifiez la configuration dans les paramètres et assurez-vous que la fonction Edge est déployée.');
+      }
       
-      // Simuler des besoins clients pour la démonstration
-      const demoNeeds = [
-        {
-          id: 'demo-1',
-          title: 'Développeur Full Stack Senior',
-          client: 'TechCorp Solutions',
-          description: 'Recherche d\'un développeur expérimenté en React/Node.js pour projet e-commerce',
-          status: 'En Cours',
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        },
-        {
-          id: 'demo-2', 
-          title: 'Consultant DevOps',
-          client: 'InnovateTech',
-          description: 'Mission de mise en place d\'une infrastructure cloud AWS',
-          status: 'Piste Identifiée',
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        },
-        {
-          id: 'demo-3',
-          title: 'Architecte Solutions',
-          client: 'Digital Dynamics',
-          description: 'Conception d\'architecture microservices pour plateforme SaaS',
-          status: 'En Cours',
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        }
-      ];
-      
-      setOpenNeeds(demoNeeds);
-      console.log('✅ Mode démo activé avec', demoNeeds.length, 'besoins simulés');
+      const needs = await fetchOpenNeeds();
+      console.log('Loaded needs from Boondmanager:', needs.length);
+      setOpenNeeds(needs);
     } catch (error) {
       console.error('Error loading open needs:', error);
-      
-      // En cas d'erreur, utiliser le mode démo
-      const demoNeeds = [
-        {
-          id: 'demo-fallback',
-          title: 'Besoin client exemple',
-          client: 'Client Démo',
-          description: 'Exemple de besoin client en mode démonstration',
-          status: 'En Cours',
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        }
-      ];
-      
-      setOpenNeeds(demoNeeds);
-      setNeedsError('Mode démonstration activé - Fonction proxy Boondmanager non déployée');
+      setNeedsError(error instanceof Error ? error.message : 'Erreur lors du chargement des besoins');
+      setOpenNeeds([]);
     } finally {
       setNeedsLoading(false);
     }
@@ -254,7 +213,7 @@ export function BoondmanagerProspectsForm({ salesReps, onSubmit, isLoading = fal
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <label htmlFor="selected-need" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-              Besoin client
+              Besoin Boondmanager
             </label>
             <button
               type="button"
@@ -267,18 +226,11 @@ export function BoondmanagerProspectsForm({ salesReps, onSubmit, isLoading = fal
             </button>
           </div>
           
-          {needsError && !needsLoading && (
-            <div className="p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg flex items-start gap-3">
-              <AlertCircle className="w-4 h-4 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
-              <div className="text-blue-800 dark:text-blue-200 text-sm">
-                <div className="font-medium mb-2">🚀 Mode Démonstration</div>
-                <div className="mb-2">
-                  L'intégration Boondmanager est en cours de déploiement. 
-                  Vous pouvez tester l'interface avec des besoins clients simulés.
-                </div>
-                <div className="text-xs text-blue-600 dark:text-blue-300">
-                  Les besoins affichés sont des exemples pour la démonstration.
-                </div>
+          {needsError && (
+            <div className="p-3 bg-red-100 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg flex items-start gap-2">
+              <AlertCircle className="w-4 h-4 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
+              <div className="text-red-700 dark:text-red-300 text-sm">
+                {needsError}
               </div>
             </div>
           )}
