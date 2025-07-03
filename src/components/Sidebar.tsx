@@ -24,9 +24,9 @@ const tabs = [
   },
   {
     id: 'boondmanager-prospects',
-    label: 'Profils pour besoins Boondmanager',
+    label: 'Besoins clients (Démo)',
     icon: Users,
-    description: 'Analyse de profils pour besoins clients'
+    description: 'Mode démonstration - Besoins clients'
   },
   {
     id: 'analytics',
