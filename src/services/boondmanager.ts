@@ -1,6 +1,6 @@
 /**
  * Service pour l'intégration avec l'API Boondmanager
- * Version de debug avec logs détaillés
+ * Authentification Basic avec email/password
  */
 
 export interface BoondmanagerNeed {
@@ -22,21 +22,24 @@ export interface BoondmanagerApiConfig {
  * Configuration de l'API Boondmanager
  */
 function getBoondmanagerConfig(): BoondmanagerApiConfig | null {
-  // Essayer d'abord les clés spécifiques à l'utilisateur
+  // Essayer d'abord les clés globales
   let username = localStorage.getItem('boondmanager-username');
   let password = localStorage.getItem('boondmanager-password');
 
   // Si pas trouvé, essayer les clés utilisateur spécifiques
   if (!username || !password) {
     try {
-      const { supabase } = await import('../lib/supabase');
-      const { data: { session } } = await supabase.auth.getSession();
-      const userEmail = session?.user?.email;
-      
-      if (userEmail) {
-        const userPrefix = `boondmanager_${userEmail}_`;
-        username = username || localStorage.getItem(`${userPrefix}username`);
-        password = password || localStorage.getItem(`${userPrefix}password`);
+      // Récupérer l'email utilisateur depuis le localStorage de Supabase
+      const supabaseAuth = localStorage.getItem('sb-onuznsfzlkguvfdeilff-auth-token');
+      if (supabaseAuth) {
+        const authData = JSON.parse(supabaseAuth);
+        const userEmail = authData?.user?.email;
+        
+        if (userEmail) {
+          const userPrefix = `boondmanager_${userEmail}_`;
+          username = username || localStorage.getItem(`${userPrefix}username`);
+          password = password || localStorage.getItem(`${userPrefix}password`);
+        }
       }
     } catch (e) {
       console.warn('Could not get user-specific config:', e);
@@ -46,8 +49,8 @@ function getBoondmanagerConfig(): BoondmanagerApiConfig | null {
   console.log('🔧 Boondmanager config check:', { 
     hasUsername: !!username,
     hasPassword: !!password,
-    usernameLength: username?.length || 0,
-    passwordLength: password?.length || 0
+    usernamePreview: username ? username.substring(0, 5) + '...' : 'none',
+    passwordPreview: password ? '***' : 'none'
   });
 
   if (!username || !password) {
@@ -68,7 +71,7 @@ async function callBoondmanagerAPI(endpoint: string, options: RequestInit = {}):
   const config = getBoondmanagerConfig();
   
   if (!config) {
-    throw new Error('Configuration Boondmanager manquante. Veuillez configurer votre nom d\'utilisateur et mot de passe dans les paramètres.');
+    throw new Error('❌ CONFIGURATION MANQUANTE\n\nVeuillez configurer votre nom d\'utilisateur et mot de passe Boondmanager dans les paramètres.\n\nUtilisez vos identifiants de connexion Boondmanager (email + mot de passe).');
   }
 
   // URL de base de l'API Boondmanager
@@ -90,14 +93,15 @@ async function callBoondmanagerAPI(endpoint: string, options: RequestInit = {}):
     'Accept': 'application/json',
     'Authorization': `Basic ${credentials}`,
     'User-Agent': 'Mozilla/5.0 (compatible; GOJO-Platform/1.0)',
+    'X-Requested-With': 'XMLHttpRequest',
     ...((options.headers as Record<string, string>) || {})
   };
 
-  console.log('📤 Request headers:', {
-    'Content-Type': headers['Content-Type'],
-    'Accept': headers['Accept'],
-    'Authorization': `Basic ${credentials.substring(0, 20)}...`,
-    'User-Agent': headers['User-Agent']
+  console.log('📤 Request details:', {
+    url,
+    method: options.method || 'GET',
+    authHeader: `Basic ${credentials.substring(0, 20)}...`,
+    hasCredentials: !!credentials
   });
 
   try {
@@ -105,37 +109,66 @@ async function callBoondmanagerAPI(endpoint: string, options: RequestInit = {}):
       ...options,
       headers,
       mode: 'cors',
-      credentials: 'omit'
+      credentials: 'omit',
+      cache: 'no-cache'
     });
 
     console.log('📥 Response details:', {
       status: response.status,
       statusText: response.statusText,
-      headers: Object.fromEntries(response.headers.entries()),
-      url: response.url
+      ok: response.ok,
+      url: response.url,
+      headers: Object.fromEntries(response.headers.entries())
     });
 
     // Lire le contenu de la réponse
     const responseText = await response.text();
-    console.log('📥 Response body (first 500 chars):', responseText.substring(0, 500));
+    console.log('📥 Response body preview:', responseText.substring(0, 200) + (responseText.length > 200 ? '...' : ''));
 
     if (!response.ok) {
       console.error('❌ API Error Response:', {
         status: response.status,
         statusText: response.statusText,
-        body: responseText
+        body: responseText.substring(0, 500)
       });
       
       if (response.status === 401) {
-        throw new Error('❌ AUTHENTIFICATION ÉCHOUÉE\n\nVérifiez :\n• Votre nom d\'utilisateur Boondmanager\n• Votre mot de passe Boondmanager\n• Que votre compte a accès à l\'API\n\nRéponse serveur : ' + responseText);
+        throw new Error(`❌ AUTHENTIFICATION ÉCHOUÉE (401)
+
+Vos identifiants Boondmanager sont incorrects ou votre compte n'a pas accès à l'API.
+
+Vérifiez :
+• Votre email Boondmanager
+• Votre mot de passe Boondmanager  
+• Que votre compte a les droits d'accès API
+
+Réponse serveur : ${responseText}`);
       } else if (response.status === 403) {
-        throw new Error('❌ ACCÈS REFUSÉ\n\nVotre compte n\'a pas les permissions pour accéder à l\'API Boondmanager.\nContactez votre administrateur.\n\nRéponse serveur : ' + responseText);
+        throw new Error(`❌ ACCÈS REFUSÉ (403)
+
+Votre compte n'a pas les permissions pour accéder à cette ressource.
+Contactez votre administrateur Boondmanager.
+
+Réponse serveur : ${responseText}`);
       } else if (response.status === 404) {
-        throw new Error('❌ ENDPOINT NON TROUVÉ\n\nL\'endpoint ' + endpoint + ' n\'existe pas.\nVérifiez la documentation API Boondmanager.\n\nRéponse serveur : ' + responseText);
+        throw new Error(`❌ ENDPOINT NON TROUVÉ (404)
+
+L'endpoint ${endpoint} n'existe pas sur votre instance Boondmanager.
+
+Réponse serveur : ${responseText}`);
       } else if (response.status === 0) {
-        throw new Error('❌ PROBLÈME CORS\n\nL\'API Boondmanager bloque les requêtes depuis le navigateur.\nContactez votre administrateur Boondmanager pour configurer les CORS pour : ' + window.location.origin);
+        throw new Error(`❌ PROBLÈME CORS
+
+L'API Boondmanager bloque les requêtes depuis le navigateur.
+Contactez votre administrateur pour configurer les CORS.
+
+Origin requis : ${window.location.origin}`);
       } else {
-        throw new Error(`❌ ERREUR API (${response.status})\n\n${response.statusText}\n\nRéponse serveur : ${responseText}`);
+        throw new Error(`❌ ERREUR API (${response.status})
+
+${response.statusText}
+
+Réponse serveur : ${responseText}`);
       }
     }
 
@@ -143,10 +176,19 @@ async function callBoondmanagerAPI(endpoint: string, options: RequestInit = {}):
     let data;
     try {
       data = JSON.parse(responseText);
-      console.log('✅ JSON parsed successfully, type:', typeof data, 'keys:', Object.keys(data || {}));
+      console.log('✅ JSON parsed successfully:', {
+        type: typeof data,
+        isArray: Array.isArray(data),
+        keys: typeof data === 'object' && data !== null ? Object.keys(data) : [],
+        length: Array.isArray(data) ? data.length : 'N/A'
+      });
     } catch (parseError) {
       console.error('❌ Failed to parse JSON:', parseError);
-      throw new Error('❌ RÉPONSE INVALIDE\n\nLa réponse de l\'API n\'est pas du JSON valide.\n\nRéponse reçue : ' + responseText.substring(0, 200));
+      throw new Error(`❌ RÉPONSE INVALIDE
+
+La réponse de l'API n'est pas du JSON valide.
+
+Réponse reçue : ${responseText.substring(0, 300)}`);
     }
 
     return data;
@@ -154,115 +196,122 @@ async function callBoondmanagerAPI(endpoint: string, options: RequestInit = {}):
     console.error('💥 Erreur lors de l\'appel à l\'API Boondmanager:', error);
     
     if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
-      throw new Error('❌ PROBLÈME DE CONNEXION\n\n1. Vérifiez votre connexion internet\n2. L\'API Boondmanager pourrait être indisponible\n3. Problème CORS possible\n\nURL tentée : ' + url);
+      throw new Error(`❌ PROBLÈME DE CONNEXION
+
+Causes possibles :
+1. Connexion internet coupée
+2. API Boondmanager indisponible
+3. Problème CORS (l'API bloque les requêtes web)
+4. Firewall ou proxy bloquant
+
+URL tentée : ${url}`);
     }
     
     if (error instanceof Error) {
       throw error;
     }
     
-    throw new Error('❌ ERREUR INCONNUE\n\nUne erreur inattendue s\'est produite lors de l\'appel à l\'API Boondmanager.');
+    throw new Error('❌ ERREUR INCONNUE\n\nUne erreur inattendue s\'est produite.');
   }
 }
 
 /**
- * Récupère tous les besoins avec les statuts "En Cours" et "Piste Identifiée"
+ * Récupère tous les besoins actifs
  */
 export async function fetchOpenNeeds(): Promise<BoondmanagerNeed[]> {
   try {
     console.log('🔍 Fetching open needs from Boondmanager...');
     
-    // Liste des endpoints à essayer selon la documentation Boondmanager
+    // Endpoints à essayer selon la documentation Boondmanager
     const endpointsToTry = [
-      '/opportunities?limit=10',
+      '/opportunities?limit=20',
       '/opportunities',
-      '/needs?limit=10',
+      '/opportunity',
+      '/needs?limit=20', 
       '/needs',
-      '/projects?limit=10',
-      '/projects',
-      '/api/opportunities',
-      '/api/needs',
-      '/v1/opportunities',
-      '/v1/needs'
+      '/projects?limit=20',
+      '/projects'
     ];
     
     let response;
-    let opportunities;
+    let opportunities = [];
     let lastError;
     
     for (const endpoint of endpointsToTry) {
       try {
-        console.log(`🔄 Trying endpoint: ${endpoint}`);
+        console.log(`🔄 Testing endpoint: ${endpoint}`);
         response = await callBoondmanagerAPI(endpoint);
         
-        console.log('📊 Response structure:', {
+        // Analyser la structure de réponse
+        console.log('📊 Response analysis:', {
           type: typeof response,
           isArray: Array.isArray(response),
           keys: response && typeof response === 'object' ? Object.keys(response) : [],
-          length: Array.isArray(response) ? response.length : 'N/A'
+          hasData: response && response.data !== undefined,
+          dataType: response && response.data ? typeof response.data : 'undefined'
         });
         
-        // Essayer différentes structures de réponse
-        opportunities = response.data || response.opportunities || response.needs || response.projects || response;
+        // Extraire les données selon différentes structures possibles
+        opportunities = response?.data || response?.opportunities || response?.needs || response?.projects || response;
         
-        if (Array.isArray(opportunities)) {
-          console.log(`✅ Success with ${endpoint}, found ${opportunities.length} items`);
+        if (Array.isArray(opportunities) && opportunities.length >= 0) {
+          console.log(`✅ Success with ${endpoint}: found ${opportunities.length} items`);
           break;
         } else if (opportunities && typeof opportunities === 'object') {
-          // Chercher un tableau dans l'objet
-          const possibleArrays = Object.values(opportunities).filter(Array.isArray);
-          if (possibleArrays.length > 0) {
-            opportunities = possibleArrays[0];
-            console.log(`✅ Success with ${endpoint}, found array with ${opportunities.length} items`);
+          // Chercher un tableau dans les propriétés
+          const arrayProperties = Object.values(opportunities).filter(Array.isArray);
+          if (arrayProperties.length > 0) {
+            opportunities = arrayProperties[0];
+            console.log(`✅ Success with ${endpoint}: found nested array with ${opportunities.length} items`);
             break;
           }
         }
         
-        console.log(`⚠️ ${endpoint} returned non-array data:`, typeof opportunities);
+        console.log(`⚠️ ${endpoint} returned non-array data`);
       } catch (error) {
-        console.log(`❌ ${endpoint} failed:`, error.message);
+        console.log(`❌ ${endpoint} failed:`, error.message.split('\n')[0]);
         lastError = error;
         continue;
       }
     }
     
     if (!Array.isArray(opportunities)) {
-      console.error('❌ No valid endpoint found. Last response:', response);
-      throw lastError || new Error('❌ AUCUN ENDPOINT VALIDE\n\nAucun endpoint n\'a retourné de données valides.\nVérifiez :\n• Votre configuration Boondmanager\n• Que votre compte a accès aux données\n• La documentation API de votre instance');
+      console.error('❌ No valid data found');
+      throw lastError || new Error(`❌ AUCUNE DONNÉE TROUVÉE
+
+Aucun endpoint n'a retourné de données exploitables.
+
+Vérifiez :
+• Votre configuration Boondmanager
+• Que votre compte a accès aux données
+• Que des opportunités/besoins existent dans votre instance`);
     }
     
-    // Afficher un exemple d'opportunité pour debug
+    // Afficher un exemple pour debug
     if (opportunities.length > 0) {
-      console.log('📋 Example opportunity structure:', opportunities[0]);
+      console.log('📋 Example item structure:', opportunities[0]);
     }
     
-    // Filtrer côté client si nécessaire
-    const filteredOpportunities = opportunities.filter((opp: any) => {
-      const state = opp.state || opp.status || '';
-      return !state || state === 'En Cours' || state === 'Piste Identifiée' || state === 'Open' || state === 'Active';
-    });
-    
-    console.log(`🔍 Filtered ${opportunities.length} items to ${filteredOpportunities.length} open needs`);
-    
-    const mappedNeeds = filteredOpportunities.map((opportunity: any, index: number) => {
+    // Mapper les données au format attendu
+    const mappedNeeds = opportunities.map((item: any, index: number) => {
       const mapped = {
-        id: opportunity.id?.toString() || opportunity.uuid || `temp-${Date.now()}-${index}`,
-        title: opportunity.title || opportunity.name || opportunity.subject || opportunity.label || `Besoin ${index + 1}`,
-        client: opportunity.company?.name || opportunity.client?.name || opportunity.account?.name || opportunity.customer || 'Client non spécifié',
-        description: opportunity.description || opportunity.details || opportunity.comment || opportunity.notes || '',
-        status: opportunity.state || opportunity.status || 'En Cours',
-        created_at: opportunity.createdAt || opportunity.created_at || opportunity.dateCreated || new Date().toISOString(),
-        updated_at: opportunity.updatedAt || opportunity.updated_at || opportunity.dateUpdated || new Date().toISOString()
+        id: item.id?.toString() || item.uuid || item.ref || `item-${index}`,
+        title: item.title || item.name || item.subject || item.label || item.designation || `Besoin ${index + 1}`,
+        client: item.company?.name || item.client?.name || item.account?.name || item.customer?.name || item.companyName || 'Client non spécifié',
+        description: item.description || item.details || item.comment || item.notes || item.summary || '',
+        status: item.state || item.status || item.statut || 'En cours',
+        created_at: item.createdAt || item.created_at || item.dateCreated || item.createDate || new Date().toISOString(),
+        updated_at: item.updatedAt || item.updated_at || item.dateUpdated || item.updateDate || new Date().toISOString()
       };
       
-      console.log(`📝 Mapped opportunity ${index}:`, mapped);
       return mapped;
     });
     
     console.log(`✅ Successfully mapped ${mappedNeeds.length} needs`);
     return mappedNeeds;
+    
   } catch (error) {
-    console.error('💥 Failed to fetch open needs from Boondmanager:', error);
+    console.error('💥 Failed to fetch open needs:', error);
     throw error;
   }
 }
@@ -280,35 +329,31 @@ export async function testBoondmanagerConnection(): Promise<boolean> {
       return false;
     }
     
-    console.log('🧪 Testing with config:', {
+    console.log('🧪 Testing with credentials:', {
       hasCredentials: !!(config.username && config.password),
       username: config.username
     });
     
-    // Essayer plusieurs endpoints pour tester la connexion
+    // Test simple avec l'endpoint le plus basique
     const testEndpoints = [
       '/opportunities?limit=1',
       '/opportunities',
-      '/needs?limit=1', 
-      '/needs',
-      '/projects?limit=1',
-      '/projects',
-      '/api/opportunities',
-      '/v1/opportunities'
+      '/needs?limit=1',
+      '/needs'
     ];
     
     for (const endpoint of testEndpoints) {
       try {
-        console.log(`🧪 Testing endpoint: https://api.boondmanager.com${endpoint}`);
-        const result = await callBoondmanagerAPI(endpoint);
-        console.log(`✅ Connection test successful with ${endpoint}`, typeof result);
+        console.log(`🧪 Testing: ${endpoint}`);
+        await callBoondmanagerAPI(endpoint);
+        console.log(`✅ Connection successful with ${endpoint}`);
         return true;
       } catch (error) {
-        console.log(`❌ Test failed for ${endpoint}:`, error.message);
+        console.log(`❌ Test failed for ${endpoint}:`, error.message.split('\n')[0]);
         
-        // Si c'est un problème CORS, on arrête les tests
+        // Si c'est un problème CORS ou de réseau, arrêter les tests
         if (error.message.includes('CORS') || error.message.includes('Failed to fetch')) {
-          console.error('❌ CORS issue detected, stopping tests');
+          console.error('❌ Network/CORS issue detected');
           return false;
         }
         
@@ -319,59 +364,50 @@ export async function testBoondmanagerConnection(): Promise<boolean> {
     console.error('❌ All connection tests failed');
     return false;
   } catch (error) {
-    console.error('💥 Boondmanager connection test failed:', error);
+    console.error('💥 Connection test failed:', error);
     return false;
   }
 }
 
 /**
- * Récupère les informations d'un besoin spécifique
+ * Récupère les détails d'un besoin spécifique
  */
 export async function fetchNeedDetails(needId: string): Promise<BoondmanagerNeed | null> {
   try {
     console.log(`🔍 Fetching details for need: ${needId}`);
     
-    let response;
-    let opportunity;
-    
     const detailEndpoints = [
       `/opportunities/${needId}`,
       `/needs/${needId}`,
-      `/projects/${needId}`,
-      `/api/opportunities/${needId}`,
-      `/v1/opportunities/${needId}`
+      `/projects/${needId}`
     ];
     
     for (const endpoint of detailEndpoints) {
       try {
-        console.log(`🔄 Trying detail endpoint: ${endpoint}`);
-        response = await callBoondmanagerAPI(endpoint);
-        opportunity = response.data || response;
+        console.log(`🔄 Trying: ${endpoint}`);
+        const response = await callBoondmanagerAPI(endpoint);
+        const opportunity = response.data || response;
         
         if (opportunity && opportunity.id) {
           console.log(`✅ Found details with ${endpoint}`);
-          break;
+          return {
+            id: opportunity.id?.toString() || opportunity.uuid,
+            title: opportunity.title || opportunity.name || 'Titre non spécifié',
+            client: opportunity.company?.name || opportunity.client?.name || 'Client non spécifié',
+            description: opportunity.description || opportunity.details || '',
+            status: opportunity.state || opportunity.status || 'En cours',
+            created_at: opportunity.createdAt || opportunity.created_at || new Date().toISOString(),
+            updated_at: opportunity.updatedAt || opportunity.updated_at || new Date().toISOString()
+          };
         }
       } catch (error) {
-        console.log(`❌ Detail endpoint ${endpoint} failed:`, error.message);
+        console.log(`❌ ${endpoint} failed:`, error.message.split('\n')[0]);
         continue;
       }
     }
     
-    if (!opportunity || !opportunity.id) {
-      console.error('❌ No details found for need:', needId);
-      return null;
-    }
-    
-    return {
-      id: opportunity.id?.toString() || opportunity.uuid,
-      title: opportunity.title || opportunity.name || opportunity.subject || 'Titre non spécifié',
-      client: opportunity.company?.name || opportunity.client?.name || opportunity.account?.name || 'Client non spécifié',
-      description: opportunity.description || opportunity.details || opportunity.comment || '',
-      status: opportunity.state || opportunity.status || 'En Cours',
-      created_at: opportunity.createdAt || opportunity.created_at || opportunity.dateCreated || new Date().toISOString(),
-      updated_at: opportunity.updatedAt || opportunity.updated_at || opportunity.dateUpdated || new Date().toISOString()
-    };
+    console.error('❌ No details found for need:', needId);
+    return null;
   } catch (error) {
     console.error('💥 Failed to fetch need details:', error);
     return null;
