@@ -14,9 +14,9 @@ export interface BoondmanagerNeed {
 
 export interface BoondmanagerApiConfig {
   baseUrl: string;
-  apiKey: string;
-  username?: string;
-  password?: string;
+  clientToken: string;
+  clientKey: string;
+  userToken: string;
 }
 
 /**
@@ -25,26 +25,28 @@ export interface BoondmanagerApiConfig {
  */
 function getBoondmanagerConfig(): BoondmanagerApiConfig | null {
   const baseUrl = localStorage.getItem('boondmanager-base-url');
-  const apiKey = localStorage.getItem('boondmanager-api-key');
-  const username = localStorage.getItem('boondmanager-username');
-  const password = localStorage.getItem('boondmanager-password');
+  const clientToken = localStorage.getItem('boondmanager-client-token');
+  const clientKey = localStorage.getItem('boondmanager-client-key');
+  const userToken = localStorage.getItem('boondmanager-user-token');
 
   console.log('Boondmanager config:', { 
     hasBaseUrl: !!baseUrl, 
-    hasApiKey: !!apiKey,
+    hasClientToken: !!clientToken,
+    hasClientKey: !!clientKey,
+    hasUserToken: !!userToken,
     baseUrl: baseUrl,
-    apiKey: apiKey ? `${apiKey.substring(0, 4)}...` : 'none'
+    clientToken: clientToken ? `${clientToken.substring(0, 4)}...` : 'none'
   });
 
-  if (!baseUrl || !apiKey) {
+  if (!baseUrl || !clientToken || !clientKey || !userToken) {
     return null;
   }
 
   return {
     baseUrl: baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl,
-    apiKey,
-    username: username || undefined,
-    password: password || undefined
+    clientToken,
+    clientKey,
+    userToken
   };
 }
 
@@ -55,7 +57,7 @@ async function callBoondmanagerAPI(endpoint: string, options: RequestInit = {}):
   const config = getBoondmanagerConfig();
   
   if (!config) {
-    throw new Error('Configuration Boondmanager manquante. Veuillez configurer l\'API dans les paramètres.');
+    throw new Error('Configuration Boondmanager manquante. Veuillez configurer le Client Token, Client Key et User Token dans les paramètres.');
   }
 
   // Construire l'URL complète
@@ -65,18 +67,14 @@ async function callBoondmanagerAPI(endpoint: string, options: RequestInit = {}):
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
-    'X-API-KEY': config.apiKey,
+    'X-Jwt-Client-BoondManager': `${config.clientToken}.${config.clientKey}.${config.userToken}`,
     ...((options.headers as Record<string, string>) || {})
   };
 
-  // Authentification Basic si username/password fournis
-  if (config.username && config.password) {
-    const credentials = btoa(`${config.username}:${config.password}`);
-    headers['Authorization'] = `Basic ${credentials}`;
-    console.log('Using Basic auth with username:', config.username);
-  }
-
-  console.log('Request headers:', { ...headers, 'X-API-KEY': `${config.apiKey.substring(0, 4)}...` });
+  console.log('Request headers:', { 
+    ...headers, 
+    'X-Jwt-Client-BoondManager': `${config.clientToken.substring(0, 4)}...${config.clientKey.substring(0, 4)}...${config.userToken.substring(0, 4)}...` 
+  });
 
   try {
     const response = await fetch(url, {

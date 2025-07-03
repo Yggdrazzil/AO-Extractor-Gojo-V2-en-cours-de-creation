@@ -45,9 +45,9 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
         const userPrefix = `boondmanager_${session.user.email}_`;
         setBoondmanagerConfig({
           baseUrl: localStorage.getItem(`${userPrefix}base-url`) || '',
-          apiKey: localStorage.getItem(`${userPrefix}api-key`) || '',
-          username: localStorage.getItem(`${userPrefix}username`) || '',
-          password: localStorage.getItem(`${userPrefix}password`) || ''
+          apiKey: localStorage.getItem(`${userPrefix}client-token`) || '',
+          username: localStorage.getItem(`${userPrefix}client-key`) || '',
+          password: localStorage.getItem(`${userPrefix}user-token`) || ''
         });
       }
     };
@@ -78,15 +78,15 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
     if (userEmail) {
       const userPrefix = `boondmanager_${userEmail}_`;
       localStorage.setItem(`${userPrefix}base-url`, boondmanagerConfig.baseUrl);
-      localStorage.setItem(`${userPrefix}api-key`, boondmanagerConfig.apiKey);
-      localStorage.setItem(`${userPrefix}username`, boondmanagerConfig.username);
-      localStorage.setItem(`${userPrefix}password`, boondmanagerConfig.password);
+      localStorage.setItem(`${userPrefix}client-token`, boondmanagerConfig.apiKey);
+      localStorage.setItem(`${userPrefix}client-key`, boondmanagerConfig.username);
+      localStorage.setItem(`${userPrefix}user-token`, boondmanagerConfig.password);
       
       // Maintenir aussi les clés globales pour la compatibilité
       localStorage.setItem('boondmanager-base-url', boondmanagerConfig.baseUrl);
-      localStorage.setItem('boondmanager-api-key', boondmanagerConfig.apiKey);
-      localStorage.setItem('boondmanager-username', boondmanagerConfig.username);
-      localStorage.setItem('boondmanager-password', boondmanagerConfig.password);
+      localStorage.setItem('boondmanager-client-token', boondmanagerConfig.apiKey);
+      localStorage.setItem('boondmanager-client-key', boondmanagerConfig.username);
+      localStorage.setItem('boondmanager-user-token', boondmanagerConfig.password);
     }
     setShowSuccess(true);
     setTimeout(() => {
@@ -198,56 +198,57 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
             <div className="space-y-3">
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  URL de base
+                  URL de base de l'API
                 </label>
                 <input
                   type="url"
                   value={boondmanagerConfig.baseUrl}
                   onChange={(e) => setBoondmanagerConfig(prev => ({ ...prev, baseUrl: e.target.value }))}
-                  placeholder="https://votre-instance.boondmanager.com"
+                  placeholder="https://api.boondmanager.com"
                   className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-[#1651EE] focus:border-transparent"
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Clé API
+                  Client Token
                 </label>
                 <input
-                  type="password"
+                  type="text"
                   value={boondmanagerConfig.apiKey}
                   onChange={(e) => setBoondmanagerConfig(prev => ({ ...prev, apiKey: e.target.value }))}
-                  placeholder="••••••••"
+                  placeholder="Token client depuis l'interface administrateur"
                   className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-[#1651EE] focus:border-transparent"
                 />
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 gap-3">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Nom d'utilisateur (optionnel)
+                    Client Key
                   </label>
                   <input
                     type="text"
                     value={boondmanagerConfig.username}
                     onChange={(e) => setBoondmanagerConfig(prev => ({ ...prev, username: e.target.value }))}
-                    placeholder="username"
+                    placeholder="Clé client depuis l'interface administrateur"
                     className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-[#1651EE] focus:border-transparent"
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Mot de passe (optionnel)
+                    User Token
                   </label>
                   <input
-                    type="password"
+                    type="text"
                     value={boondmanagerConfig.password}
                     onChange={(e) => setBoondmanagerConfig(prev => ({ ...prev, password: e.target.value }))}
-                    placeholder="••••••••"
+                    placeholder="Token utilisateur depuis votre compte"
                     className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-[#1651EE] focus:border-transparent"
                   />
                 </div>
               </div>
               <p className="text-sm text-gray-500 dark:text-gray-400">
-                Votre configuration est stockée uniquement dans votre navigateur et n'est jamais partagée.
+                <strong>Client Token et Client Key :</strong> disponibles dans l'interface administrateur > dashboard<br/>
+                <strong>User Token :</strong> disponible dans votre interface utilisateur > paramètres > sécurité
               </p>
               <button
                 onClick={handleUpdateBoondmanagerConfig}
