@@ -192,13 +192,13 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
             <div className="space-y-3">
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Nom d'utilisateur
+                  Email / Nom d'utilisateur
                 </label>
                 <input
                   type="text"
                   value={boondmanagerConfig.username}
                   onChange={(e) => setBoondmanagerConfig(prev => ({ ...prev, username: e.target.value }))}
-                  placeholder="Votre nom d'utilisateur Boondmanager"
+                  placeholder="Votre email ou nom d'utilisateur Boondmanager"
                   className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-[#1651EE] focus:border-transparent"
                 />
               </div>
@@ -215,7 +215,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                 />
               </div>
               <p className="text-sm text-gray-500 dark:text-gray-400">
-                <strong>Authentification Basic :</strong> Utilisez vos identifiants de connexion Boondmanager<br/>
+                <strong>Authentification Basic :</strong> Utilisez vos identifiants de connexion Boondmanager (email + mot de passe)<br/>
                 <em>Connexion directe à l'API via https://api.boondmanager.com</em>
               </p>
               <button

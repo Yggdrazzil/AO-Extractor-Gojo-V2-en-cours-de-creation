@@ -1,6 +1,6 @@
 /**
  * Service pour l'intégration avec l'API Boondmanager
- * Utilise l'authentification Basic (username/password)
+ * Version de debug avec logs détaillés
  */
 
 export interface BoondmanagerNeed {
@@ -29,7 +29,10 @@ function getBoondmanagerConfig(): BoondmanagerApiConfig | null {
   // Si pas trouvé, essayer les clés utilisateur spécifiques
   if (!username || !password) {
     try {
-      const userEmail = JSON.parse(localStorage.getItem('supabase.auth.token') || '{}')?.user?.email;
+      const { supabase } = await import('../lib/supabase');
+      const { data: { session } } = await supabase.auth.getSession();
+      const userEmail = session?.user?.email;
+      
       if (userEmail) {
         const userPrefix = `boondmanager_${userEmail}_`;
         username = username || localStorage.getItem(`${userPrefix}username`);
@@ -42,7 +45,9 @@ function getBoondmanagerConfig(): BoondmanagerApiConfig | null {
 
   console.log('🔧 Boondmanager config check:', { 
     hasUsername: !!username,
-    hasPassword: !!password
+    hasPassword: !!password,
+    usernameLength: username?.length || 0,
+    passwordLength: password?.length || 0
   });
 
   if (!username || !password) {
@@ -70,7 +75,12 @@ async function callBoondmanagerAPI(endpoint: string, options: RequestInit = {}):
   const baseUrl = 'https://api.boondmanager.com';
   const url = `${baseUrl}${endpoint}`;
   
-  console.log('🔗 Calling Boondmanager API:', url);
+  console.log('🔗 Calling Boondmanager API:', {
+    url,
+    method: options.method || 'GET',
+    username: config.username,
+    hasPassword: !!config.password
+  });
   
   // Créer l'en-tête d'authentification Basic
   const credentials = btoa(`${config.username}:${config.password}`);
@@ -79,13 +89,15 @@ async function callBoondmanagerAPI(endpoint: string, options: RequestInit = {}):
     'Content-Type': 'application/json',
     'Accept': 'application/json',
     'Authorization': `Basic ${credentials}`,
+    'User-Agent': 'Mozilla/5.0 (compatible; GOJO-Platform/1.0)',
     ...((options.headers as Record<string, string>) || {})
   };
 
-  console.log('📤 Request details:', { 
-    url,
-    method: options.method || 'GET',
-    hasAuth: true
+  console.log('📤 Request headers:', {
+    'Content-Type': headers['Content-Type'],
+    'Accept': headers['Accept'],
+    'Authorization': `Basic ${credentials.substring(0, 20)}...`,
+    'User-Agent': headers['User-Agent']
   });
 
   try {
@@ -96,40 +108,60 @@ async function callBoondmanagerAPI(endpoint: string, options: RequestInit = {}):
       credentials: 'omit'
     });
 
-    console.log('📥 Response status:', response.status);
+    console.log('📥 Response details:', {
+      status: response.status,
+      statusText: response.statusText,
+      headers: Object.fromEntries(response.headers.entries()),
+      url: response.url
+    });
+
+    // Lire le contenu de la réponse
+    const responseText = await response.text();
+    console.log('📥 Response body (first 500 chars):', responseText.substring(0, 500));
 
     if (!response.ok) {
-      const errorText = await response.text();
-      console.error('❌ API Error Response:', errorText);
+      console.error('❌ API Error Response:', {
+        status: response.status,
+        statusText: response.statusText,
+        body: responseText
+      });
       
       if (response.status === 401) {
-        throw new Error('Authentification échouée. Vérifiez votre nom d\'utilisateur et mot de passe Boondmanager.');
+        throw new Error('❌ AUTHENTIFICATION ÉCHOUÉE\n\nVérifiez :\n• Votre nom d\'utilisateur Boondmanager\n• Votre mot de passe Boondmanager\n• Que votre compte a accès à l\'API\n\nRéponse serveur : ' + responseText);
       } else if (response.status === 403) {
-        throw new Error('Accès refusé. Vérifiez les permissions de votre compte Boondmanager.');
+        throw new Error('❌ ACCÈS REFUSÉ\n\nVotre compte n\'a pas les permissions pour accéder à l\'API Boondmanager.\nContactez votre administrateur.\n\nRéponse serveur : ' + responseText);
       } else if (response.status === 404) {
-        throw new Error('Endpoint non trouvé. L\'API Boondmanager pourrait avoir changé.');
+        throw new Error('❌ ENDPOINT NON TROUVÉ\n\nL\'endpoint ' + endpoint + ' n\'existe pas.\nVérifiez la documentation API Boondmanager.\n\nRéponse serveur : ' + responseText);
       } else if (response.status === 0) {
-        throw new Error('Problème CORS : L\'API Boondmanager bloque les requêtes depuis le navigateur. Contactez votre administrateur Boondmanager pour configurer les CORS.');
+        throw new Error('❌ PROBLÈME CORS\n\nL\'API Boondmanager bloque les requêtes depuis le navigateur.\nContactez votre administrateur Boondmanager pour configurer les CORS pour : ' + window.location.origin);
       } else {
-        throw new Error(`Erreur API Boondmanager (${response.status}): ${errorText}`);
+        throw new Error(`❌ ERREUR API (${response.status})\n\n${response.statusText}\n\nRéponse serveur : ${responseText}`);
       }
     }
 
-    const data = await response.json();
-    console.log('✅ API Response data received');
+    // Essayer de parser le JSON
+    let data;
+    try {
+      data = JSON.parse(responseText);
+      console.log('✅ JSON parsed successfully, type:', typeof data, 'keys:', Object.keys(data || {}));
+    } catch (parseError) {
+      console.error('❌ Failed to parse JSON:', parseError);
+      throw new Error('❌ RÉPONSE INVALIDE\n\nLa réponse de l\'API n\'est pas du JSON valide.\n\nRéponse reçue : ' + responseText.substring(0, 200));
+    }
+
     return data;
   } catch (error) {
     console.error('💥 Erreur lors de l\'appel à l\'API Boondmanager:', error);
     
     if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
-      throw new Error('❌ PROBLÈME DE CONNEXION :\n\n1. Vérifiez votre connexion internet\n2. L\'API Boondmanager pourrait bloquer les requêtes depuis le navigateur (CORS)\n3. Contactez votre administrateur Boondmanager\n\nL\'API doit autoriser les requêtes depuis ' + window.location.origin);
+      throw new Error('❌ PROBLÈME DE CONNEXION\n\n1. Vérifiez votre connexion internet\n2. L\'API Boondmanager pourrait être indisponible\n3. Problème CORS possible\n\nURL tentée : ' + url);
     }
     
     if (error instanceof Error) {
       throw error;
     }
     
-    throw new Error('Erreur inconnue lors de l\'appel à l\'API Boondmanager');
+    throw new Error('❌ ERREUR INCONNUE\n\nUne erreur inattendue s\'est produite lors de l\'appel à l\'API Boondmanager.');
   }
 }
 
@@ -142,13 +174,16 @@ export async function fetchOpenNeeds(): Promise<BoondmanagerNeed[]> {
     
     // Liste des endpoints à essayer selon la documentation Boondmanager
     const endpointsToTry = [
-      '/opportunities?state[]=En%20Cours&state[]=Piste%20Identifi%C3%A9e&limit=50',
-      '/opportunities?limit=50',
+      '/opportunities?limit=10',
       '/opportunities',
-      '/needs?limit=50',
+      '/needs?limit=10',
       '/needs',
-      '/projects?limit=50',
-      '/projects'
+      '/projects?limit=10',
+      '/projects',
+      '/api/opportunities',
+      '/api/needs',
+      '/v1/opportunities',
+      '/v1/needs'
     ];
     
     let response;
@@ -159,6 +194,13 @@ export async function fetchOpenNeeds(): Promise<BoondmanagerNeed[]> {
       try {
         console.log(`🔄 Trying endpoint: ${endpoint}`);
         response = await callBoondmanagerAPI(endpoint);
+        
+        console.log('📊 Response structure:', {
+          type: typeof response,
+          isArray: Array.isArray(response),
+          keys: response && typeof response === 'object' ? Object.keys(response) : [],
+          length: Array.isArray(response) ? response.length : 'N/A'
+        });
         
         // Essayer différentes structures de réponse
         opportunities = response.data || response.opportunities || response.needs || response.projects || response;
@@ -186,7 +228,12 @@ export async function fetchOpenNeeds(): Promise<BoondmanagerNeed[]> {
     
     if (!Array.isArray(opportunities)) {
       console.error('❌ No valid endpoint found. Last response:', response);
-      throw lastError || new Error('Aucun endpoint valide trouvé pour récupérer les besoins. Vérifiez la configuration de l\'API.');
+      throw lastError || new Error('❌ AUCUN ENDPOINT VALIDE\n\nAucun endpoint n\'a retourné de données valides.\nVérifiez :\n• Votre configuration Boondmanager\n• Que votre compte a accès aux données\n• La documentation API de votre instance');
+    }
+    
+    // Afficher un exemple d'opportunité pour debug
+    if (opportunities.length > 0) {
+      console.log('📋 Example opportunity structure:', opportunities[0]);
     }
     
     // Filtrer côté client si nécessaire
@@ -198,7 +245,7 @@ export async function fetchOpenNeeds(): Promise<BoondmanagerNeed[]> {
     console.log(`🔍 Filtered ${opportunities.length} items to ${filteredOpportunities.length} open needs`);
     
     const mappedNeeds = filteredOpportunities.map((opportunity: any, index: number) => {
-      return {
+      const mapped = {
         id: opportunity.id?.toString() || opportunity.uuid || `temp-${Date.now()}-${index}`,
         title: opportunity.title || opportunity.name || opportunity.subject || opportunity.label || `Besoin ${index + 1}`,
         client: opportunity.company?.name || opportunity.client?.name || opportunity.account?.name || opportunity.customer || 'Client non spécifié',
@@ -207,6 +254,9 @@ export async function fetchOpenNeeds(): Promise<BoondmanagerNeed[]> {
         created_at: opportunity.createdAt || opportunity.created_at || opportunity.dateCreated || new Date().toISOString(),
         updated_at: opportunity.updatedAt || opportunity.updated_at || opportunity.dateUpdated || new Date().toISOString()
       };
+      
+      console.log(`📝 Mapped opportunity ${index}:`, mapped);
+      return mapped;
     });
     
     console.log(`✅ Successfully mapped ${mappedNeeds.length} needs`);
@@ -231,7 +281,8 @@ export async function testBoondmanagerConnection(): Promise<boolean> {
     }
     
     console.log('🧪 Testing with config:', {
-      hasCredentials: !!(config.username && config.password)
+      hasCredentials: !!(config.username && config.password),
+      username: config.username
     });
     
     // Essayer plusieurs endpoints pour tester la connexion
@@ -241,14 +292,16 @@ export async function testBoondmanagerConnection(): Promise<boolean> {
       '/needs?limit=1', 
       '/needs',
       '/projects?limit=1',
-      '/projects'
+      '/projects',
+      '/api/opportunities',
+      '/v1/opportunities'
     ];
     
     for (const endpoint of testEndpoints) {
       try {
         console.log(`🧪 Testing endpoint: https://api.boondmanager.com${endpoint}`);
-        await callBoondmanagerAPI(endpoint);
-        console.log(`✅ Connection test successful with ${endpoint}`);
+        const result = await callBoondmanagerAPI(endpoint);
+        console.log(`✅ Connection test successful with ${endpoint}`, typeof result);
         return true;
       } catch (error) {
         console.log(`❌ Test failed for ${endpoint}:`, error.message);
@@ -284,7 +337,9 @@ export async function fetchNeedDetails(needId: string): Promise<BoondmanagerNeed
     const detailEndpoints = [
       `/opportunities/${needId}`,
       `/needs/${needId}`,
-      `/projects/${needId}`
+      `/projects/${needId}`,
+      `/api/opportunities/${needId}`,
+      `/v1/opportunities/${needId}`
     ];
     
     for (const endpoint of detailEndpoints) {
