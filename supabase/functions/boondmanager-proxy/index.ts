@@ -1,19 +1,13 @@
-import { corsHeaders } from '../_shared/cors.ts'
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'POST, GET, OPTIONS, PUT, DELETE',
+}
 
 interface BoondmanagerConfig {
   clientToken: string
   clientKey: string
   userToken: string
-}
-
-interface BoondmanagerNeed {
-  id: string
-  title: string
-  client: string
-  description?: string
-  status: string
-  created_at: string
-  updated_at: string
 }
 
 /**
@@ -78,11 +72,6 @@ Deno.serve(async (req) => {
       'User-Agent': 'Supabase-Edge-Function/1.0'
     }
 
-    console.log('📤 Request headers:', { 
-      ...headers, 
-      'X-Jwt-Client-BoondManager': `${clientToken.substring(0, 4)}...${clientKey.substring(0, 4)}...${userToken.substring(0, 4)}...` 
-    })
-
     const response = await fetch(url, {
       method: 'GET',
       headers
@@ -118,7 +107,7 @@ Deno.serve(async (req) => {
     }
 
     const data = await response.json()
-    console.log('✅ API Response received:', typeof data, Array.isArray(data) ? `Array(${data.length})` : 'Object')
+    console.log('✅ API Response received')
     
     return new Response(
       JSON.stringify({ success: true, data }),
