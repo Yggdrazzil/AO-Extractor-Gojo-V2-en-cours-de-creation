@@ -4,7 +4,7 @@ import { RFPTable } from './RFPTable';
 import { ProspectsForm } from './ProspectsForm';
 import { ProspectsTable } from './ProspectsTable';
 import { ClientNeedsForm } from './ClientNeedsForm';
-import { NeedsManagement } from './NeedsManagement';
+import { ClientNeedsTable } from './ClientNeedsTable';
 import { DailySummaryTest } from './DailySummaryTest';
 import { DailyProspectsSummaryTest } from './DailyProspectsSummaryTest';
 import type { RFP, SalesRep } from '../types';
@@ -193,19 +193,21 @@ export function TabContent({
               isLoading={isAnalyzingBoondmanagerProspect}
             />
           )}
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm">
-            <div className="p-4 border-b border-gray-200 dark:border-gray-700">
-              <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">
-                Gestion des besoins clients
-              </h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                Créez et gérez les besoins clients pour vos prospects
-              </p>
-            </div>
-            <div className="p-6">
-              <NeedsManagement />
-            </div>
-          </div>
+          <ClientNeedsTable
+            prospects={boondmanagerProspects}
+            salesReps={salesReps}
+            onStatusChange={onBoondmanagerProspectStatusChange || (() => Promise.resolve())}
+            onAssigneeChange={onBoondmanagerProspectAssigneeChange || (() => Promise.resolve())}
+            onSelectedNeedChange={onBoondmanagerProspectSelectedNeedChange || (() => Promise.resolve())}
+            onAvailabilityChange={onBoondmanagerProspectAvailabilityChange || (() => Promise.resolve())}
+            onDailyRateChange={onBoondmanagerProspectDailyRateChange || (() => Promise.resolve())}
+            onResidenceChange={onBoondmanagerProspectResidenceChange || (() => Promise.resolve())}
+            onMobilityChange={onBoondmanagerProspectMobilityChange || (() => Promise.resolve())}
+            onPhoneChange={onBoondmanagerProspectPhoneChange || (() => Promise.resolve())}
+            onEmailChange={onBoondmanagerProspectEmailChange || (() => Promise.resolve())}
+            onView={onBoondmanagerProspectView || (() => Promise.resolve())}
+            onDelete={onBoondmanagerProspectDelete || (() => Promise.resolve())}
+          />
         </div>
       );
 
