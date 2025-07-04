@@ -67,6 +67,7 @@ export async function addClientNeed(prospect: BoondmanagerProspect): Promise<Boo
 export async function updateClientNeedStatus(id: string, status: BoondmanagerProspect['status']): Promise<void> {
   const index = clientNeedsStore.findIndex(p => p.id === id);
   if (index !== -1) {
+    console.log(`Updating client need status: ${id} from ${clientNeedsStore[index].status} to ${status}`);
     clientNeedsStore[index].status = status;
     await saveClientNeedsToStorage();
   }

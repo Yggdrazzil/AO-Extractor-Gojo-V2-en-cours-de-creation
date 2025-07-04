@@ -685,7 +685,7 @@ export function ClientNeedsTable({
                     {/* Statut */}
                     <td className="p-2 sm:p-4">
                       <select
-                        value={prospect.status || 'À traiter'}
+                        value={prospect.status}
                         onChange={(e) => {
                           const newStatus = e.target.value as 'À traiter' | 'Traité';
                           onStatusChange(prospect.id, newStatus);
