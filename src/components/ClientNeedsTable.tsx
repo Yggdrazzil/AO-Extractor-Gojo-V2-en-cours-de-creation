@@ -743,5 +743,3 @@ export function ClientNeedsTable({
     </div>
   );
 }
-
-export { ClientNeedsTable }
