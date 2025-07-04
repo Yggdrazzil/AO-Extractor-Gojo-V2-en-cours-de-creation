@@ -67,12 +67,6 @@ export interface Need {
   id: string;
   title: string;
   client: string;
-  description: string;
-  location: string;
-  skills: string;
-  maxRate: number | null;
-  startDate: string | null;
-  endDate: string | null;
   status: 'Ouvert' | 'En cours' | 'Pourvu' | 'Annulé';
   createdBy: string;
   createdAt: string;

@@ -165,7 +165,7 @@ export function ClientNeedsForm({ salesReps, onSubmit, isLoading = false }: Clie
   const selectedNeed = needs.find(need => need.id === selectedNeedId);
 
   return (
-    <form onSubmit={handleSubmit} className="bg-white dark:bg-gray-800 rounded-lg shadow-sm">
+    <form onSubmit={handleSubmit} className="bg-white dark:bg-gray-800 rounded-lg shadow-sm relative">
       <div className="p-4 flex items-center justify-between border-b border-gray-200 dark:border-gray-700">
         <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">
           Profils pour besoins clients
@@ -253,16 +253,6 @@ export function ClientNeedsForm({ salesReps, onSubmit, isLoading = false }: Clie
               <h4 className="font-medium text-blue-900 dark:text-blue-100 mb-1">
                 {selectedNeed.client} - {selectedNeed.title}
               </h4>
-              {selectedNeed.description && (
-                <p className="text-sm text-blue-700 dark:text-blue-300 mb-2">
-                  {selectedNeed.description}
-                </p>
-              )}
-              <div className="text-xs text-blue-600 dark:text-blue-400 space-y-1">
-                {selectedNeed.location && <div>📍 {selectedNeed.location}</div>}
-                {selectedNeed.maxRate && <div>💰 TJM max: {selectedNeed.maxRate}€</div>}
-                {selectedNeed.skills && <div>🛠️ {selectedNeed.skills}</div>}
-              </div>
             </div>
           )}
         </div>
@@ -356,11 +346,24 @@ export function ClientNeedsForm({ salesReps, onSubmit, isLoading = false }: Clie
         
           <button
             type="submit"
-            disabled={isLoading || (!textContent.trim() && !selectedFile) || !selectedNeedId || !assignedTo}
+            disabled={isLoading || !selectedNeedId || !assignedTo || (!textContent.trim() && !selectedFile)}
             className="w-full sm:w-auto px-6 py-2 bg-[#1651EE] hover:bg-[#1651EE]/90 text-white font-medium rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             {isLoading ? 'Analyse...' : 'Analyser'}
           </button>
+          {(!textContent.trim() && !selectedFile) && (
+            <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 rounded-lg">
+              <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg max-w-sm w-full">
+                <div className="flex justify-center mb-4">
+                  <AlertCircle className="h-12 w-12 text-yellow-500" />
+                </div>
+                <h3 className="text-lg font-bold text-center mb-2">Informations requises</h3>
+                <p className="text-center text-gray-600 dark:text-gray-400">
+                  Veuillez ajouter du texte ou joindre un fichier CV pour continuer
+                </p>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </form>

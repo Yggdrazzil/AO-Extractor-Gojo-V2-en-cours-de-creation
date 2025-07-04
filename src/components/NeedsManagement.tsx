@@ -8,12 +8,6 @@ interface EditingNeed {
   id?: string;
   title: string;
   client: string;
-  description: string;
-  location: string;
-  skills: string;
-  maxRate: string;
-  startDate: string;
-  endDate: string;
   status: Need['status'];
 }
 
@@ -28,12 +22,6 @@ export function NeedsManagement() {
   const emptyForm: EditingNeed = {
     title: '',
     client: '',
-    description: '',
-    location: '',
-    skills: '',
-    maxRate: '',
-    startDate: '',
-    endDate: '',
     status: 'Ouvert'
   };
 
@@ -88,12 +76,6 @@ export function NeedsManagement() {
         await updateNeed(editingNeed.id, {
           title: editingNeed.title,
           client: editingNeed.client,
-          description: editingNeed.description,
-          location: editingNeed.location,
-          skills: editingNeed.skills,
-          maxRate: editingNeed.maxRate ? parseInt(editingNeed.maxRate) : null,
-          startDate: editingNeed.startDate || null,
-          endDate: editingNeed.endDate || null,
           status: editingNeed.status
         });
       } else {
@@ -101,12 +83,6 @@ export function NeedsManagement() {
         await createNeed({
           title: editingNeed.title,
           client: editingNeed.client,
-          description: editingNeed.description,
-          location: editingNeed.location,
-          skills: editingNeed.skills,
-          maxRate: editingNeed.maxRate ? parseInt(editingNeed.maxRate) : null,
-          startDate: editingNeed.startDate || null,
-          endDate: editingNeed.endDate || null,
           status: editingNeed.status,
           createdBy: currentUserId
         });
@@ -126,12 +102,6 @@ export function NeedsManagement() {
       id: need.id,
       title: need.title,
       client: need.client,
-      description: need.description,
-      location: need.location,
-      skills: need.skills,
-      maxRate: need.maxRate?.toString() || '',
-      startDate: need.startDate || '',
-      endDate: need.endDate || '',
       status: need.status
     });
     setShowForm(true);
@@ -181,7 +151,7 @@ export function NeedsManagement() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-            Gestion des Besoins
+            Besoins clients
           </h1>
           <p className="text-gray-600 dark:text-gray-400">
             Créez et gérez les besoins clients pour vos prospects
@@ -212,14 +182,14 @@ export function NeedsManagement() {
       {showForm && editingNeed && (
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
           <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">
-            {editingNeed.id ? 'Modifier le besoin' : 'Nouveau besoin'}
+            {editingNeed.id ? 'Modifier' : 'Nouveau besoin client'}
           </h2>
           
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Titre du besoin *
+                  Intitulé du besoin *
                 </label>
                 <input
                   type="text"
@@ -246,87 +216,7 @@ export function NeedsManagement() {
               </div>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Description
-              </label>
-              <textarea
-                value={editingNeed.description}
-                onChange={(e) => setEditingNeed({ ...editingNeed, description: e.target.value })}
-                rows={3}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="Description détaillée du besoin..."
-              />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Localisation
-                </label>
-                <input
-                  type="text"
-                  value={editingNeed.location}
-                  onChange={(e) => setEditingNeed({ ...editingNeed, location: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Ex: Paris, Télétravail, France entière"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  TJM Maximum (€)
-                </label>
-                <input
-                  type="number"
-                  min="0"
-                  value={editingNeed.maxRate}
-                  onChange={(e) => setEditingNeed({ ...editingNeed, maxRate: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="750"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Compétences requises
-              </label>
-              <input
-                type="text"
-                value={editingNeed.skills}
-                onChange={(e) => setEditingNeed({ ...editingNeed, skills: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="Java, Spring Boot, Microservices, Docker..."
-              />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Date de début
-                </label>
-                <input
-                  type="date"
-                  value={editingNeed.startDate}
-                  onChange={(e) => setEditingNeed({ ...editingNeed, startDate: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Date de fin
-                </label>
-                <input
-                  type="date"
-                  value={editingNeed.endDate}
-                  onChange={(e) => setEditingNeed({ ...editingNeed, endDate: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-              
-              <div>
+            <div className="w-full md:w-1/3">
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Statut
                 </label>
@@ -340,7 +230,6 @@ export function NeedsManagement() {
                   <option value="Pourvu">Pourvu</option>
                   <option value="Annulé">Annulé</option>
                 </select>
-              </div>
             </div>
 
             <div className="flex items-center gap-3 pt-4">
@@ -348,7 +237,7 @@ export function NeedsManagement() {
                 type="submit"
                 className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
               >
-                <Check className="w-4 h-4" />
+                <Check className="w-5 h-5" />
                 {editingNeed.id ? 'Mettre à jour' : 'Créer'}
               </button>
               <button
@@ -359,7 +248,7 @@ export function NeedsManagement() {
                 }}
                 className="flex items-center gap-2 px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
               >
-                <X className="w-4 h-4" />
+                <X className="w-5 h-5" />
                 Annuler
               </button>
             </div>
@@ -373,7 +262,7 @@ export function NeedsManagement() {
           <div className="p-12 text-center">
             <Users className="w-12 h-12 text-gray-400 mx-auto mb-4" />
             <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
-              Aucun besoin créé
+              Aucun besoin client
             </h3>
             <p className="text-gray-600 dark:text-gray-400 mb-6">
               Créez votre premier besoin client pour commencer
@@ -383,10 +272,10 @@ export function NeedsManagement() {
                 setEditingNeed(emptyForm);
                 setShowForm(true);
               }}
-              className="flex items-center gap-2 mx-auto px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              className="flex items-center gap-2 mx-auto px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
             >
               <Plus className="w-4 h-4" />
-              Créer un besoin
+              Ajouter un besoin
             </button>
           </div>
         ) : (
@@ -400,12 +289,6 @@ export function NeedsManagement() {
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                       Client
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                      Localisation
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                      TJM Max
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                       Statut
@@ -423,27 +306,10 @@ export function NeedsManagement() {
                           <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
                             {need.title}
                           </div>
-                          {need.description && (
-                            <div className="text-sm text-gray-500 dark:text-gray-400 mt-1 line-clamp-2">
-                              {need.description}
-                            </div>
-                          )}
                         </div>
                       </td>
                       <td className="px-6 py-4 text-sm text-gray-900 dark:text-gray-100">
                         {need.client}
-                      </td>
-                      <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
-                        <div className="flex items-center">
-                          <MapPin className="w-4 h-4 mr-1" />
-                          {need.location || 'Non spécifié'}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
-                        <div className="flex items-center">
-                          <DollarSign className="w-4 h-4 mr-1" />
-                          {need.maxRate ? `${need.maxRate}€` : '-'}
-                        </div>
                       </td>
                       <td className="px-6 py-4">
                         {getStatusBadge(need.status)}

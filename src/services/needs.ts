@@ -27,12 +27,6 @@ export async function fetchNeeds(): Promise<Need[]> {
         id, 
         title, 
         client, 
-        description, 
-        location, 
-        skills, 
-        max_rate, 
-        start_date, 
-        end_date, 
         status, 
         created_by, 
         created_at, 
@@ -56,12 +50,6 @@ export async function fetchNeeds(): Promise<Need[]> {
       id: need.id,
       title: need.title,
       client: need.client,
-      description: need.description || '',
-      location: need.location || '',
-      skills: need.skills || '',
-      maxRate: need.max_rate,
-      startDate: need.start_date,
-      endDate: need.end_date,
       status: need.status,
       createdBy: need.created_by,
       createdAt: need.created_at,
@@ -85,12 +73,6 @@ export async function createNeed(need: Omit<Need, 'id' | 'createdAt' | 'updatedA
     const insertData = {
       title: need.title,
       client: need.client,
-      description: need.description,
-      location: need.location,
-      skills: need.skills,
-      max_rate: need.maxRate,
-      start_date: need.startDate,
-      end_date: need.endDate,
       status: need.status,
       created_by: need.createdBy
     };
@@ -102,12 +84,6 @@ export async function createNeed(need: Omit<Need, 'id' | 'createdAt' | 'updatedA
         id, 
         title, 
         client, 
-        description, 
-        location, 
-        skills, 
-        max_rate, 
-        start_date, 
-        end_date, 
         status, 
         created_by, 
         created_at, 
@@ -130,12 +106,6 @@ export async function createNeed(need: Omit<Need, 'id' | 'createdAt' | 'updatedA
       id: data.id,
       title: data.title,
       client: data.client,
-      description: data.description,
-      location: data.location,
-      skills: data.skills,
-      maxRate: data.max_rate,
-      startDate: data.start_date,
-      endDate: data.end_date,
       status: data.status,
       createdBy: data.created_by,
       createdAt: data.created_at,
@@ -147,18 +117,12 @@ export async function createNeed(need: Omit<Need, 'id' | 'createdAt' | 'updatedA
   }
 }
 
-export async function updateNeed(id: string, updates: Partial<Omit<Need, 'id' | 'createdBy' | 'createdAt' | 'updatedAt'>>): Promise<void> {
+export async function updateNeed(id: string, updates: Partial<Pick<Need, 'title' | 'client' | 'status'>>): Promise<void> {
   try {
     const updateData: any = {};
     
     if (updates.title !== undefined) updateData.title = updates.title;
     if (updates.client !== undefined) updateData.client = updates.client;
-    if (updates.description !== undefined) updateData.description = updates.description;
-    if (updates.location !== undefined) updateData.location = updates.location;
-    if (updates.skills !== undefined) updateData.skills = updates.skills;
-    if (updates.maxRate !== undefined) updateData.max_rate = updates.maxRate;
-    if (updates.startDate !== undefined) updateData.start_date = updates.startDate;
-    if (updates.endDate !== undefined) updateData.end_date = updates.endDate;
     if (updates.status !== undefined) updateData.status = updates.status;
 
     const { error } = await supabase
@@ -201,12 +165,6 @@ export async function fetchOpenNeeds(): Promise<Need[]> {
         id, 
         title, 
         client, 
-        description, 
-        location, 
-        skills, 
-        max_rate, 
-        start_date, 
-        end_date, 
         status, 
         created_by, 
         created_at, 
@@ -224,12 +182,6 @@ export async function fetchOpenNeeds(): Promise<Need[]> {
       id: need.id,
       title: need.title,
       client: need.client,
-      description: need.description || '',
-      location: need.location || '',
-      skills: need.skills || '',
-      maxRate: need.max_rate,
-      startDate: need.start_date,
-      endDate: need.end_date,
       status: need.status,
       createdBy: need.created_by,
       createdAt: need.created_at,
