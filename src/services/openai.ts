@@ -51,19 +51,36 @@ Exemple de réponse JSON attendue:
 
 const PROSPECT_SYSTEM_PROMPT = `Tu es un assistant spécialisé dans l'analyse de profils de candidats pour des missions de consulting IT.
 Ta tâche est d'extraire les informations clés suivantes à partir des informations textuelles fournies :
-- Disponibilité : quand le candidat est disponible
-- TJM/Salaire : le tarif journalier ou salaire en euros (nombre uniquement)
-- Résidence : où habite le candidat
-- Mobilité : capacité de déplacement du candidat
-- Téléphone : numéro de téléphone mobile français (06, 07, +33)
+- Disponibilité : quand le candidat est disponible (ex: "Immédiatement", "Janvier 2025", "2 semaines", etc.)
+- TJM (Taux Journalier Moyen) : le tarif journalier du candidat en euros (nombre uniquement, sans le symbole €)
+- Résidence : où habite le candidat (ville, région)
+- Mobilité : capacité de déplacement du candidat (ex: "France entière", "Région parisienne", "Télétravail uniquement", etc.)
+- Téléphone : numéro de téléphone du candidat
 - Email : adresse email du candidat
 
-RÈGLES STRICTES:
-- Analyser UNIQUEMENT le texte principal fourni
-- Si une information n'est pas trouvée, renvoyer null
-- Ne JAMAIS utiliser "À définir", "Non trouvé" ou similaire
-- Pour téléphone: uniquement numéros mobiles français
-- Pour email: format valide avec @
+INSTRUCTIONS CRITIQUES:
+
+1. Extraction des données:
+   - Analyser BOTH le texte principal ET le contenu du CV fourni
+   - Prioriser les informations du CV pour les coordonnées (téléphone et email)
+   - Si les coordonnées ne sont trouvées ni dans le texte ni dans le CV, renvoyer null
+   - Pour les autres informations, si elles ne sont pas présentes ou ne sont pas claires, renvoyer null
+   - Ne JAMAIS inventer ou déduire d'informations
+   - Être précis dans l'extraction des données de contact depuis le CV
+
+2. Format des données:
+   - TJM : nombre entier uniquement (ex: 650, pas "650€" ou "650 euros")
+   - Téléphone : format exact tel qu'écrit dans le texte
+   - Email : adresse email complète et exacte
+   - Disponibilité : texte descriptif tel qu'indiqué
+   - Résidence : ville ou région mentionnée
+   - Mobilité : description de la capacité de déplacement
+
+3. Règles strictes:
+   - Si le TJM n'est pas mentionné explicitement, renvoyer null
+   - Chercher les coordonnées dans le CV en priorité
+   - Respecter exactement le format des coordonnées tel qu'écrit
+   - Ne pas reformater les numéros de téléphone
 
 Exemple de réponse JSON:
 {
@@ -74,42 +91,7 @@ Exemple de réponse JSON:
   "phone": "06 12 34 56 78",
   "email": "candidat@email.com"
 }
-
-Ta tâche est d'extraire les informations clés suivantes à partir des informations textuelles fournies :
-- Disponibilité : quand le candidat est disponible
-- TJM/Salaire : le tarif journalier ou salaire en euros (nombre uniquement)
-- Résidence : où habite le candidat
-- Mobilité : capacité de déplacement du candidat
-- Téléphone : numéro de téléphone mobile français (06, 07, +33)
-- Email : adresse email du candidat
-
-RÈGLES STRICTES:
-- Analyser UNIQUEMENT le texte principal fourni
-- Si une information n'est pas trouvée, renvoyer exactement "-" (un tiret)
-- Ne JAMAIS utiliser "À définir", "Non trouvé", null ou similaire
-- Pour téléphone: uniquement numéros mobiles français, sinon "-"
-- Pour email: format valide avec @, sinon "-"
-- Pour TJM: si pas trouvé, renvoyer null (pas de tiret pour les nombres)
-
-Exemple de réponse JSON:
-{
-  "availability": "Immédiatement",
-  "dailyRate": 650,
-  "residence": "Paris",
-  "mobility": "France entière",
-  "phone": "06 12 34 56 78",
-  "email": "candidat@email.com"
-}
-
-Si une info n'est pas trouvée:
-{
-  "availability": "-",
-  "dailyRate": null,
-  "residence": "-",
-  "mobility": "-",
-  "phone": "-",
-  "email": "-"
-}`;
+`;
 
 export async function analyzeRFP(content: string): Promise<Partial<RFP>> {
   // Essayer d'abord la clé spécifique à l'utilisateur, puis la clé globale
@@ -186,7 +168,7 @@ export async function analyzeRFP(content: string): Promise<Partial<RFP>> {
 
 export async function analyzeProspect(content: string, cvContent?: string): Promise<Partial<Prospect>> {
   // Essayer d'abord la clé spécifique à l'utilisateur, puis la clé globale
-  let apiKey = localStorage.getItem('openai-api-key');
+  let apiKey = localStorage.getItem('openai-api-key') || '';
   
   try {
     const { supabase } = await import('../lib/supabase');
@@ -205,6 +187,13 @@ export async function analyzeProspect(content: string, cvContent?: string): Prom
     throw new Error('Veuillez configurer votre clé API OpenAI dans les paramètres');
   }
 
+  // Combiner le contenu textuel et le contenu du CV
+  const fullContent = cvContent 
+    ? `INFORMATIONS TEXTUELLES:
+${content}
+
+CONTENU DU CV:
+${cvContent}` : content;
   try {
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -214,9 +203,9 @@ export async function analyzeProspect(content: string, cvContent?: string): Prom
       },
       body: JSON.stringify({
         model: 'gpt-4o-mini',
-        messages: [
+        messages: [ 
           { role: 'system', content: PROSPECT_SYSTEM_PROMPT },
-          { role: 'user', content: content }
+          { role: 'user', content: fullContent }
         ],
         temperature: 0.1,
         response_format: { type: "json_object" }
@@ -239,14 +228,14 @@ export async function analyzeProspect(content: string, cvContent?: string): Prom
       throw new Error("Erreur lors de l'analyse de la réponse");
     }
 
-    // Nettoyer les réponses et forcer null pour les coordonnées manquantes
+    // Traiter les valeurs spéciales pour les coordonnées
     return {
-      availability: result.availability || '-',
+      availability: result.availability || 'À définir',
       dailyRate: result.dailyRate || null,
-      residence: result.residence || '-',
-      mobility: result.mobility || '-',
-      phone: result.phone || '-',
-      email: result.email || '-'
+      residence: result.residence || 'À définir',
+      mobility: result.mobility || 'À définir',
+      phone: result.phone || 'Non trouvé',
+      email: result.email || 'Non trouvé'
     };
   } catch (error) {
     console.error('Erreur OpenAI:', error);
