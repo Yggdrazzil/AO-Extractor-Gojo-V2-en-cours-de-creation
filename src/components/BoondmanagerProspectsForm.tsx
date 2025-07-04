@@ -2,7 +2,7 @@ import React, { useState, useCallback, useEffect } from 'react';
 import { ChevronDown, ChevronUp, Upload, X, RefreshCw, AlertCircle } from 'lucide-react';
 import { SalesRep, Need } from '../types';
 import { supabase } from '../lib/supabase';
-import { fetchOpenNeeds } from '../services/needs';
+import { fetchNeeds } from '../services/needs';
 
 interface ClientNeedsFormProps {
   salesReps: SalesRep[];
@@ -19,7 +19,7 @@ export function ClientNeedsForm({ salesReps, onSubmit, isLoading = false }: Clie
   const [isExpanded, setIsExpanded] = useState(true);
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [dragActive, setDragActive] = useState(false);
-  const [openNeeds, setOpenNeeds] = useState<Need[]>([]);
+  const [needs, setNeeds] = useState<Need[]>([]);
   const [needsLoading, setNeedsLoading] = useState(false);
   const [needsError, setNeedsError] = useState<string | null>(null);
 
@@ -52,8 +52,13 @@ export function ClientNeedsForm({ salesReps, onSubmit, isLoading = false }: Clie
     setNeedsError(null);
     
     try {
-      setNeeds([]);
-      console.log('Loaded needs:', needs.length);
+      const loadedNeeds = await fetchNeeds();
+      console.log('Loaded needs:', loadedNeeds.length);
+      setNeeds(loadedNeeds);
+      setNeedsLoading(false);
+    } catch (error) {
+      console.error('Error loading needs:', error);
+      setNeedsError(error instanceof Error ? error.message : 'Erreur lors du chargement des besoins');
       setNeedsLoading(false);
     }
   };
