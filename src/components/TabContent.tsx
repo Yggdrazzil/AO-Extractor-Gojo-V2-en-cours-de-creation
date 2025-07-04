@@ -49,7 +49,7 @@ interface TabContentProps {
   onProspectDelete?: (id: string) => Promise<void>;
   
   // Props pour les besoins clients
-  onBoondmanagerProspectStatusChange?: (id: string, status: BoondmanagerProspect['status']) => Promise<void>;
+  onBoondmanagerProspectStatusChange?: (id: string, status: 'À traiter' | 'Traité') => Promise<void>;
   onBoondmanagerProspectAssigneeChange?: (id: string, assignedTo: string) => Promise<void>;
   onBoondmanagerProspectSelectedNeedChange?: (id: string, besoin: string) => Promise<void>;
   onBoondmanagerProspectAvailabilityChange?: (id: string, availability: string) => Promise<void>;
@@ -196,7 +196,7 @@ export function TabContent({
           <ClientNeedsTable
             prospects={boondmanagerProspects}
             salesReps={salesReps}
-            onStatusChange={onBoondmanagerProspectStatusChange || (() => Promise.resolve())}
+            onStatusChange={onBoondmanagerProspectStatusChange!}
             onAssigneeChange={onBoondmanagerProspectAssigneeChange || (() => Promise.resolve())}
             onSelectedNeedChange={onBoondmanagerProspectSelectedNeedChange || (() => Promise.resolve())}
             onAvailabilityChange={onBoondmanagerProspectAvailabilityChange || (() => Promise.resolve())}
