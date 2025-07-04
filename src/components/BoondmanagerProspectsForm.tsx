@@ -1,16 +1,16 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { ChevronDown, ChevronUp, Upload, X, RefreshCw, AlertCircle } from 'lucide-react';
-import { SalesRep } from '../types';
+import { SalesRep, Need } from '../types';
 import { supabase } from '../lib/supabase';
-import { fetchOpenNeeds, testBoondmanagerConnection, type BoondmanagerNeed } from '../services/boondmanager';
+import { fetchOpenNeeds } from '../services/needs';
 
-interface BoondmanagerProspectsFormProps {
+interface ClientNeedsFormProps {
   salesReps: SalesRep[];
   onSubmit: (textContent: string, selectedNeedId: string, selectedNeedTitle: string, file: File | null, assignedTo: string) => Promise<void>;
   isLoading?: boolean;
 }
 
-export function BoondmanagerProspectsForm({ salesReps, onSubmit, isLoading = false }: BoondmanagerProspectsFormProps) {
+export function ClientNeedsForm({ salesReps, onSubmit, isLoading = false }: ClientNeedsFormProps) {
   const [textContent, setTextContent] = useState('');
   const [selectedNeedId, setSelectedNeedId] = useState('');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -19,7 +19,7 @@ export function BoondmanagerProspectsForm({ salesReps, onSubmit, isLoading = fal
   const [isExpanded, setIsExpanded] = useState(true);
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [dragActive, setDragActive] = useState(false);
-  const [openNeeds, setOpenNeeds] = useState<BoondmanagerNeed[]>([]);
+  const [needs, setNeeds] = useState<Need[]>([]);
   const [needsLoading, setNeedsLoading] = useState(false);
   const [needsError, setNeedsError] = useState<string | null>(null);
 
@@ -31,7 +31,7 @@ export function BoondmanagerProspectsForm({ salesReps, onSubmit, isLoading = fal
         setUserEmail(email);
 
         if (email) {
-          const storageKey = `boondmanagerProspectsFormExpanded_${email}`;
+          const storageKey = `clientNeedsFormExpanded_${email}`;
           const savedState = localStorage.getItem(storageKey);
           setIsExpanded(savedState === null ? true : savedState === 'true');
         }
@@ -44,27 +44,21 @@ export function BoondmanagerProspectsForm({ salesReps, onSubmit, isLoading = fal
   }, []);
 
   useEffect(() => {
-    loadOpenNeeds();
+    loadNeeds();
   }, []);
 
-  const loadOpenNeeds = async () => {
+  const loadNeeds = async () => {
     setNeedsLoading(true);
     setNeedsError(null);
     
     try {
-      // Vérifier d'abord la connexion
-      const isConnected = await testBoondmanagerConnection();
-      if (!isConnected) {
-        throw new Error('Impossible de se connecter à Boondmanager. Vérifiez votre nom d\'utilisateur et mot de passe dans les paramètres.');
-      }
-      
-      const needs = await fetchOpenNeeds();
-      console.log('Loaded needs from Boondmanager:', needs.length);
-      setOpenNeeds(needs);
+      const openNeeds = await fetchOpenNeeds();
+      console.log('Loaded needs:', openNeeds.length);
+      setNeeds(openNeeds);
     } catch (error) {
-      console.error('Error loading open needs:', error);
+      console.error('Error loading needs:', error);
       setNeedsError(error instanceof Error ? error.message : 'Erreur lors du chargement des besoins');
-      setOpenNeeds([]);
+      setNeeds([]);
     } finally {
       setNeedsLoading(false);
     }
@@ -74,7 +68,7 @@ export function BoondmanagerProspectsForm({ salesReps, onSubmit, isLoading = fal
     setIsExpanded(prev => {
       const newState = !prev;
       if (userEmail) {
-        const storageKey = `boondmanagerProspectsFormExpanded_${userEmail}`;
+        const storageKey = `clientNeedsFormExpanded_${userEmail}`;
         localStorage.setItem(storageKey, String(newState));
       }
       return newState;
@@ -154,7 +148,7 @@ export function BoondmanagerProspectsForm({ salesReps, onSubmit, isLoading = fal
         return;
       }
       
-      const selectedNeed = openNeeds.find(need => need.id === selectedNeedId);
+      const selectedNeed = needs.find(need => need.id === selectedNeedId);
       const selectedNeedTitle = selectedNeed ? `${selectedNeed.client} - ${selectedNeed.title}` : 'Besoin non trouvé';
       
       await onSubmit(textContent, selectedNeedId, selectedNeedTitle, selectedFile, assignedTo);
@@ -168,13 +162,13 @@ export function BoondmanagerProspectsForm({ salesReps, onSubmit, isLoading = fal
     }
   };
 
-  const selectedNeed = openNeeds.find(need => need.id === selectedNeedId);
+  const selectedNeed = needs.find(need => need.id === selectedNeedId);
 
   return (
     <form onSubmit={handleSubmit} className="bg-white dark:bg-gray-800 rounded-lg shadow-sm">
       <div className="p-4 flex items-center justify-between border-b border-gray-200 dark:border-gray-700">
         <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">
-          Profils pour besoins Boondmanager
+          Profils pour besoins clients
         </h2>
         <button
           type="button"
@@ -209,15 +203,15 @@ export function BoondmanagerProspectsForm({ salesReps, onSubmit, isLoading = fal
           />
         </div>
 
-        {/* Sélection du besoin Boondmanager */}
+        {/* Sélection du besoin client */}
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <label htmlFor="selected-need" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-              Besoin Boondmanager
+              Besoin client
             </label>
             <button
               type="button"
-              onClick={loadOpenNeeds}
+              onClick={loadNeeds}
               disabled={needsLoading}
               className="flex items-center gap-1 px-2 py-1 text-xs text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 disabled:opacity-50"
             >
@@ -239,15 +233,15 @@ export function BoondmanagerProspectsForm({ salesReps, onSubmit, isLoading = fal
             id="selected-need"
             value={selectedNeedId}
             onChange={(e) => setSelectedNeedId(e.target.value)}
-            disabled={needsLoading || openNeeds.length === 0}
+            disabled={needsLoading || needs.length === 0}
             className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors disabled:opacity-50"
           >
             <option value="">
               {needsLoading ? 'Chargement des besoins...' : 
-               openNeeds.length === 0 ? 'Aucun besoin disponible' : 
+               needs.length === 0 ? 'Aucun besoin disponible' : 
                'Sélectionner un besoin'}
             </option>
-            {openNeeds.map((need) => (
+            {needs.map((need) => (
               <option key={need.id} value={need.id}>
                 {need.client} - {need.title}
               </option>
@@ -260,10 +254,15 @@ export function BoondmanagerProspectsForm({ salesReps, onSubmit, isLoading = fal
                 {selectedNeed.client} - {selectedNeed.title}
               </h4>
               {selectedNeed.description && (
-                <p className="text-sm text-blue-700 dark:text-blue-300">
+                <p className="text-sm text-blue-700 dark:text-blue-300 mb-2">
                   {selectedNeed.description}
                 </p>
               )}
+              <div className="text-xs text-blue-600 dark:text-blue-400 space-y-1">
+                {selectedNeed.location && <div>📍 {selectedNeed.location}</div>}
+                {selectedNeed.maxRate && <div>💰 TJM max: {selectedNeed.maxRate}€</div>}
+                {selectedNeed.skills && <div>🛠️ {selectedNeed.skills}</div>}
+              </div>
             </div>
           )}
         </div>

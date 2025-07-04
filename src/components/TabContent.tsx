@@ -3,7 +3,8 @@ import { RFPForm } from './RFPForm';
 import { RFPTable } from './RFPTable';
 import { ProspectsForm } from './ProspectsForm';
 import { ProspectsTable } from './ProspectsTable';
-import { BoondmanagerProspectsForm } from './BoondmanagerProspectsForm';
+import { ClientNeedsForm } from './BoondmanagerProspectsForm';
+import { NeedsManagement } from './NeedsManagement';
 import { DailySummaryTest } from './DailySummaryTest';
 import { DailyProspectsSummaryTest } from './DailyProspectsSummaryTest';
 import type { RFP, SalesRep } from '../types';
@@ -184,16 +185,25 @@ export function TabContent({
       return (
         <div className="p-6 space-y-6 h-full overflow-auto">
           {onAnalyzeBoondmanagerProspect && (
-            <BoondmanagerProspectsForm
+            <ClientNeedsForm
               salesReps={salesReps}
               onSubmit={onAnalyzeBoondmanagerProspect}
               isLoading={isAnalyzingBoondmanagerProspect}
             />
           )}
-          <PlaceholderTab
-            title="Tableau des profils Boondmanager"
-            description="Le tableau pour afficher les profils liés aux besoins Boondmanager sera implémenté prochainement."
-          />
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm">
+            <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+              <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">
+                Gestion des besoins clients
+              </h3>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                Créez et gérez les besoins clients pour vos prospects
+              </p>
+            </div>
+            <div className="p-6">
+              <NeedsManagement />
+            </div>
+          </div>
         </div>
       );
 
