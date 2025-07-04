@@ -3,7 +3,7 @@ import { RFPForm } from './RFPForm';
 import { RFPTable } from './RFPTable';
 import { ProspectsForm } from './ProspectsForm';
 import { ProspectsTable } from './ProspectsTable';
-import { ClientNeedsForm } from './BoondmanagerProspectsForm';
+import { ClientNeedsForm } from './ClientNeedsForm';
 import { NeedsManagement } from './NeedsManagement';
 import { DailySummaryTest } from './DailySummaryTest';
 import { DailyProspectsSummaryTest } from './DailyProspectsSummaryTest';
@@ -48,10 +48,10 @@ interface TabContentProps {
   onProspectView?: (prospect: Prospect) => Promise<void>;
   onProspectDelete?: (id: string) => Promise<void>;
   
-  // Props pour les prospects Boondmanager
+  // Props pour les besoins clients
   onBoondmanagerProspectStatusChange?: (id: string, status: BoondmanagerProspect['status']) => Promise<void>;
   onBoondmanagerProspectAssigneeChange?: (id: string, assignedTo: string) => Promise<void>;
-  onBoondmanagerProspectSelectedNeedChange?: (id: string, selectedNeedId: string, selectedNeedTitle: string) => Promise<void>;
+  onBoondmanagerProspectSelectedNeedChange?: (id: string, besoin: string) => Promise<void>;
   onBoondmanagerProspectAvailabilityChange?: (id: string, availability: string) => Promise<void>;
   onBoondmanagerProspectDailyRateChange?: (id: string, dailyRate: string) => Promise<void>;
   onBoondmanagerProspectResidenceChange?: (id: string, residence: string) => Promise<void>;
@@ -187,7 +187,9 @@ export function TabContent({
           {onAnalyzeBoondmanagerProspect && (
             <ClientNeedsForm
               salesReps={salesReps}
-              onSubmit={onAnalyzeBoondmanagerProspect}
+              onSubmit={(textContent, besoin, file, assignedTo) => 
+                onAnalyzeBoondmanagerProspect(textContent, besoin, besoin, file, assignedTo)
+              }
               isLoading={isAnalyzingBoondmanagerProspect}
             />
           )}

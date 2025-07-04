@@ -521,8 +521,8 @@ function App() {
       if (!textContent.trim() && !file) {
         throw new Error("Veuillez saisir du texte ou joindre un fichier");
       }
-      if (!selectedNeedId) {
-        throw new Error("Veuillez sélectionner un besoin");
+      if (!selectedNeedId.trim()) {
+        throw new Error("Veuillez saisir un besoin");
       }
       if (!selectedRep) {
         throw new Error("Veuillez sélectionner un commercial valide");
