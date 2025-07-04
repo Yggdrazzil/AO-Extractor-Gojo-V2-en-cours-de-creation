@@ -369,3 +369,5 @@ export function ClientNeedsForm({ salesReps, onSubmit, isLoading = false }: Clie
     </form>
   );
 }
+
+export { ClientNeedsForm }
