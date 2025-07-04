@@ -556,12 +556,12 @@ function App() {
 
       // Analyser le contenu avec l'IA si on a du contenu à analyser
       let analysisResult = {
-        availability: 'À définir',
+        availability: '-',
         dailyRate: null,
-        residence: 'À définir',
-        mobility: 'À définir',
-        phone: 'À définir',
-        email: 'À définir'
+        residence: '-',
+        mobility: '-',
+        phone: '-',
+        email: '-'
       };
       
       if (textContent.trim() || fileContent) {

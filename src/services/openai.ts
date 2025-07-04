@@ -230,12 +230,12 @@ ${cvContent}` : content;
 
     // Traiter les valeurs spéciales pour les coordonnées
     return {
-      availability: result.availability || 'À définir',
+      availability: result.availability || '-',
       dailyRate: result.dailyRate || null,
-      residence: result.residence || 'À définir',
-      mobility: result.mobility || 'À définir',
-      phone: result.phone || 'Non trouvé',
-      email: result.email || 'Non trouvé'
+      residence: result.residence || '-',
+      mobility: result.mobility || '-',
+      phone: result.phone || '-',
+      email: result.email || '-'
     };
   } catch (error) {
     console.error('Erreur OpenAI:', error);

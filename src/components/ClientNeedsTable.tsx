@@ -587,7 +587,7 @@ export function ClientNeedsTable({
                           className="cursor-pointer hover:text-blue-600 dark:hover:text-blue-400 text-xs sm:text-sm break-words" 
                           title="Cliquer pour modifier"
                         >
-                          {prospect.residence}
+                          {prospect.residence || '-'}
                         </div>
                       )}
                     </td>
@@ -617,7 +617,7 @@ export function ClientNeedsTable({
                           className="cursor-pointer hover:text-blue-600 dark:hover:text-blue-400 text-xs sm:text-sm break-words" 
                           title="Cliquer pour modifier"
                         >
-                          {prospect.mobility}
+                          {prospect.mobility || '-'}
                         </div>
                       )}
                     </td>
@@ -647,7 +647,7 @@ export function ClientNeedsTable({
                           className="cursor-pointer hover:text-blue-600 dark:hover:text-blue-400 text-xs sm:text-sm break-words" 
                           title="Cliquer pour modifier"
                         >
-                          {prospect.phone}
+                          {prospect.phone || '-'}
                         </div>
                       )}
                     </td>
@@ -677,7 +677,7 @@ export function ClientNeedsTable({
                           className="cursor-pointer hover:text-blue-600 dark:hover:text-blue-400 text-xs sm:text-sm break-words" 
                           title="Cliquer pour modifier"
                         >
-                          {prospect.email}
+                          {prospect.email || '-'}
                         </div>
                       )}
                     </td>

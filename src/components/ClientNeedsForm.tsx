@@ -147,12 +147,12 @@ export function ClientNeedsForm({ salesReps, onSubmit, isLoading = false }: Clie
           // Mettre à jour les données du prospect avec les résultats de l'analyse
           // Ces données seront utilisées par la fonction onSubmit
           const enrichedTextContent = textContent + '\n\n--- Analyse automatique ---\n' +
-            `Disponibilité: ${analysisResult.availability}\n` +
+            `Disponibilité: ${analysisResult.availability || '-'}\n` +
             `TJM: ${analysisResult.dailyRate || 'Non spécifié'}\n` +
-            `Résidence: ${analysisResult.residence}\n` +
-            `Mobilité: ${analysisResult.mobility}\n` +
-            `Téléphone: ${analysisResult.phone}\n` +
-            `Email: ${analysisResult.email}`;
+            `Résidence: ${analysisResult.residence || '-'}\n` +
+            `Mobilité: ${analysisResult.mobility || '-'}\n` +
+            `Téléphone: ${analysisResult.phone || '-'}\n` +
+            `Email: ${analysisResult.email || '-'}`;
           
           await onSubmit(enrichedTextContent, besoin, selectedFile, assignedTo);
         } catch (analysisError) {
