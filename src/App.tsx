@@ -929,7 +929,7 @@ function App() {
               onProspectEmailChange={handleProspectEmailChange}
               onProspectDelete={handleProspectDelete}
               onProspectView={handleViewProspect}
-              onBoondmanagerProspectStatusChange={() => Promise.resolve()}
+              onBoondmanagerProspectStatusChange={handleClientNeedStatusChange}
               onBoondmanagerProspectAssigneeChange={handleClientNeedAssigneeChange}
               onBoondmanagerProspectSelectedNeedChange={handleClientNeedSelectedNeedChange}
               onBoondmanagerProspectAvailabilityChange={handleClientNeedAvailabilityChange}
