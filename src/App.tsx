@@ -516,6 +516,15 @@ function App() {
   const handleAnalyzeBoondmanagerProspect = async (textContent: string, selectedNeedId: string, selectedNeedTitle: string, file: File | null, assignedTo: string) => {
     setIsAnalyzingBoondmanagerProspect(true);
     try {
+      console.log('Starting client needs analysis:', { 
+        textContent: textContent ? `${textContent.substring(0, 50)}...` : 'none',
+        selectedNeedId,
+        selectedNeedTitle,
+        hasFile: !!file,
+        fileName: file?.name,
+        assignedTo
+      });
+      
       const selectedRep = salesReps.find(rep => rep.id === assignedTo);
 
       if (!textContent.trim() && !file) {
@@ -528,22 +537,58 @@ function App() {
         throw new Error("Veuillez sélectionner un commercial valide");
       }
 
-      // Pour l'instant, on simule la création d'un prospect Boondmanager
-      // En attendant la création de la table et des services correspondants
-      const newBoondmanagerProspect: BoondmanagerProspect = {
-        id: `temp-${Date.now()}`,
-        textContent: textContent || '',
-        fileName: file?.name || undefined,
-        fileUrl: undefined,
-        fileContent: undefined,
-        selectedNeedId,
-        selectedNeedTitle,
+      // Extraire le contenu du fichier si présent
+      let fileUrl = undefined;
+      let fileName = file?.name;
+      let fileContent = undefined;
+      
+      if (file) {
+        try {
+          const { uploadFile } = await import('./services/fileUpload');
+          const uploadResult = await uploadFile(file, 'cvs');
+          fileUrl = uploadResult.url;
+          fileContent = uploadResult.content;
+          console.log('File uploaded successfully:', { url: fileUrl, content: fileContent?.substring(0, 100) + '...' });
+        } catch (uploadError) {
+          console.error('File upload failed:', uploadError);
+        }
+      }
+
+      // Analyser le contenu avec l'IA si on a du contenu à analyser
+      let analysisResult = {
         availability: 'À définir',
         dailyRate: null,
         residence: 'À définir',
         mobility: 'À définir',
         phone: 'À définir',
-        email: 'À définir',
+        email: 'À définir'
+      };
+      
+      if (textContent.trim() || fileContent) {
+        try {
+          analysisResult = await analyzeProspect(textContent.trim(), fileContent);
+          console.log('Client needs analysis result:', analysisResult);
+        } catch (analysisError) {
+          console.error('Error analyzing client needs:', analysisError);
+        }
+      }
+
+      // Pour l'instant, on simule la création d'un prospect Boondmanager
+      // En attendant la création de la table et des services correspondants
+      const newBoondmanagerProspect: BoondmanagerProspect = {
+        id: `temp-${Date.now()}`,
+        textContent: textContent || '',
+        fileName: fileName || undefined,
+        fileUrl: fileUrl,
+        fileContent: fileContent,
+        selectedNeedId,
+        selectedNeedTitle,
+        availability: analysisResult.availability,
+        dailyRate: analysisResult.dailyRate,
+        residence: analysisResult.residence,
+        mobility: analysisResult.mobility,
+        phone: analysisResult.phone,
+        email: analysisResult.email,
         status: 'À traiter',
         assignedTo,
         isRead: false

@@ -1,7 +1,9 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { ChevronDown, ChevronUp, Upload, X } from 'lucide-react';
 import { SalesRep } from '../types';
+import { analyzeProspect } from '../services/openai';
 import { supabase } from '../lib/supabase';
+import { extractFileContent } from '../services/fileUpload';
 
 interface ClientNeedsFormProps {
   salesReps: SalesRep[];
@@ -109,7 +111,7 @@ export function ClientNeedsForm({ salesReps, onSubmit, isLoading = false }: Clie
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-    
+
     try {
       if (!textContent.trim() && !selectedFile) {
         setError("Veuillez saisir du texte ou joindre un fichier");
@@ -123,8 +125,45 @@ export function ClientNeedsForm({ salesReps, onSubmit, isLoading = false }: Clie
         setError("Veuillez sélectionner un commercial");
         return;
       }
-      
+
+      // Extraire le contenu du fichier si présent
+      let cvContent = undefined;
+      if (selectedFile) {
+        try {
+          cvContent = await extractFileContent(selectedFile);
+          console.log('File content extracted:', cvContent ? 'Success' : 'Failed');
+        } catch (fileError) {
+          console.error('Error extracting file content:', fileError);
+          // Continuer sans le contenu du fichier
+        }
+      }
+
+      // Analyser le contenu avec l'IA si on a du contenu à analyser
+      if (textContent.trim() || cvContent) {
+        try {
+          const analysisResult = await analyzeProspect(textContent.trim(), cvContent);
+          console.log('Client needs analysis result:', analysisResult);
+          
+          // Mettre à jour les données du prospect avec les résultats de l'analyse
+          // Ces données seront utilisées par la fonction onSubmit
+          const enrichedTextContent = textContent + '\n\n--- Analyse automatique ---\n' +
+            `Disponibilité: ${analysisResult.availability}\n` +
+            `TJM: ${analysisResult.dailyRate || 'Non spécifié'}\n` +
+            `Résidence: ${analysisResult.residence}\n` +
+            `Mobilité: ${analysisResult.mobility}\n` +
+            `Téléphone: ${analysisResult.phone}\n` +
+            `Email: ${analysisResult.email}`;
+          
+          await onSubmit(enrichedTextContent, besoin, selectedFile, assignedTo);
+        } catch (analysisError) {
+          console.error('Error analyzing client needs:', analysisError);
+          // En cas d'erreur d'analyse, on continue avec les données brutes
+          await onSubmit(textContent, besoin, selectedFile, assignedTo);
+        }
+      } else {
       await onSubmit(textContent, besoin, selectedFile, assignedTo);
+      }
+      
       setTextContent('');
       setBesoin('');
       setSelectedFile(null);
