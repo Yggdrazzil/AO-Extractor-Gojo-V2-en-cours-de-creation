@@ -1,48 +1,43 @@
 import { supabase } from '../lib/supabase';
 import type { BoondmanagerProspect } from '../types';
+import { uploadFile } from './fileUpload';
 
 /**
  * Service pour la gestion des profils pour besoins clients
  */
 
 // Stockage local pour simuler une base de données
-let clientNeedsStore: BoondmanagerProspect[] = [];
+// Utiliser une clé unique pour tous les utilisateurs
+const STORAGE_KEY = 'clientNeeds';
 
 /**
  * Récupère tous les profils pour besoins clients
  */
 export async function fetchClientNeeds(): Promise<BoondmanagerProspect[]> {
-  // Si le store est vide, essayer de récupérer depuis le localStorage
-  if (clientNeedsStore.length === 0) {
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session?.user?.email) {
-        const storageKey = `clientNeeds_${session.user.email}`;
-        const savedData = localStorage.getItem(storageKey);
-        if (savedData) {
-          clientNeedsStore = JSON.parse(savedData);
-          console.log('Loaded client needs from localStorage:', clientNeedsStore.length);
-        }
-      }
-    } catch (error) {
-      console.error('Error loading client needs from localStorage:', error);
+  try {
+    // Récupérer depuis le localStorage
+    const savedData = localStorage.getItem(STORAGE_KEY);
+    if (savedData) {
+      const clientNeeds = JSON.parse(savedData);
+      console.log('Loaded client needs from localStorage:', clientNeeds.length);
+      return clientNeeds;
+    } else {
+      console.log('No client needs found in localStorage');
+      return [];
     }
+  } catch (error) {
+    console.error('Error loading client needs from localStorage:', error);
+    return [];
   }
-  
-  return [...clientNeedsStore];
 }
 
 /**
  * Sauvegarde les profils dans le localStorage
  */
-async function saveClientNeedsToStorage(): Promise<void> {
+async function saveClientNeedsToStorage(clientNeeds: BoondmanagerProspect[]): Promise<void> {
   try {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (session?.user?.email) {
-      const storageKey = `clientNeeds_${session.user.email}`;
-      localStorage.setItem(storageKey, JSON.stringify(clientNeedsStore));
-      console.log('Saved client needs to localStorage:', clientNeedsStore.length);
-    }
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(clientNeeds));
+    console.log('Saved client needs to localStorage:', clientNeeds.length);
   } catch (error) {
     console.error('Error saving client needs to localStorage:', error);
   }
@@ -51,131 +46,130 @@ async function saveClientNeedsToStorage(): Promise<void> {
 /**
  * Ajoute un profil pour besoin client
  */
-export async function addClientNeed(prospect: BoondmanagerProspect): Promise<BoondmanagerProspect> {
-  // Ajouter au store local
-  clientNeedsStore.unshift(prospect);
+export async function addClientNeed(newProspect: BoondmanagerProspect): Promise<BoondmanagerProspect> {
+  try {
+    // Récupérer les profils existants
+    const clientNeeds = await fetchClientNeeds();
+    
+    // Ajouter le nouveau profil
+    clientNeeds.unshift(newProspect);
+    
+    // Sauvegarder dans le localStorage
+    await saveClientNeedsToStorage(clientNeeds);
+    
+    return newProspect;
+  } catch (error) {
+    console.error('Failed to add client need:', error);
+    throw error;
+  }
+}
+
+/**
+ * Récupère un profil par son ID
+ */
+async function getClientNeedById(id: string): Promise<BoondmanagerProspect | undefined> {
+  const clientNeeds = await fetchClientNeeds();
+  return clientNeeds.find(p => p.id === id);
+}
+
+/**
+ * Met à jour un profil dans le localStorage
+ */
+async function updateClientNeed(id: string, updates: Partial<BoondmanagerProspect>): Promise<void> {
+  const clientNeeds = await fetchClientNeeds();
+  const index = clientNeeds.findIndex(p => p.id === id);
   
-  // Sauvegarder dans le localStorage
-  await saveClientNeedsToStorage();
+  if (index !== -1) {
+    clientNeeds[index] = { ...clientNeeds[index], ...updates };
+    await saveClientNeedsToStorage(clientNeeds);
+  }
+}
+
+/**
+ * Supprime un profil du localStorage
+ */
+async function removeClientNeed(id: string): Promise<void> {
+  const clientNeeds = await fetchClientNeeds();
+  const filteredNeeds = clientNeeds.filter(p => p.id !== id);
   
-  return prospect;
+  if (filteredNeeds.length !== clientNeeds.length) {
+    await saveClientNeedsToStorage(filteredNeeds);
+  }
 }
 
 /**
  * Met à jour le statut d'un profil
  */
 export async function updateClientNeedStatus(id: string, status: BoondmanagerProspect['status']): Promise<void> {
-  const index = clientNeedsStore.findIndex(p => p.id === id);
-  if (index !== -1) {
-    console.log(`Updating client need status: ${id} from ${clientNeedsStore[index].status} to ${status}`);
-    clientNeedsStore[index].status = status;
-    await saveClientNeedsToStorage();
-  }
+  await updateClientNeed(id, { status });
 }
 
 /**
  * Met à jour le commercial assigné
  */
 export async function updateClientNeedAssignee(id: string, assignedTo: string): Promise<void> {
-  const index = clientNeedsStore.findIndex(p => p.id === id);
-  if (index !== -1) {
-    clientNeedsStore[index].assignedTo = assignedTo;
-    await saveClientNeedsToStorage();
-  }
+  await updateClientNeed(id, { assignedTo });
 }
 
 /**
  * Met à jour le besoin sélectionné
  */
 export async function updateClientNeedSelectedNeed(id: string, selectedNeedTitle: string): Promise<void> {
-  const index = clientNeedsStore.findIndex(p => p.id === id);
-  if (index !== -1) {
-    clientNeedsStore[index].selectedNeedTitle = selectedNeedTitle;
-    await saveClientNeedsToStorage();
-  }
+  await updateClientNeed(id, { selectedNeedTitle });
 }
 
 /**
  * Met à jour la disponibilité
  */
 export async function updateClientNeedAvailability(id: string, availability: string): Promise<void> {
-  const index = clientNeedsStore.findIndex(p => p.id === id);
-  if (index !== -1) {
-    clientNeedsStore[index].availability = availability;
-    await saveClientNeedsToStorage();
-  }
+  await updateClientNeed(id, { availability });
 }
 
 /**
  * Met à jour le TJM
  */
 export async function updateClientNeedDailyRate(id: string, dailyRate: number | null): Promise<void> {
-  const index = clientNeedsStore.findIndex(p => p.id === id);
-  if (index !== -1) {
-    clientNeedsStore[index].dailyRate = dailyRate;
-    await saveClientNeedsToStorage();
-  }
+  await updateClientNeed(id, { dailyRate });
 }
 
 /**
  * Met à jour la résidence
  */
 export async function updateClientNeedResidence(id: string, residence: string): Promise<void> {
-  const index = clientNeedsStore.findIndex(p => p.id === id);
-  if (index !== -1) {
-    clientNeedsStore[index].residence = residence;
-    await saveClientNeedsToStorage();
-  }
+  await updateClientNeed(id, { residence });
 }
 
 /**
  * Met à jour la mobilité
  */
 export async function updateClientNeedMobility(id: string, mobility: string): Promise<void> {
-  const index = clientNeedsStore.findIndex(p => p.id === id);
-  if (index !== -1) {
-    clientNeedsStore[index].mobility = mobility;
-    await saveClientNeedsToStorage();
-  }
+  await updateClientNeed(id, { mobility });
 }
 
 /**
  * Met à jour le téléphone
  */
 export async function updateClientNeedPhone(id: string, phone: string): Promise<void> {
-  const index = clientNeedsStore.findIndex(p => p.id === id);
-  if (index !== -1) {
-    clientNeedsStore[index].phone = phone;
-    await saveClientNeedsToStorage();
-  }
+  await updateClientNeed(id, { phone });
 }
 
 /**
  * Met à jour l'email
  */
 export async function updateClientNeedEmail(id: string, email: string): Promise<void> {
-  const index = clientNeedsStore.findIndex(p => p.id === id);
-  if (index !== -1) {
-    clientNeedsStore[index].email = email;
-    await saveClientNeedsToStorage();
-  }
+  await updateClientNeed(id, { email });
 }
 
 /**
  * Marque un profil comme lu
  */
 export async function markClientNeedAsRead(id: string): Promise<void> {
-  const index = clientNeedsStore.findIndex(p => p.id === id);
-  if (index !== -1) {
-    clientNeedsStore[index].isRead = true;
-    await saveClientNeedsToStorage();
-  }
+  await updateClientNeed(id, { isRead: true });
 }
 
 /**
  * Supprime un profil
  */
 export async function deleteClientNeed(id: string): Promise<void> {
-  clientNeedsStore = clientNeedsStore.filter(p => p.id !== id);
-  await saveClientNeedsToStorage();
+  await removeClientNeed(id);
 }

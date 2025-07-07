@@ -79,14 +79,23 @@ export async function getDailyClientNeedsSummaryStats(): Promise<Array<{
     // Pour chaque commercial, compter les profils en attente
     const stats = await Promise.all(
       salesReps.map(async (salesRep) => {
-        // Récupérer les profils depuis le localStorage
+        // Récupérer les profils depuis le localStorage global
         let pendingClientNeeds = 0;
         try {
-          const storageKey = `clientNeeds_${salesRep.email}`;
+          // Récupérer tous les profils de besoins clients stockés dans le localStorage
+          const storageKey = 'clientNeeds';
           const savedData = localStorage.getItem(storageKey);
           if (savedData) {
-            const clientNeeds = JSON.parse(savedData);
-            pendingClientNeeds = clientNeeds.filter(need => need.status === 'À traiter' && need.assignedTo === salesRep.id).length;
+            try {
+              const clientNeeds = JSON.parse(savedData);
+              pendingClientNeeds = clientNeeds.filter(need => 
+                need.status === 'À traiter' && 
+                need.assignedTo === salesRep.id
+              ).length;
+              console.log(`Found ${pendingClientNeeds} pending client needs for ${salesRep.code} in localStorage`);
+            } catch (parseError) {
+              console.error(`Error parsing client needs for ${salesRep.code}:`, parseError);
+            }
           }
         } catch (error) {
           console.error(`Error counting client needs for ${salesRep.code}:`, error);
