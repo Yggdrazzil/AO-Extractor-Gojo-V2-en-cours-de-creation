@@ -60,6 +60,50 @@ export async function getDailyClientNeedsSummaryStats(): Promise<Array<{
 }>> {
   try {
     console.log('Fetching daily client needs summary stats...');
+
+    // Créer des données de test si nécessaire
+    try {
+      const storageKey = 'clientNeeds';
+      const savedData = localStorage.getItem(storageKey);
+      if (!savedData) {
+        console.log('No client needs found in localStorage, creating test data');
+        
+        // Récupérer les commerciaux
+        const { data: salesReps, error: salesRepsError } = await supabase
+          .from('sales_reps')
+          .select('id, name, code')
+          .order('code');
+        
+        if (salesRepsError) {
+          console.error('Error fetching sales reps for test data:', salesRepsError);
+        } else if (salesReps && salesReps.length > 0) {
+          // Créer des données de test
+          const testData = salesReps.map(rep => ({
+            id: `test-${rep.id}`,
+            textContent: 'Profil de test pour le récapitulatif quotidien',
+            fileName: 'cv-test.pdf',
+            fileUrl: 'https://example.com/cv-test.pdf',
+            fileContent: 'Contenu du CV de test',
+            selectedNeedId: 'need-123',
+            selectedNeedTitle: 'Développeur React - Client Test',
+            availability: 'Immédiatement',
+            dailyRate: 650,
+            residence: 'Paris',
+            mobility: 'France entière',
+            phone: '06 12 34 56 78',
+            email: 'test@example.com',
+            status: 'À traiter',
+            assignedTo: rep.id,
+            isRead: false
+          }));
+          
+          localStorage.setItem(storageKey, JSON.stringify(testData));
+          console.log('Created test client needs data:', testData.length);
+        }
+      }
+    } catch (error) {
+      console.error('Error creating test data:', error);
+    }
     
     // Récupérer tous les commerciaux
     const { data: salesReps, error: salesRepsError } = await supabase

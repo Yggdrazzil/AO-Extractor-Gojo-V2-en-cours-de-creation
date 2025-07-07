@@ -3,7 +3,7 @@ import { RFPForm } from './RFPForm';
 import { RFPTable } from './RFPTable';
 import { ProspectsForm } from './ProspectsForm';
 import { ProspectsTable } from './ProspectsTable';
-import { ClientNeedsForm } from './ClientNeedsForm';
+import { ClientNeedsForm } from './BoondmanagerProspectsForm';
 import { ClientNeedsTable } from './ClientNeedsTable';
 import { DailySummaryTest } from './DailySummaryTest';
 import { DailyProspectsSummaryTest } from './DailyProspectsSummaryTest';
