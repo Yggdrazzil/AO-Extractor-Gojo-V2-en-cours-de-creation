@@ -347,7 +347,7 @@ function generateDailyProspectsSummaryHTML(salesRepName: string, prospects: Pros
         
         <div class="footer">
           <div>Email automatique quotidien • Ne pas répondre</div>
-          <div>Plateforme de gestion des prospects • Envoyé à 9h01</div>
+          <div>GOJO • Plateforme de gestion des prospects • Envoyé à 9h01</div>
         </div>
       </div>
     </body>
@@ -377,7 +377,7 @@ ${platformUrl}
 
 ---
 Email automatique quotidien - Ne pas répondre
-Plateforme de gestion des prospects - Envoyé à 9h01
+GOJO - Plateforme de gestion des prospects - Envoyé à 9h01
   `.trim()
 }
 
@@ -469,11 +469,11 @@ async function sendEmailWithSendGrid(to: string, subject: string, html: string, 
         ],
         from: {
           email: fromEmail,
-          name: 'HITO Digital'
+          name: 'GOJO'
         },
         reply_to: {
           email: 'noreply@hito.digital',
-          name: 'HITO Digital - Ne pas répondre'
+          name: 'GOJO - Ne pas répondre'
         },
         content: [
           {

@@ -282,7 +282,7 @@ function generateEmailHTML(data: ProspectNotificationData, salesRepName: string,
         
         <div class="footer">
           <div>Email automatique • Ne pas répondre</div>
-          <div>Plateforme de gestion des prospects</div>
+          <div>GOJO • Plateforme de gestion des prospects</div>
         </div>
       </div>
     </body>
@@ -315,7 +315,7 @@ ${platformUrl}
 
 ---
 Email automatique - Ne pas répondre
-Plateforme de gestion des prospects
+GOJO - Plateforme de gestion des prospects
   `.trim()
 }
 
@@ -380,11 +380,11 @@ async function sendEmailWithSendGrid(to: string, subject: string, html: string, 
         ],
         from: {
           email: fromEmail,
-          name: 'HITO Digital'
+          name: 'GOJO'
         },
         reply_to: {
           email: 'noreply@hito.digital',
-          name: 'HITO Digital - Ne pas répondre'
+          name: 'GOJO - Ne pas répondre'
         },
         content: [
           {

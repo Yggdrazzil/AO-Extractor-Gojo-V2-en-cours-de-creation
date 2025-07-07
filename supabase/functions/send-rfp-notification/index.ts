@@ -266,7 +266,7 @@ function generateEmailHTML(data: RFPNotificationData, salesRepName: string, plat
         
         <div class="footer">
           <div>Email automatique • Ne pas répondre</div>
-          <div>Plateforme de gestion des AO</div>
+          <div>GOJO • Plateforme de gestion des AO</div>
         </div>
       </div>
     </body>
@@ -299,7 +299,7 @@ Rappel: Pensez à marquer l'AO comme "lu" une fois consulté.
 
 ---
 Email automatique - Ne pas répondre
-Plateforme de gestion des AO
+GOJO - Plateforme de gestion des AO
   `.trim()
 }
 
@@ -365,11 +365,11 @@ async function sendEmailWithSendGrid(to: string, subject: string, html: string, 
         ],
         from: {
           email: fromEmail,
-          name: 'HITO Digital'
+          name: 'GOJO'
         },
         reply_to: {
           email: 'noreply@hito.digital',
-          name: 'HITO Digital - Ne pas répondre'
+          name: 'GOJO - Ne pas répondre'
         },
         content: [
           {
