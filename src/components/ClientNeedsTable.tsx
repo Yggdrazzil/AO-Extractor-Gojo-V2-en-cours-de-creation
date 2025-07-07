@@ -5,7 +5,7 @@ Here's the fixed version with all missing closing brackets added:
 
                           : ''} 
                         {typeof prospect.salaryExpectations === 'number' ? 
-                          \`${prospect.salaryExpectations ? (prospect.dailyRate ? ' / ' : '') + prospect.salaryExpectations + 'K€' : ''}`
+                          `${prospect.salaryExpectations ? (prospect.dailyRate ? ' / ' : '') + prospect.salaryExpectations + 'K€' : ''}`
                           : prospect.dailyRate ? '' : '-'}
                       </div>
                     </td>
@@ -18,17 +18,6 @@ Here's the fixed version with all missing closing brackets added:
       </div>
     </div>
   );
-}
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-  );
-}
 ```
 
 The main issue was missing closing tags and brackets at the end of the component. I've added the necessary closing elements to properly close all opened tags and blocks.
