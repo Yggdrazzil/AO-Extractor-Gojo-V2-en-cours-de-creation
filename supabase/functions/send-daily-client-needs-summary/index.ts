@@ -134,7 +134,7 @@ function generateDailyClientNeedsSummaryHTML(salesRepName: string, clientNeeds: 
         }
         
         .header { 
-          background: #1651EE; 
+          background: #008876; 
           color: #ffffff; 
           padding: 48px 32px; 
           text-align: center; 
@@ -181,7 +181,7 @@ function generateDailyClientNeedsSummaryHTML(salesRepName: string, clientNeeds: 
         .stats-number {
           font-size: 48px;
           font-weight: 700;
-          color: #1651EE;
+          color: #008876;
           margin-bottom: 8px;
           line-height: 1;
         }
@@ -206,7 +206,7 @@ function generateDailyClientNeedsSummaryHTML(salesRepName: string, clientNeeds: 
         
         .cta-button { 
           display: inline-block; 
-          background: #1651EE !important; 
+          background: #008876 !important; 
           color: #ffffff !important; 
           padding: 16px 32px; 
           text-decoration: none; 
@@ -217,14 +217,14 @@ function generateDailyClientNeedsSummaryHTML(salesRepName: string, clientNeeds: 
           transition: all 0.2s ease;
           border: none;
           cursor: pointer;
-          box-shadow: 0 2px 8px rgba(22, 81, 238, 0.3);
+          box-shadow: 0 2px 8px rgba(0, 136, 118, 0.3);
         }
         
         .cta-button:hover { 
-          background: #1240cc !important;
+          background: #007a69 !important;
           color: #ffffff !important;
           transform: translateY(-1px);
-          box-shadow: 0 4px 12px rgba(22, 81, 238, 0.4);
+          box-shadow: 0 4px 12px rgba(0, 136, 118, 0.4);
         }
         
         .footer { 

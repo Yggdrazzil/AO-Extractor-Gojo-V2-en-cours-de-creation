@@ -50,7 +50,7 @@ function generateEmailHTML(data: ClientNeedNotificationData, salesRepName: strin
         }
         
         .header { 
-          background: #1651EE; 
+          background: #008876; 
           color: #ffffff; 
           padding: 48px 32px; 
           text-align: center; 
@@ -139,7 +139,7 @@ function generateEmailHTML(data: ClientNeedNotificationData, salesRepName: strin
         
         .cta-button { 
           display: inline-block; 
-          background: #1651EE !important; 
+          background: #008876 !important; 
           color: #ffffff !important; 
           padding: 16px 32px; 
           text-decoration: none; 
@@ -150,14 +150,14 @@ function generateEmailHTML(data: ClientNeedNotificationData, salesRepName: strin
           transition: all 0.2s ease;
           border: none;
           cursor: pointer;
-          box-shadow: 0 2px 8px rgba(22, 81, 238, 0.3);
+          box-shadow: 0 2px 8px rgba(0, 136, 118, 0.3);
         }
         
         .cta-button:hover { 
-          background: #1240cc !important;
+          background: #007a69 !important;
           color: #ffffff !important;
           transform: translateY(-1px);
-          box-shadow: 0 4px 12px rgba(22, 81, 238, 0.4);
+          box-shadow: 0 4px 12px rgba(0, 136, 118, 0.4);
         }
         
         .cta-button:visited {
@@ -251,7 +251,7 @@ function generateEmailHTML(data: ClientNeedNotificationData, salesRepName: strin
           <p class="intro-text">Un nouveau profil pour besoin client vient d'être ajouté et vous a été assigné :</p>
           
           <div class="prospect-card">
-            <div class="prospect-title">🎯 Besoin : ${data.besoin}</div>
+            <div class="prospect-title">🔍 Besoin : ${data.besoin}</div>
             <div class="prospect-details">
               ${data.hasCV ? '<div><strong>Type :</strong> CV disponible pour analyse</div>' : '<div><strong>Type :</strong> Informations textuelles uniquement</div>'}
               <div><strong>Objectif :</strong> Staffing sur besoin client</div>
