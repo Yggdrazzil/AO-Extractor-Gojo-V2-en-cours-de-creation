@@ -534,15 +534,6 @@ function App() {
   const handleAnalyzeBoondmanagerProspect = async (textContent: string, selectedNeedId: string, selectedNeedTitle: string, file: File | null, assignedTo: string) => {
     setIsAnalyzingBoondmanagerProspect(true);
     try {
-      console.log('Starting client needs analysis:', { 
-        textContent: textContent ? `${textContent.substring(0, 50)}...` : 'none',
-        selectedNeedId,
-        selectedNeedTitle,
-        hasFile: !!file,
-        fileName: file?.name,
-        assignedTo
-      });
-      
       const selectedRep = salesReps.find(rep => rep.id === assignedTo);
 
       if (!textContent.trim() && !file) {
@@ -591,59 +582,28 @@ function App() {
         }
       }
 
-      // Pour l'instant, on simule la création d'un prospect Boondmanager
-      // En attendant la création de la table et des services correspondants
-      const newBoondmanagerProspect: BoondmanagerProspect = {
-        id: `temp-${Date.now()}`,
-        textContent: textContent || '',
-        fileName: fileName || undefined,
-        fileUrl: fileUrl,
-        fileContent: fileContent,
-        selectedNeedId,
-        selectedNeedTitle,
-        availability: analysisResult.availability,
-        dailyRate: analysisResult.dailyRate,
-        residence: analysisResult.residence,
-        mobility: analysisResult.mobility,
-        phone: analysisResult.phone,
-        email: analysisResult.email,
-        status: 'À traiter',
-        assignedTo,
-        isRead: false
-      };
-
-      setBoondmanagerProspects((prev) => [newBoondmanagerProspect, ...prev]);
-      
-      // TODO: Implémenter la création réelle en base de données
+      // Créer le profil dans la base de données
       try {
-        await addClientNeed(newBoondmanagerProspect);
+        const newBoondmanagerProspect = await addClientNeed({
+          textContent: textContent || '',
+          fileName: fileName || undefined,
+          fileUrl: fileUrl,
+          fileContent: fileContent,
+          selectedNeedId,
+          selectedNeedTitle,
+          availability: analysisResult.availability,
+          dailyRate: analysisResult.dailyRate,
+          residence: analysisResult.residence,
+          mobility: analysisResult.mobility,
+          phone: analysisResult.phone,
+          email: analysisResult.email,
+          status: 'À traiter',
+          assignedTo,
+          isRead: false
+        });
+
+        setBoondmanagerProspects((prev) => [newBoondmanagerProspect, ...prev]);
         console.log('Client need created and saved:', newBoondmanagerProspect.id);
-        
-        // Envoi de la notification email (non bloquant)
-        try {
-          const salesRepCode = await getSalesRepCode(assignedTo);
-          if (salesRepCode) {
-            // Programmer l'envoi avec un délai de 30 secondes
-            const emailScheduled = await sendClientNeedNotification({
-              prospectId: newBoondmanagerProspect.id,
-              besoin: selectedNeedTitle,
-              salesRepCode,
-              assignedTo,
-              hasCV: !!newBoondmanagerProspect.fileName,
-              fileName: newBoondmanagerProspect.fileName
-            }, 0.5); // 30 secondes de délai (0.5 minute)
-            
-            if (emailScheduled) {
-              console.log('Client need email notification scheduled successfully (will be sent in 30 seconds)');
-            } else {
-              console.log('Client need email notification could not be scheduled');
-            }
-          } else {
-            console.warn('Could not send client need email: sales rep code not found');
-          }
-        } catch (emailError) {
-          console.warn('Client need email notification scheduling failed (non-blocking):', emailError);
-        }
       } catch (saveError) {
         console.error('Error saving client need:', saveError);
       }

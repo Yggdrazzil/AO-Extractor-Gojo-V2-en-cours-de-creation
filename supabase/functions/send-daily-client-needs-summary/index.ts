@@ -391,41 +391,23 @@ async function getAllSalesReps(): Promise<SalesRep[]> {
 async function getPendingClientNeedsForSalesRep(salesRepId: string): Promise<ClientNeed[]> {
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!
-    const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!
-
-    // Comme les données sont stockées dans le localStorage côté client,
-    // on simule des données pour le test
-    console.log(`Simulating client needs data for sales rep: ${salesRepId}`)
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     
-    // Créer quelques données de test pour chaque commercial
-    const testData: ClientNeed[] = [
-      {
-        id: `test-${salesRepId}-1`,
-        selected_need_title: 'Développeur React Senior - Banque XYZ',
-        availability: 'Immédiatement',
-        daily_rate: 650,
-        residence: 'Paris',
-        mobility: 'Ile-de-France',
-        phone: '06 12 34 56 78',
-        email: 'candidat1@example.com',
-        created_at: new Date().toISOString(),
-        file_name: 'cv-candidat1.pdf'
-      },
-      {
-        id: `test-${salesRepId}-2`,
-        selected_need_title: 'Architecte Cloud - Assurance ABC',
-        availability: 'Sous 2 semaines',
-        daily_rate: 750,
-        residence: 'Lyon',
-        mobility: 'France entière',
-        phone: '07 98 76 54 32',
-        email: 'candidat2@example.com',
-        created_at: new Date().toISOString(),
-        file_name: null
-      }
-    ]
+    const supabase = createClient(supabaseUrl, supabaseServiceKey)
+    
+    const { data, error } = await supabase
+      .from('client_needs')
+      .select('id, selected_need_title, availability, daily_rate, residence, mobility, phone, email, created_at, file_name')
+      .eq('assigned_to', salesRepId)
+      .eq('status', 'À traiter')
+      .order('created_at', { ascending: false })
 
-    return testData
+    if (error) {
+      console.error('Error fetching client needs for sales rep:', salesRepId, error)
+      return []
+    }
+
+    return data || []
   } catch (error) {
     console.error('Failed to get client needs for sales rep:', salesRepId, error)
     return []

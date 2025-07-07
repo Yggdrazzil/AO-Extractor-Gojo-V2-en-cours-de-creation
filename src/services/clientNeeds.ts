@@ -1,45 +1,75 @@
 import { supabase } from '../lib/supabase';
 import type { BoondmanagerProspect } from '../types';
 import { uploadFile } from './fileUpload';
-
-/**
- * Service pour la gestion des profils pour besoins clients
- */
-
-// Stockage local pour simuler une base de données
-// Utiliser une clé unique pour tous les utilisateurs
-const STORAGE_KEY = 'clientNeeds';
+import { sendClientNeedNotification, getSalesRepCode } from './clientNeedNotification';
 
 /**
  * Récupère tous les profils pour besoins clients
  */
 export async function fetchClientNeeds(): Promise<BoondmanagerProspect[]> {
   try {
-    // Récupérer depuis le localStorage
-    const savedData = localStorage.getItem(STORAGE_KEY);
-    if (savedData) {
-      const clientNeeds = JSON.parse(savedData);
-      console.log('Loaded client needs from localStorage:', clientNeeds.length);
-      return clientNeeds;
-    } else {
-      console.log('No client needs found in localStorage');
+    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+    
+    if (sessionError) {
+      console.error('Session error:', sessionError);
+      throw new Error('Erreur de session');
+    }
+    
+    if (!session) {
+      console.error('No active session found');
+      throw new Error('Authentication required');
+    }
+
+    const { data, error } = await supabase
+      .from('client_needs')
+      .select('id, text_content, file_name, file_url, file_content, selected_need_id, selected_need_title, availability, daily_rate, residence, mobility, phone, email, status, assigned_to, is_read, created_at')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching client needs:', error);
+      
+      if (error.code === 'PGRST301') {
+        throw new Error('Session expirée. Veuillez vous reconnecter.');
+      } else if (error.code === '42501') {
+        throw new Error('Permissions insuffisantes pour accéder aux données.');
+      } else {
+        throw new Error(error.message || 'Erreur lors du chargement des données');
+      }
+    }
+  
+    if (!data) {
+      console.warn('No data returned from Supabase');
       return [];
     }
+  
+    console.log('Successfully fetched client needs:', { count: data.length });
+    
+    return data.map(need => ({
+      id: need.id,
+      textContent: need.text_content || '',
+      fileName: need.file_name,
+      fileUrl: need.file_url,
+      fileContent: need.file_content,
+      selectedNeedId: need.selected_need_id,
+      selectedNeedTitle: need.selected_need_title,
+      availability: need.availability || '-',
+      dailyRate: need.daily_rate,
+      residence: need.residence || '-',
+      mobility: need.mobility || '-',
+      phone: need.phone || '-',
+      email: need.email || '-',
+      status: need.status,
+      assignedTo: need.assigned_to,
+      isRead: need.is_read || false
+    }));
   } catch (error) {
-    console.error('Error loading client needs from localStorage:', error);
-    return [];
-  }
-}
-
-/**
- * Sauvegarde les profils dans le localStorage
- */
-async function saveClientNeedsToStorage(clientNeeds: BoondmanagerProspect[]): Promise<void> {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(clientNeeds));
-    console.log('Saved client needs to localStorage:', clientNeeds.length);
-  } catch (error) {
-    console.error('Error saving client needs to localStorage:', error);
+    console.error('Failed to fetch client needs:', error);
+    
+    if (error instanceof Error) {
+      throw error;
+    } else {
+      throw new Error('Erreur lors du chargement des données');
+    }
   }
 }
 
@@ -48,16 +78,102 @@ async function saveClientNeedsToStorage(clientNeeds: BoondmanagerProspect[]): Pr
  */
 export async function addClientNeed(newProspect: BoondmanagerProspect): Promise<BoondmanagerProspect> {
   try {
-    // Récupérer les profils existants
-    const clientNeeds = await fetchClientNeeds();
+    const { data: salesRep, error: salesRepError } = await supabase
+      .from('sales_reps')
+      .select('id, code')
+      .eq('id', newProspect.assignedTo)
+      .single();
+
+    if (salesRepError || !salesRep) {
+      console.error('Sales rep not found:', newProspect.assignedTo);
+      throw new Error('Commercial non trouvé');
+    }
+
+    let fileUrl = newProspect.fileUrl;
+    let fileName = newProspect.fileName;
+    let fileContent = newProspect.fileContent;
+
+    const insertData = {
+      text_content: newProspect.textContent,
+      file_name: fileName,
+      file_url: fileUrl,
+      file_content: fileContent,
+      selected_need_id: newProspect.selectedNeedId,
+      selected_need_title: newProspect.selectedNeedTitle,
+      availability: newProspect.availability,
+      daily_rate: newProspect.dailyRate,
+      residence: newProspect.residence,
+      mobility: newProspect.mobility,
+      phone: newProspect.phone,
+      email: newProspect.email,
+      status: newProspect.status,
+      assigned_to: newProspect.assignedTo,
+      is_read: newProspect.isRead
+    };
+
+    console.log('Creating client need with data:', insertData);
+
+    const { data, error } = await supabase
+      .from('client_needs')
+      .insert([insertData])
+      .select('id, text_content, file_name, file_url, file_content, selected_need_id, selected_need_title, availability, daily_rate, residence, mobility, phone, email, status, assigned_to, is_read, created_at')
+      .single();
+
+    if (error) {
+      console.error('Error creating client need:', error);
+      throw error;
+    }
     
-    // Ajouter le nouveau profil
-    clientNeeds.unshift(newProspect);
+    if (!data) {
+      throw new Error('Failed to create client need');
+    }
     
-    // Sauvegarder dans le localStorage
-    await saveClientNeedsToStorage(clientNeeds);
+    console.log('Successfully created client need:', data);
+
+    // Envoi de la notification email (non bloquant)
+    try {
+      const salesRepCode = await getSalesRepCode(newProspect.assignedTo);
+      if (salesRepCode) {
+        // Programmer l'envoi avec un délai de 30 secondes
+        const emailScheduled = await sendClientNeedNotification({
+          prospectId: data.id,
+          besoin: data.selected_need_title,
+          salesRepCode,
+          assignedTo: data.assigned_to,
+          hasCV: !!data.file_name,
+          fileName: data.file_name || undefined
+        }, 0.5); // 30 secondes de délai (0.5 minute)
+        
+        if (emailScheduled) {
+          console.log('Client need email notification scheduled successfully (will be sent in 30 seconds)');
+        } else {
+          console.log('Client need email notification could not be scheduled');
+        }
+      } else {
+        console.warn('Could not send client need email: sales rep code not found');
+      }
+    } catch (emailError) {
+      console.warn('Client need email notification scheduling failed (non-blocking):', emailError);
+    }
     
-    return newProspect;
+    return {
+      id: data.id,
+      textContent: data.text_content,
+      fileName: data.file_name,
+      fileUrl: data.file_url,
+      fileContent: data.file_content,
+      selectedNeedId: data.selected_need_id,
+      selectedNeedTitle: data.selected_need_title,
+      availability: data.availability || '-',
+      dailyRate: data.daily_rate,
+      residence: data.residence || '-',
+      mobility: data.mobility || '-',
+      phone: data.phone || '-',
+      email: data.email || '-',
+      status: data.status,
+      assignedTo: data.assigned_to,
+      isRead: data.is_read
+    };
   } catch (error) {
     console.error('Failed to add client need:', error);
     throw error;
@@ -65,111 +181,163 @@ export async function addClientNeed(newProspect: BoondmanagerProspect): Promise<
 }
 
 /**
- * Récupère un profil par son ID
- */
-async function getClientNeedById(id: string): Promise<BoondmanagerProspect | undefined> {
-  const clientNeeds = await fetchClientNeeds();
-  return clientNeeds.find(p => p.id === id);
-}
-
-/**
- * Met à jour un profil dans le localStorage
- */
-async function updateClientNeed(id: string, updates: Partial<BoondmanagerProspect>): Promise<void> {
-  const clientNeeds = await fetchClientNeeds();
-  const index = clientNeeds.findIndex(p => p.id === id);
-  
-  if (index !== -1) {
-    clientNeeds[index] = { ...clientNeeds[index], ...updates };
-    await saveClientNeedsToStorage(clientNeeds);
-  }
-}
-
-/**
- * Supprime un profil du localStorage
- */
-async function removeClientNeed(id: string): Promise<void> {
-  const clientNeeds = await fetchClientNeeds();
-  const filteredNeeds = clientNeeds.filter(p => p.id !== id);
-  
-  if (filteredNeeds.length !== clientNeeds.length) {
-    await saveClientNeedsToStorage(filteredNeeds);
-  }
-}
-
-/**
  * Met à jour le statut d'un profil
  */
 export async function updateClientNeedStatus(id: string, status: BoondmanagerProspect['status']): Promise<void> {
-  await updateClientNeed(id, { status });
+  const { error } = await supabase
+    .from('client_needs')
+    .update({ status })
+    .eq('id', id);
+
+  if (error) throw error;
 }
 
 /**
  * Met à jour le commercial assigné
  */
 export async function updateClientNeedAssignee(id: string, assignedTo: string): Promise<void> {
-  await updateClientNeed(id, { assignedTo });
+  const { error } = await supabase
+    .from('client_needs')
+    .update({ assigned_to: assignedTo })
+    .eq('id', id);
+
+  if (error) throw error;
 }
 
 /**
  * Met à jour le besoin sélectionné
  */
 export async function updateClientNeedSelectedNeed(id: string, selectedNeedTitle: string): Promise<void> {
-  await updateClientNeed(id, { selectedNeedTitle });
+  const { error } = await supabase
+    .from('client_needs')
+    .update({ selected_need_title: selectedNeedTitle })
+    .eq('id', id);
+
+  if (error) throw error;
 }
 
 /**
  * Met à jour la disponibilité
  */
 export async function updateClientNeedAvailability(id: string, availability: string): Promise<void> {
-  await updateClientNeed(id, { availability });
+  const { error } = await supabase
+    .from('client_needs')
+    .update({ availability })
+    .eq('id', id);
+
+  if (error) throw error;
 }
 
 /**
  * Met à jour le TJM
  */
 export async function updateClientNeedDailyRate(id: string, dailyRate: number | null): Promise<void> {
-  await updateClientNeed(id, { dailyRate });
+  const { error } = await supabase
+    .from('client_needs')
+    .update({ daily_rate: dailyRate })
+    .eq('id', id);
+
+  if (error) throw error;
 }
 
 /**
  * Met à jour la résidence
  */
 export async function updateClientNeedResidence(id: string, residence: string): Promise<void> {
-  await updateClientNeed(id, { residence });
+  const { error } = await supabase
+    .from('client_needs')
+    .update({ residence })
+    .eq('id', id);
+
+  if (error) throw error;
 }
 
 /**
  * Met à jour la mobilité
  */
 export async function updateClientNeedMobility(id: string, mobility: string): Promise<void> {
-  await updateClientNeed(id, { mobility });
+  const { error } = await supabase
+    .from('client_needs')
+    .update({ mobility })
+    .eq('id', id);
+
+  if (error) throw error;
 }
 
 /**
  * Met à jour le téléphone
  */
 export async function updateClientNeedPhone(id: string, phone: string): Promise<void> {
-  await updateClientNeed(id, { phone });
+  const { error } = await supabase
+    .from('client_needs')
+    .update({ phone })
+    .eq('id', id);
+
+  if (error) throw error;
 }
 
 /**
  * Met à jour l'email
  */
 export async function updateClientNeedEmail(id: string, email: string): Promise<void> {
-  await updateClientNeed(id, { email });
+  const { error } = await supabase
+    .from('client_needs')
+    .update({ email })
+    .eq('id', id);
+
+  if (error) throw error;
 }
 
 /**
  * Marque un profil comme lu
  */
 export async function markClientNeedAsRead(id: string): Promise<void> {
-  await updateClientNeed(id, { isRead: true });
+  const { error } = await supabase
+    .from('client_needs')
+    .update({ is_read: true })
+    .eq('id', id);
+
+  if (error) throw error;
 }
 
 /**
  * Supprime un profil
  */
 export async function deleteClientNeed(id: string): Promise<void> {
-  await removeClientNeed(id);
+  try {
+    const { data: clientNeed, error: fetchError } = await supabase
+      .from('client_needs')
+      .select('file_url')
+      .eq('id', id)
+      .single();
+
+    if (fetchError) {
+      console.error('Error fetching client need for deletion:', fetchError);
+    }
+
+    const { error } = await supabase
+      .from('client_needs')
+      .delete()
+      .eq('id', id);
+
+    if (error) throw error;
+
+    // Si un fichier est associé, le supprimer du stockage
+    if (clientNeed?.file_url) {
+      try {
+        const { deleteFile } = await import('./fileUpload');
+        const url = new URL(clientNeed.file_url);
+        const pathParts = url.pathname.split('/');
+        const filePath = pathParts.slice(-2).join('/');
+        
+        await deleteFile(filePath);
+        console.log('File deleted from storage:', filePath);
+      } catch (fileError) {
+        console.error('Error deleting file from storage:', fileError);
+      }
+    }
+  } catch (error) {
+    console.error('Error in deleteClientNeed:', error);
+    throw error;
+  }
 }

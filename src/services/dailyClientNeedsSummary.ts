@@ -1,9 +1,5 @@
 import { supabase } from '../lib/supabase';
 
-/**
- * Service pour tester manuellement l'envoi du récapitulatif quotidien des profils pour besoins clients
- */
-
 export interface DailyClientNeedsSummaryResult {
   success: boolean;
   emailsSent: number;
@@ -60,50 +56,6 @@ export async function getDailyClientNeedsSummaryStats(): Promise<Array<{
 }>> {
   try {
     console.log('Fetching daily client needs summary stats...');
-
-    // Créer des données de test si nécessaire
-    try {
-      const storageKey = 'clientNeeds';
-      const savedData = localStorage.getItem(storageKey);
-      if (!savedData) {
-        console.log('No client needs found in localStorage, creating test data');
-        
-        // Récupérer les commerciaux
-        const { data: salesReps, error: salesRepsError } = await supabase
-          .from('sales_reps')
-          .select('id, name, code')
-          .order('code');
-        
-        if (salesRepsError) {
-          console.error('Error fetching sales reps for test data:', salesRepsError);
-        } else if (salesReps && salesReps.length > 0) {
-          // Créer des données de test
-          const testData = salesReps.map(rep => ({
-            id: `test-${rep.id}`,
-            textContent: 'Profil de test pour le récapitulatif quotidien',
-            fileName: 'cv-test.pdf',
-            fileUrl: 'https://example.com/cv-test.pdf',
-            fileContent: 'Contenu du CV de test',
-            selectedNeedId: 'need-123',
-            selectedNeedTitle: 'Développeur React - Client Test',
-            availability: 'Immédiatement',
-            dailyRate: 650,
-            residence: 'Paris',
-            mobility: 'France entière',
-            phone: '06 12 34 56 78',
-            email: 'test@example.com',
-            status: 'À traiter',
-            assignedTo: rep.id,
-            isRead: false
-          }));
-          
-          localStorage.setItem(storageKey, JSON.stringify(testData));
-          console.log('Created test client needs data:', testData.length);
-        }
-      }
-    } catch (error) {
-      console.error('Error creating test data:', error);
-    }
     
     // Récupérer tous les commerciaux
     const { data: salesReps, error: salesRepsError } = await supabase
@@ -123,32 +75,25 @@ export async function getDailyClientNeedsSummaryStats(): Promise<Array<{
     // Pour chaque commercial, compter les profils en attente
     const stats = await Promise.all(
       salesReps.map(async (salesRep) => {
-        // Récupérer les profils depuis le localStorage global
-        let pendingClientNeeds = 0;
-        try {
-          // Récupérer tous les profils de besoins clients stockés dans le localStorage
-          const storageKey = 'clientNeeds';
-          const savedData = localStorage.getItem(storageKey);
-          if (savedData) {
-            try {
-              const clientNeeds = JSON.parse(savedData);
-              pendingClientNeeds = clientNeeds.filter(need => 
-                need.status === 'À traiter' && 
-                need.assignedTo === salesRep.id
-              ).length;
-              console.log(`Found ${pendingClientNeeds} pending client needs for ${salesRep.code} in localStorage`);
-            } catch (parseError) {
-              console.error(`Error parsing client needs for ${salesRep.code}:`, parseError);
-            }
-          }
-        } catch (error) {
-          console.error(`Error counting client needs for ${salesRep.code}:`, error);
+        const { data: clientNeeds, error: clientNeedsError } = await supabase
+          .from('client_needs')
+          .select('id')
+          .eq('assigned_to', salesRep.id)
+          .eq('status', 'À traiter');
+
+        if (clientNeedsError) {
+          console.error(`Error fetching client needs for ${salesRep.code}:`, clientNeedsError);
+          return {
+            salesRepCode: salesRep.code,
+            salesRepName: salesRep.name,
+            pendingClientNeeds: 0
+          };
         }
 
         return {
           salesRepCode: salesRep.code,
           salesRepName: salesRep.name,
-          pendingClientNeeds
+          pendingClientNeeds: clientNeeds?.length || 0
         };
       })
     );
