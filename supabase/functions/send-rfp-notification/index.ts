@@ -259,7 +259,7 @@ function generateEmailHTML(data: RFPNotificationData, salesRepName: string, plat
           
           <div class="reminder-section">
             <p class="reminder-text">
-              <strong>Rappel :</strong> Pensez à marquer l'AO comme "lu" une fois consulté pour optimiser le suivi.
+              <strong>💡</strong> Pensez à marquer l'AO comme "Traité" une fois consulté pour optimiser le suivi.
             </p>
           </div>
         </div>
@@ -295,7 +295,7 @@ Connectez-vous à la plateforme pour consulter tous les détails et commencer le
 Lien vers la plateforme:
 ${platformUrl}
 
-Rappel: Pensez à marquer l'AO comme "lu" une fois consulté.
+💡 Pensez à marquer l'AO comme "Traité" une fois consulté.
 
 ---
 Email automatique - Ne pas répondre
