@@ -23,9 +23,32 @@ export function DailyClientNeedsSummaryTest() {
   const handleTriggerSummary = async () => {
     setIsLoading(true);
     setError(null);
-    setResult(null);
+    setResult(null); 
     
     try {
+      // Ajouter des données de test dans le localStorage pour simuler des profils
+      const testData = salesReps.map(rep => ({
+        id: `test-${rep.id}`,
+        textContent: 'Profil de test pour le récapitulatif quotidien',
+        fileName: 'cv-test.pdf',
+        fileUrl: 'https://example.com/cv-test.pdf',
+        fileContent: 'Contenu du CV de test',
+        selectedNeedId: 'need-123',
+        selectedNeedTitle: 'Développeur React - Client Test',
+        availability: 'Immédiatement',
+        dailyRate: 650,
+        residence: 'Paris',
+        mobility: 'France entière',
+        phone: '06 12 34 56 78',
+        email: 'test@example.com',
+        status: 'À traiter',
+        assignedTo: rep.id,
+        isRead: false
+      }));
+      
+      localStorage.setItem('clientNeeds', JSON.stringify(testData));
+      console.log('Added test client needs to localStorage:', testData.length);
+      
       const summaryResult = await triggerDailyClientNeedsSummary();
       setResult(summaryResult);
     } catch (err) {
@@ -38,6 +61,37 @@ export function DailyClientNeedsSummaryTest() {
 
   const handleLoadStats = async () => {
     setError(null);
+    
+    // Récupérer les commerciaux pour les statistiques
+    const { data: salesReps } = await supabase
+      .from('sales_reps')
+      .select('id, name, code, email')
+      .order('code');
+    
+    if (salesReps && salesReps.length > 0) {
+      // Ajouter des données de test dans le localStorage pour simuler des profils
+      const testData = salesReps.map(rep => ({
+        id: `test-${rep.id}`,
+        textContent: 'Profil de test pour le récapitulatif quotidien',
+        fileName: 'cv-test.pdf',
+        fileUrl: 'https://example.com/cv-test.pdf',
+        fileContent: 'Contenu du CV de test',
+        selectedNeedId: 'need-123',
+        selectedNeedTitle: 'Développeur React - Client Test',
+        availability: 'Immédiatement',
+        dailyRate: 650,
+        residence: 'Paris',
+        mobility: 'France entière',
+        phone: '06 12 34 56 78',
+        email: 'test@example.com',
+        status: 'À traiter',
+        assignedTo: rep.id,
+        isRead: false
+      }));
+      
+      localStorage.setItem('clientNeeds', JSON.stringify(testData));
+      console.log('Added test client needs to localStorage for stats:', testData.length);
+    }
     
     try {
       const statsResult = await getDailyClientNeedsSummaryStats();
