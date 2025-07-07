@@ -730,7 +730,10 @@ export function ClientNeedsTable({
                           className="p-1 text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
                         >
                           <Trash2 className="w-4 h-4 sm:w-5 sm:h-5" />
-                        </button>
+                           : ''} 
+                         {typeof prospect.salaryExpectations === 'number' ? 
+                           `${prospect.salaryExpectations ? (prospect.dailyRate ? ' / ' : '') + prospect.salaryExpectations + 'K€' : ''}`
+                           : prospect.dailyRate ? '' : '-'}
                       </div>
                     </td>
                   </tr>

@@ -54,6 +54,7 @@ export async function fetchClientNeeds(): Promise<BoondmanagerProspect[]> {
       selectedNeedTitle: need.selected_need_title,
       availability: need.availability || '-',
       dailyRate: need.daily_rate,
+      salaryExpectations: need.salary_expectations,
       residence: need.residence || '-',
       mobility: need.mobility || '-',
       phone: need.phone || '-',
@@ -102,6 +103,7 @@ export async function addClientNeed(newProspect: BoondmanagerProspect): Promise<
       selected_need_title: newProspect.selectedNeedTitle,
       availability: newProspect.availability,
       daily_rate: newProspect.dailyRate,
+      salary_expectations: newProspect.salaryExpectations,
       residence: newProspect.residence,
       mobility: newProspect.mobility,
       phone: newProspect.phone,
@@ -116,7 +118,7 @@ export async function addClientNeed(newProspect: BoondmanagerProspect): Promise<
     const { data, error } = await supabase
       .from('client_needs')
       .insert([insertData])
-      .select('id, text_content, file_name, file_url, file_content, selected_need_id, selected_need_title, availability, daily_rate, residence, mobility, phone, email, status, assigned_to, is_read, created_at')
+      .select('id, text_content, file_name, file_url, file_content, selected_need_id, selected_need_title, availability, daily_rate, salary_expectations, residence, mobility, phone, email, status, assigned_to, is_read, created_at')
       .single();
 
     if (error) {
@@ -166,6 +168,7 @@ export async function addClientNeed(newProspect: BoondmanagerProspect): Promise<
       selectedNeedTitle: data.selected_need_title,
       availability: data.availability || '-',
       dailyRate: data.daily_rate,
+      salaryExpectations: data.salary_expectations,
       residence: data.residence || '-',
       mobility: data.mobility || '-',
       phone: data.phone || '-',

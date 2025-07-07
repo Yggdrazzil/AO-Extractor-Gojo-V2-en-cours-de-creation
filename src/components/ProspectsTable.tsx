@@ -542,7 +542,10 @@ export function ProspectsTable({
                       <div onClick={() => handleEdit(prospect, 'dailyRate')} className="cursor-pointer hover:text-blue-600 dark:hover:text-blue-400 text-xs sm:text-sm" title="Cliquer pour modifier">
                         {typeof prospect.dailyRate === 'number' ? 
                           `${prospect.dailyRate}€`
-                          : '-'}
+                           : ''} 
+                         {typeof prospect.salaryExpectations === 'number' ? 
+                           `${prospect.salaryExpectations ? (prospect.dailyRate ? ' / ' : '') + prospect.salaryExpectations + 'K€' : ''}`
+                           : prospect.dailyRate ? '' : '-'}
                       </div>
                     )}
                   </td>

@@ -567,6 +567,7 @@ function App() {
       let analysisResult = {
         availability: '-',
         dailyRate: null,
+        salaryExpectations: null,
         residence: '-',
         mobility: '-',
         phone: '-',
@@ -593,6 +594,7 @@ function App() {
           selectedNeedTitle,
           availability: analysisResult.availability,
           dailyRate: analysisResult.dailyRate,
+          salaryExpectations: analysisResult.salaryExpectations,
           residence: analysisResult.residence,
           mobility: analysisResult.mobility,
           phone: analysisResult.phone,

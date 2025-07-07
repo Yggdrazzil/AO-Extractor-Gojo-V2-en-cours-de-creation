@@ -139,6 +139,7 @@ export async function createProspect(prospect: Omit<Prospect, 'id'>, file?: File
       target_account: prospect.targetAccount,
       availability: prospect.availability,
       daily_rate: prospect.dailyRate,
+      salary_expectations: prospect.salaryExpectations,
       residence: prospect.residence,
       mobility: prospect.mobility,
       phone: prospect.phone,
@@ -153,7 +154,7 @@ export async function createProspect(prospect: Omit<Prospect, 'id'>, file?: File
     const { data, error } = await supabase
       .from('prospects')
       .insert([insertData])
-      .select('id, text_content, file_name, file_url, file_content, target_account, availability, daily_rate, residence, mobility, phone, email, status, assigned_to, is_read')
+      .select('id, text_content, file_name, file_url, file_content, target_account, availability, daily_rate, salary_expectations, residence, mobility, phone, email, status, assigned_to, is_read')
       .single();
 
     if (error) {
@@ -202,6 +203,7 @@ export async function createProspect(prospect: Omit<Prospect, 'id'>, file?: File
       targetAccount: data.target_account,
       availability: data.availability || '-',
       dailyRate: data.daily_rate,
+      salaryExpectations: data.salary_expectations,
       residence: data.residence || '-',
       mobility: data.mobility || '-',
       phone: data.phone || '-',
