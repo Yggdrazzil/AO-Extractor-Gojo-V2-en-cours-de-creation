@@ -346,12 +346,12 @@ export function ClientNeedsForm({ salesReps, onSubmit, isLoading = false }: Clie
           <button
             type="submit"
             disabled={isLoading || !selectedNeedId || !assignedTo || (!textContent.trim() && !selectedFile)}
-            className="w-full sm:w-auto px-6 py-2 bg-[#1651EE] hover:bg-[#1651EE]/90 text-white font-medium rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="w-full sm:w-auto px-6 py-2 bg-[#1651EE] hover:bg-[#1651EE]/90 text-white font-medium rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors relative z-10"
           >
             {isLoading ? 'Analyse...' : 'Analyser'}
           </button>
-          {(!textContent.trim() && !selectedFile) && (
-            <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 rounded-lg">
+          {(!textContent.trim() && !selectedFile && !isLoading) && (
+            <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 rounded-lg z-20">
               <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg max-w-sm w-full">
                 <div className="flex justify-center mb-4">
                   <AlertCircle className="h-12 w-12 text-yellow-500" />

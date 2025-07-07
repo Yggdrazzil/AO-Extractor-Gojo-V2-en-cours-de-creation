@@ -12,50 +12,6 @@ export interface DailyClientNeedsSummaryResult {
     messageId?: string;
     error?: string;
     reason?: string;
-  }>;
-}
-
-/**
- * Déclenche manuellement l'envoi du récapitulatif quotidien des profils pour besoins clients
- * Utile pour tester le système
- */
-export async function triggerDailyClientNeedsSummary(): Promise<DailyClientNeedsSummaryResult> {
-  try {
-    console.log('Triggering manual daily client needs summary...');
-    
-    const { data, error } = await supabase.functions.invoke('send-daily-client-needs-summary', {
-      body: {}
-    });
-
-    if (error) {
-      console.error('Error invoking daily client needs summary function:', error);
-      throw new Error(`Erreur lors de l'envoi du récapitulatif: ${error.message}`);
-    }
-
-    if (!data?.success) {
-      console.error('Daily client needs summary function returned error:', data);
-      throw new Error('Erreur lors de l\'envoi du récapitulatif quotidien des profils pour besoins clients');
-    }
-
-    console.log('Daily client needs summary triggered successfully:', data);
-    return data;
-  } catch (error) {
-    console.error('Failed to trigger daily client needs summary:', error);
-    throw error;
-  }
-}
-
-/**
- * Récupère les statistiques des profils pour besoins clients en attente par commercial
- * Utile pour vérifier l'état avant l'envoi
- */
-export async function getDailyClientNeedsSummaryStats(): Promise<Array<{
-  salesRepCode: string;
-  salesRepName: string;
-  pendingClientNeeds: number;
-}>> {
-  try {
-    console.log('Fetching daily client needs summary stats...');
     
     // Récupérer tous les commerciaux
     const { data: salesReps, error: salesRepsError } = await supabase
@@ -68,13 +24,6 @@ export async function getDailyClientNeedsSummaryStats(): Promise<Array<{
       throw salesRepsError;
     }
 
-    if (!salesReps || salesReps.length === 0) {
-      return [];
-    }
-
-    // Pour chaque commercial, compter les profils en attente
-    const stats = await Promise.all(
-      salesReps.map(async (salesRep) => {
         const { data: clientNeeds, error: clientNeedsError } = await supabase
           .from('client_needs')
           .select('id')
