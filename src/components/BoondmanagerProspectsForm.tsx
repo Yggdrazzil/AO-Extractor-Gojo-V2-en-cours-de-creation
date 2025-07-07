@@ -1,8 +1,7 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { ChevronDown, ChevronUp, Upload, X, RefreshCw, AlertCircle } from 'lucide-react';
+import { ChevronDown, ChevronUp, Upload, X } from 'lucide-react';
 import { SalesRep, Need } from '../types';
 import { supabase } from '../lib/supabase';
-import { fetchNeeds } from '../services/needs';
 
 interface ClientNeedsFormProps {
   salesReps: SalesRep[];
@@ -12,16 +11,13 @@ interface ClientNeedsFormProps {
 
 export function ClientNeedsForm({ salesReps, onSubmit, isLoading = false }: ClientNeedsFormProps) {
   const [textContent, setTextContent] = useState('');
-  const [selectedNeedId, setSelectedNeedId] = useState('');
+  const [besoin, setBesoin] = useState('');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [assignedTo, setAssignedTo] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isExpanded, setIsExpanded] = useState(true);
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [dragActive, setDragActive] = useState(false);
-  const [needs, setNeeds] = useState<Need[]>([]);
-  const [needsLoading, setNeedsLoading] = useState(false);
-  const [needsError, setNeedsError] = useState<string | null>(null);
 
   useEffect(() => {
     const initializeExpansionState = async () => {
@@ -42,26 +38,6 @@ export function ClientNeedsForm({ salesReps, onSubmit, isLoading = false }: Clie
 
     initializeExpansionState();
   }, []);
-
-  useEffect(() => {
-    loadNeeds();
-  }, []);
-
-  const loadNeeds = async () => {
-    setNeedsLoading(true);
-    setNeedsError(null);
-    
-    try {
-      const loadedNeeds = await fetchNeeds();
-      console.log('Loaded needs:', loadedNeeds.length);
-      setNeeds(loadedNeeds);
-      setNeedsLoading(false);
-    } catch (error) {
-      console.error('Error loading needs:', error);
-      setNeedsError(error instanceof Error ? error.message : 'Erreur lors du chargement des besoins');
-      setNeedsLoading(false);
-    }
-  };
 
   const toggleExpand = useCallback(() => {
     setIsExpanded(prev => {
@@ -138,7 +114,7 @@ export function ClientNeedsForm({ salesReps, onSubmit, isLoading = false }: Clie
         setError("Veuillez saisir du texte ou joindre un fichier");
         return;
       }
-      if (!selectedNeedId) {
+      if (!besoin.trim()) {
         setError("Veuillez sélectionner un besoin");
         return;
       }
@@ -146,13 +122,10 @@ export function ClientNeedsForm({ salesReps, onSubmit, isLoading = false }: Clie
         setError("Veuillez sélectionner un commercial");
         return;
       }
-      
-      const selectedNeed = needs.find(need => need.id === selectedNeedId);
-      const selectedNeedTitle = selectedNeed ? `${selectedNeed.client} - ${selectedNeed.title}` : 'Besoin non trouvé';
-      
-      await onSubmit(textContent, selectedNeedId, selectedNeedTitle, selectedFile, assignedTo);
+            
+      await onSubmit(textContent, besoin, besoin, selectedFile, assignedTo);
       setTextContent('');
-      setSelectedNeedId('');
+      setBesoin('');
       setSelectedFile(null);
       setAssignedTo('');
     } catch (err) {
@@ -160,8 +133,6 @@ export function ClientNeedsForm({ salesReps, onSubmit, isLoading = false }: Clie
       setError(err instanceof Error ? err.message : "Une erreur est survenue");
     }
   };
-
-  const selectedNeed = needs.find(need => need.id === selectedNeedId);
 
   return (
     <form onSubmit={handleSubmit} className="bg-white dark:bg-gray-800 rounded-lg shadow-sm relative">
@@ -204,56 +175,17 @@ export function ClientNeedsForm({ salesReps, onSubmit, isLoading = false }: Clie
 
         {/* Sélection du besoin client */}
         <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <label htmlFor="selected-need" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-              Besoin client
-            </label>
-            <button
-              type="button"
-              onClick={loadNeeds}
-              disabled={needsLoading}
-              className="flex items-center gap-1 px-2 py-1 text-xs text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 disabled:opacity-50"
-            >
-              <RefreshCw className={`w-3 h-3 ${needsLoading ? 'animate-spin' : ''}`} />
-              Actualiser
-            </button>
-          </div>
-          
-          {needsError && (
-            <div className="p-3 bg-red-100 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg flex items-start gap-2">
-              <AlertCircle className="w-4 h-4 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
-              <div className="text-red-700 dark:text-red-300 text-sm">
-                {needsError}
-              </div>
-            </div>
-          )}
-          
-          <select
-            id="selected-need"
-            value={selectedNeedId}
-            onChange={(e) => setSelectedNeedId(e.target.value)}
-            disabled={needsLoading || needs.length === 0}
-            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors disabled:opacity-50"
-          >
-            <option value="">
-              {needsLoading ? 'Chargement des besoins...' : 
-               needs.length === 0 ? 'Aucun besoin disponible' : 
-               'Sélectionner un besoin'}
-            </option>
-            {needs.map((need) => (
-              <option key={need.id} value={need.id}>
-                {need.client} - {need.title}
-              </option>
-            ))}
-          </select>
-          
-          {selectedNeed && (
-            <div className="p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
-              <h4 className="font-medium text-blue-900 dark:text-blue-100 mb-1">
-                {selectedNeed.client} - {selectedNeed.title}
-              </h4>
-            </div>
-          )}
+          <label htmlFor="besoin" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            Besoin client
+          </label>
+          <input
+            id="besoin"
+            type="text"
+            value={besoin}
+            onChange={(e) => setBesoin(e.target.value)}
+            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+            placeholder="Décrivez le besoin client (ex: Développeur React - Banque XYZ)"
+          />
         </div>
 
         {/* Zone de dépôt de fichier */}
@@ -345,7 +277,7 @@ export function ClientNeedsForm({ salesReps, onSubmit, isLoading = false }: Clie
         
           <button
             type="submit"
-            disabled={isLoading || !selectedNeedId || !assignedTo || (!textContent.trim() && !selectedFile)}
+            disabled={isLoading || !besoin.trim() || !assignedTo || (!textContent.trim() && !selectedFile)}
             className="w-full sm:w-auto px-6 py-2 bg-[#1651EE] hover:bg-[#1651EE]/90 text-white font-medium rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors relative z-10"
           >
             {isLoading ? 'Analyse...' : 'Analyser'}

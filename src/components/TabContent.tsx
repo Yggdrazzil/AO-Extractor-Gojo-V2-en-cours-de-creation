@@ -188,8 +188,8 @@ export function TabContent({
           {onAnalyzeBoondmanagerProspect && (
             <ClientNeedsForm
               salesReps={salesReps}
-              onSubmit={(textContent, besoin, file, assignedTo) => 
-                onAnalyzeBoondmanagerProspect(textContent, besoin, besoin, file, assignedTo)
+              onSubmit={(textContent, selectedNeedId, selectedNeedTitle, file, assignedTo) => 
+                onAnalyzeBoondmanagerProspect(textContent, selectedNeedId, selectedNeedTitle, file, assignedTo)
               }
               isLoading={isAnalyzingBoondmanagerProspect}
             />
