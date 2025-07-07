@@ -3,9 +3,22 @@ Here's the fixed version with all missing closing brackets added:
 ```typescript
 // At the end of the file, add these closing brackets and braces:
 
-                        </button>
+                          : ''} 
+                        {typeof prospect.salaryExpectations === 'number' ? 
+                          `${prospect.salaryExpectations ? (prospect.dailyRate ? ' / ' : '') + prospect.salaryExpectations + 'K€' : ''}`
+                          : prospect.dailyRate ? '' : '-'}
                       </div>
                     </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+}
                   </tr>
                 ))
               )}
