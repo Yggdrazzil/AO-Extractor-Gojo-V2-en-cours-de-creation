@@ -350,19 +350,6 @@ export function ClientNeedsForm({ salesReps, onSubmit, isLoading = false }: Clie
           >
             {isLoading ? 'Analyse...' : 'Analyser'}
           </button>
-          {(!textContent.trim() && !selectedFile && !isLoading) && (
-            <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 rounded-lg z-20">
-              <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg max-w-sm w-full">
-                <div className="flex justify-center mb-4">
-                  <AlertCircle className="h-12 w-12 text-yellow-500" />
-                </div>
-                <h3 className="text-lg font-bold text-center mb-2">Informations requises</h3>
-                <p className="text-center text-gray-600 dark:text-gray-400">
-                  Veuillez ajouter du texte ou joindre un fichier CV pour continuer
-                </p>
-              </div>
-            </div>
-          )}
         </div>
       </div>
     </form>
