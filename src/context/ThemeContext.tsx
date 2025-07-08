@@ -12,20 +12,21 @@ interface ThemeContextType {
 // Props pour le fournisseur de thème
 interface ThemeProviderProps {
   children: React.ReactNode;
+  initialTheme?: Theme;
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 // Clés pour le localStorage
 const THEME_KEY = 'theme';
-const getUserThemeKey = (email: string) => `theme_${email}`;
+const getThemeKey = (email: string) => `theme_${email}`;
 
-export function ThemeProvider({ children }: ThemeProviderProps) {
+export function ThemeProvider({ children, initialTheme = 'light' }: ThemeProviderProps) {
   // État initial du thème
   const [theme, setThemeState] = useState<Theme>(() => {
     // Essayer de récupérer le thème du localStorage
     const savedTheme = localStorage.getItem(THEME_KEY);
-    return (savedTheme === 'dark' || savedTheme === 'light') ? savedTheme : 'light';
+    return (savedTheme === 'dark' || savedTheme === 'light') ? savedTheme : initialTheme;
   });
   
   // Email de l'utilisateur pour les préférences spécifiques
@@ -40,7 +41,7 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
     
     // Sauvegarder le thème pour l'utilisateur spécifique si connecté
     if (userEmail) {
-      localStorage.setItem(getUserThemeKey(userEmail), newTheme);
+      localStorage.setItem(getThemeKey(userEmail), newTheme);
     }
   };
 
@@ -57,6 +58,7 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
   useEffect(() => {
     async function loadUserTheme() {
       try {
+        // Récupérer la session active
         const { data } = await supabase.auth.getSession();
         const session = data.session;
         
@@ -64,11 +66,11 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
           setUserEmail(session.user.email);
           
           // Récupérer le thème spécifique à l'utilisateur
-          const userThemeKey = getUserThemeKey(session.user.email);
+          const userThemeKey = getThemeKey(session.user.email);
           const userTheme = localStorage.getItem(userThemeKey);
           
           if (userTheme && (userTheme === 'light' || userTheme === 'dark')) {
-            setThemeState(userTheme);
+            setThemeState(userTheme as Theme);
           }
         }
       } catch (error) {
@@ -86,11 +88,11 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
         setUserEmail(session.user.email);
         
         // Charger le thème spécifique à l'utilisateur
-        const userThemeKey = getUserThemeKey(session.user.email);
+        const userThemeKey = getThemeKey(session.user.email);
         const userTheme = localStorage.getItem(userThemeKey);
         
         if (userTheme && (userTheme === 'light' || userTheme === 'dark')) {
-          setThemeState(userTheme);
+          setThemeState(userTheme as Theme);
         }
       } else if (event === 'SIGNED_OUT') {
         setUserEmail(null);

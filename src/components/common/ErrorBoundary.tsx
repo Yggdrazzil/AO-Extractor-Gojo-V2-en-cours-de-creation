@@ -11,9 +11,6 @@ interface ErrorBoundaryState {
   error: Error | null;
 }
 
-/**
- * Composant pour capturer et gérer les erreurs dans l'arbre de composants
- */
 export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
   constructor(props: ErrorBoundaryProps) {
     super(props);
@@ -25,10 +22,8 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
-    // Journaliser l'erreur
     console.error('Error caught by ErrorBoundary:', error, errorInfo);
     
-    // Appeler le callback onError si fourni
     if (this.props.onError) {
       this.props.onError(error, errorInfo);
     }
@@ -40,7 +35,6 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
 
   render(): ReactNode {
     if (this.state.hasError) {
-      // Afficher le fallback personnalisé ou par défaut
       if (this.props.fallback) {
         if (typeof this.props.fallback === 'function' && this.state.error) {
           return this.props.fallback(this.state.error, this.resetError);
@@ -48,7 +42,6 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
         return this.props.fallback;
       }
 
-      // Fallback par défaut
       return (
         <div className="min-h-screen bg-gray-100 dark:bg-gray-900 flex flex-col items-center justify-center p-4">
           <div className="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-lg max-w-md w-full">

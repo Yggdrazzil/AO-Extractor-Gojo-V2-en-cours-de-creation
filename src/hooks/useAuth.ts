@@ -28,6 +28,7 @@ export function useAuth(): UseAuthReturn {
   // Fonction pour récupérer les informations du commercial
   const fetchSalesRepInfo = useCallback(async (email: string) => {
     try {
+      console.log('Fetching sales rep info for email:', email);
       const { data, error } = await supabase
         .from('sales_reps')
         .select('*')
@@ -39,6 +40,7 @@ export function useAuth(): UseAuthReturn {
         return null;
       }
 
+      console.log('Sales rep info found:', data);
       return data as SalesRep;
     } catch (error) {
       console.error('Failed to fetch sales rep info:', error);
@@ -52,23 +54,31 @@ export function useAuth(): UseAuthReturn {
       try {
         setLoading(true);
         setError(null);
+        console.log('Initializing authentication state...');
 
         // Récupérer la session
         const { data, error: sessionError } = await supabase.auth.getSession();
-        const session = data.session;
         
         if (sessionError) {
           throw sessionError;
         }
 
-        setSession(session);
-        setUser(session?.user || null);
+        const currentSession = data.session;
+        console.log('Current session:', currentSession ? 'Active' : 'None');
+        
+        setSession(currentSession);
+        setUser(currentSession?.user || null);
 
         // Récupérer les informations du commercial si connecté
-        if (session?.user?.email) {
-          const repInfo = await fetchSalesRepInfo(session.user.email);
+        if (currentSession?.user?.email) {
+          console.log('Fetching sales rep data for logged in user:', currentSession.user.email);
+          const repInfo = await fetchSalesRepInfo(currentSession.user.email);
           setSalesRep(repInfo);
           setIsAdmin(repInfo?.is_admin || false);
+          
+          if (!repInfo) {
+            console.warn('No sales rep data found for email:', currentSession.user.email);
+          }
         }
       } catch (err) {
         console.error('Auth initialization error:', err);
@@ -109,6 +119,8 @@ export function useAuth(): UseAuthReturn {
       setLoading(true);
       setError(null);
 
+      console.log(`Attempting to sign in with email: ${email}`);
+      
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password
@@ -116,6 +128,7 @@ export function useAuth(): UseAuthReturn {
 
       if (error) throw error;
 
+      console.log('Sign in successful, session:', !!data.session);
       setSession(data.session);
       setUser(data.user);
 
@@ -123,6 +136,10 @@ export function useAuth(): UseAuthReturn {
         const repInfo = await fetchSalesRepInfo(data.user.email);
         setSalesRep(repInfo);
         setIsAdmin(repInfo?.is_admin || false);
+        
+        if (!repInfo) {
+          console.warn('No sales rep data found after login for:', data.user.email);
+        }
       }
     } catch (err) {
       console.error('Sign in error:', err);

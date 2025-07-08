@@ -7,9 +7,6 @@ interface LoadingSpinnerProps {
   fullScreen?: boolean;
 }
 
-/**
- * Composant de spinner de chargement réutilisable
- */
 export function LoadingSpinner({
   size = 'md',
   color = 'primary',

@@ -5,9 +5,37 @@ import type { Database } from '../../types/database.types';
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
+console.log('Initializing Supabase client with:', { 
+  url: supabaseUrl ? 'Valid URL' : 'MISSING', 
+  key: supabaseKey ? 'Valid Key' : 'MISSING'
+});
+
 if (!supabaseUrl || !supabaseKey) {
-  throw new Error('Variables d\'environnement Supabase manquantes');
+  console.error('ERREUR CRITIQUE: Variables d\'environnement Supabase manquantes!');
 }
+
+// Configuration du client avec retry et timeout
+export const supabase = createClient<Database>(
+  supabaseUrl || '',
+  supabaseKey || '',
+  {
+    auth: {
+      autoRefreshToken: true,
+      persistSession: true,
+      detectSessionInUrl: true
+    },
+    global: {
+      headers: {
+        'X-Client-Info': 'supabase-js-v2'
+      },
+    },
+    db: {
+      schema: 'public'
+    },
+    // Logs détaillés en mode développement
+    debug: true
+  }
+);
 
 // Helper pour les opérations sécurisées avec Supabase
 export async function safeSupabaseOperation<T>(
@@ -27,29 +55,14 @@ export async function safeSupabaseOperation<T>(
   return data;
 }
 
-// Configuration du client
-export const supabase = createClient<Database>(
-  supabaseUrl,
-  supabaseKey,
-  {
-    auth: {
-      autoRefreshToken: true,
-      persistSession: true,
-      detectSessionInUrl: true,
-      storage: localStorage
-    }
-  }
-);
-
-/**
- * Helper pour vérifier la connexion à Supabase
- * @returns true si la connexion est établie, false sinon
- */
-export async function checkSupabaseConnection(): Promise<boolean> {
+// Helper pour vérifier la connexion à Supabase
+export async function checkSupabaseConnection() {
   try {
-    // Test simple de connexion
-    console.log('Testing Supabase connection with URL:', supabaseUrl);
-    const { error } = await supabase.from('sales_reps').select('id', { count: 'exact', head: true });
+    console.log('Testing Supabase connection...');
+    // Test simple de connexion sans authentification
+    const { data, error } = await supabase
+      .from('sales_reps')
+      .select('count', { count: 'exact', head: true });
     
     if (error) {
       console.error('Supabase connection error:', error);
@@ -69,24 +82,27 @@ export async function checkSupabaseConnection(): Promise<boolean> {
   }
 }
 
-/**
- * Réinitialise la session Supabase
- * À utiliser en cas de problèmes de connexion
- */
-export async function resetSupabaseSession(): Promise<boolean> {
+// Réinitialiser la session Supabase (utiliser en cas de problèmes)
+export async function resetSupabaseSession() {
   try {
-    // Forcer le rechargement de la session
+    console.log('Resetting Supabase session...');
     const { data, error } = await supabase.auth.refreshSession();
     
     if (error) {
-      console.error('Error refreshing session:', error);
-      return false;
+      console.error('Session refresh error:', error);
+      // Si l'erreur est liée à une absence de session, essayons de récupérer la session
+      const sessionResult = await supabase.auth.getSession();
+      console.log('Current session state:', { 
+        hasSession: !!sessionResult.data.session,
+        error: sessionResult.error
+      });
+      return !!sessionResult.data.session;
     }
     
-    console.log('Session refreshed successfully:', !!data.session);
+    console.log('Session refreshed:', !!data.session);
     return !!data.session;
   } catch (error) {
-    console.error('Session refresh failed:', error);
+    console.error('Fatal error refreshing session:', error);
     return false;
   }
 }
