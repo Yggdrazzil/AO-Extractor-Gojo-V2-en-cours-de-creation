@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Edit, Trash2, Calendar, MapPin, DollarSign, Users, AlertCircle, Check, X } from 'lucide-react';
 import { fetchNeeds, createNeed, updateNeed, deleteNeed } from '../services/needs';
-import { supabase } from '../lib/supabase';
+import { supabase } from '../services/api/supabaseClient';
 import type { Need } from '../types';
 
 interface EditingNeed {

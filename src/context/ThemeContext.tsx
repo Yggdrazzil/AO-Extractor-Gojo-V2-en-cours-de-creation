@@ -1,5 +1,10 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { STORAGE_KEYS } from '../utils/constants';
+
+// Constantes pour le stockage local
+const STORAGE_KEYS = {
+  THEME: 'theme',
+  getUserSpecificKey: (key: string, email: string) => `${key}_${email}`
+};
 
 type Theme = 'light' | 'dark';
 
@@ -18,7 +23,7 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 export function ThemeProvider({ children, initialTheme = 'light' }: ThemeProviderProps) {
   const [theme, setThemeState] = useState<Theme>(() => {
     // Essayer de récupérer le thème du localStorage
-    const savedTheme = localStorage.getItem(STORAGE_KEYS.THEME);
+    const savedTheme = localStorage.getItem('theme');
     return (savedTheme === 'dark' || savedTheme === 'light') ? savedTheme : initialTheme;
   });
   const [userEmail, setUserEmail] = useState<string | null>(null);
@@ -29,14 +34,11 @@ export function ThemeProvider({ children, initialTheme = 'light' }: ThemeProvide
     
     // Sauvegarder le thème pour l'utilisateur spécifique
     if (userEmail) {
-      localStorage.setItem(
-        STORAGE_KEYS.getUserSpecificKey(STORAGE_KEYS.THEME, userEmail),
-        newTheme
-      );
+      localStorage.setItem(`theme_${userEmail}`, newTheme);
     }
     
     // Maintenir aussi le thème global pour la compatibilité
-    localStorage.setItem(STORAGE_KEYS.THEME, newTheme);
+    localStorage.setItem('theme', newTheme);
   };
 
   useEffect(() => {
@@ -50,7 +52,7 @@ export function ThemeProvider({ children, initialTheme = 'light' }: ThemeProvide
   // Fonction pour charger les paramètres utilisateur
   const loadUserSettings = async () => {
     try {
-      const { supabase } = await import('../lib/supabase');
+      const { supabase } = await import('../services/api/supabaseClient');
       const { data: { session } } = await supabase.auth.getSession();
       
       if (session?.user?.email) {
@@ -76,12 +78,12 @@ export function ThemeProvider({ children, initialTheme = 'light' }: ThemeProvide
   useEffect(() => {
     const setupAuthListener = async () => {
       try {
-        const { supabase } = await import('../lib/supabase');
+        const { supabase } = await import('../services/api/supabaseClient');
         const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
           if (event === 'SIGNED_IN' && session?.user?.email) {
             setUserEmail(session.user.email);
             
-            const userThemeKey = STORAGE_KEYS.getUserSpecificKey(STORAGE_KEYS.THEME, session.user.email);
+            const userThemeKey = `theme_${session.user.email}`;
             const userTheme = localStorage.getItem(userThemeKey);
             
             if (userTheme && (userTheme === 'light' || userTheme === 'dark')) {

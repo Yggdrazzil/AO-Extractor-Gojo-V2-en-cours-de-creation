@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { ChevronDown, ChevronUp, Upload, X } from 'lucide-react';
 import { SalesRep } from '../types';
-import { supabase } from '../lib/supabase';
+import { supabase } from '../services/api/supabaseClient';
 
 interface ProspectsFormProps {
   salesReps: SalesRep[];

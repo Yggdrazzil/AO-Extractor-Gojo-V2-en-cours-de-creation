@@ -2,8 +2,8 @@ import React from 'react';
 import { useState, useEffect } from 'react';
 import { Sun, Moon, X, KeyRound, LogOut } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
-import { supabase } from '../lib/supabase';
-import { checkAdminRights } from '../services/auth';
+import { supabase } from '../services/api/supabaseClient';
+import { checkAdminRights } from '../services/api/salesRepService';
 
 type SettingsModalProps = {
   isOpen: boolean;
