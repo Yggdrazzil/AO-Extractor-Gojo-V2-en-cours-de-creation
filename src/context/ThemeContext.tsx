@@ -84,14 +84,11 @@ export function ThemeProvider({ children, initialTheme = 'light' }: ThemeProvide
             const userThemeKey = STORAGE_KEYS.getUserSpecificKey(STORAGE_KEYS.THEME, session.user.email);
             const userTheme = localStorage.getItem(userThemeKey);
             
-            if (userTheme === 'light' || userTheme === 'dark') {
-              setThemeState(userTheme);
+            if (userTheme && (userTheme === 'light' || userTheme === 'dark')) {
+              setThemeState(userTheme as Theme);
+            } else {
+              setThemeState(initialTheme);
             }
-
-            const userThemeKey = STORAGE_KEYS.getUserSpecificKey(STORAGE_KEYS.THEME, session.user.email);
-            const userTheme = localStorage.getItem(userThemeKey);
-          
-            setThemeState(initialTheme);
           }
         });
         
