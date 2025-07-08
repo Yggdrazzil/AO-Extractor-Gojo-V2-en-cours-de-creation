@@ -1,40 +1,50 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
+import { supabase } from '../services/api/supabaseClient';
 
 type Theme = 'light' | 'dark';
 
+// Structure du contexte de thème
 interface ThemeContextType {
   theme: Theme;
   setTheme: (theme: Theme) => void;
 }
 
+// Props pour le fournisseur de thème
 interface ThemeProviderProps {
   children: React.ReactNode;
-  initialTheme?: Theme;
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
-export function ThemeProvider({ children, initialTheme = 'light' }: ThemeProviderProps) {
+// Clés pour le localStorage
+const THEME_KEY = 'theme';
+const getUserThemeKey = (email: string) => `theme_${email}`;
+
+export function ThemeProvider({ children }: ThemeProviderProps) {
+  // État initial du thème
   const [theme, setThemeState] = useState<Theme>(() => {
     // Essayer de récupérer le thème du localStorage
-    const savedTheme = localStorage.getItem('theme');
-    return (savedTheme === 'dark' || savedTheme === 'light') ? savedTheme : initialTheme;
+    const savedTheme = localStorage.getItem(THEME_KEY);
+    return (savedTheme === 'dark' || savedTheme === 'light') ? savedTheme : 'light';
   });
+  
+  // Email de l'utilisateur pour les préférences spécifiques
   const [userEmail, setUserEmail] = useState<string | null>(null);
 
   // Fonction pour changer le thème
   const setTheme = (newTheme: Theme) => {
     setThemeState(newTheme);
     
-    // Sauvegarder le thème pour l'utilisateur spécifique
-    if (userEmail) {
-      localStorage.setItem(`theme_${userEmail}`, newTheme);
-    }
+    // Sauvegarder le thème global
+    localStorage.setItem(THEME_KEY, newTheme);
     
-    // Maintenir aussi le thème global pour la compatibilité
-    localStorage.setItem('theme', newTheme);
+    // Sauvegarder le thème pour l'utilisateur spécifique si connecté
+    if (userEmail) {
+      localStorage.setItem(getUserThemeKey(userEmail), newTheme);
+    }
   };
 
+  // Appliquer le thème au document
   useEffect(() => {
     if (theme === 'dark') {
       document.documentElement.classList.add('dark');
@@ -43,60 +53,52 @@ export function ThemeProvider({ children, initialTheme = 'light' }: ThemeProvide
     }
   }, [theme]);
 
-  // Fonction pour charger les paramètres utilisateur
-  const loadUserSettings = async () => {
-    try {
-      const { supabase } = await import('../services/api/supabaseClient');
-      const { data } = await supabase.auth.getSession();
-      const session = data.session;
-      
-      if (session?.user?.email) {
-        setUserEmail(session.user.email);
-        
-        // Charger le thème spécifique à l'utilisateur
-        const userTheme = localStorage.getItem(`theme_${session.user.email}`);
-        if (userTheme && (userTheme === 'light' || userTheme === 'dark')) {
-          setTheme(userTheme as Theme);
-        }
-      }
-    } catch (error) {
-      console.error('Error loading user settings:', error);
-    }
-  };
-
-  // Charger les paramètres au montage du composant
+  // Charger les paramètres utilisateur à la connexion
   useEffect(() => {
-    loadUserSettings();
+    async function loadUserTheme() {
+      try {
+        const { data } = await supabase.auth.getSession();
+        const session = data.session;
+        
+        if (session?.user?.email) {
+          setUserEmail(session.user.email);
+          
+          // Récupérer le thème spécifique à l'utilisateur
+          const userThemeKey = getUserThemeKey(session.user.email);
+          const userTheme = localStorage.getItem(userThemeKey);
+          
+          if (userTheme && (userTheme === 'light' || userTheme === 'dark')) {
+            setThemeState(userTheme);
+          }
+        }
+      } catch (error) {
+        console.error('Error loading user theme:', error);
+      }
+    }
+    
+    loadUserTheme();
   }, []);
 
   // Écouter les changements d'authentification
   useEffect(() => {
-    const setupAuthListener = async () => {
-      try {
-        const { supabase } = await import('../services/api/supabaseClient');
-        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-          if (event === 'SIGNED_IN' && session?.user?.email) {
-            setUserEmail(session.user.email);
-            
-            const userThemeKey = `theme_${session.user.email}`;
-            const userTheme = localStorage.getItem(userThemeKey);
-            
-            if (userTheme && (userTheme === 'light' || userTheme === 'dark')) {
-              setThemeState(userTheme as Theme);
-            } else {
-              setThemeState(initialTheme);
-            }
-          }
-        });
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_IN' && session?.user?.email) {
+        setUserEmail(session.user.email);
         
-        return () => subscription.unsubscribe();
-      } catch (error) {
-        console.error('Error setting up auth listener:', error);
+        // Charger le thème spécifique à l'utilisateur
+        const userThemeKey = getUserThemeKey(session.user.email);
+        const userTheme = localStorage.getItem(userThemeKey);
+        
+        if (userTheme && (userTheme === 'light' || userTheme === 'dark')) {
+          setThemeState(userTheme);
+        }
+      } else if (event === 'SIGNED_OUT') {
+        setUserEmail(null);
       }
-    };
+    });
     
-    setupAuthListener();
-  }, [initialTheme]);
+    return () => subscription.unsubscribe();
+  }, []);
 
   return (
     <ThemeContext.Provider value={{ theme, setTheme }}>
