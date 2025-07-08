@@ -387,62 +387,63 @@ export function ClientNeedsTable({
                   <div className="flex items-center gap-1 sm:gap-2">
                     <span className="text-xs sm:text-sm">Besoin</span>
                     {getSortIcon('besoin')}
-                  <td className="p-2 sm:p-4 text-gray-900 dark:text-gray-100">
-                    <div className="space-y-1">
-                      {editingField?.id === prospect.id && editingField.field === 'email' ? (
-                        <div className="flex items-center space-x-2">
-                          <input
-                            type="email"
-                            value={editingField.value}
-                            onChange={(e) => setEditingField({ ...editingField, value: e.target.value })}
-                            onKeyDown={handleKeyPress}
-                            className="w-full px-2 py-1 border border-blue-500 dark:border-blue-400 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-xs sm:text-sm"
-                            autoFocus
-                          />
-                          <button onClick={handleSave} className="p-1 text-green-600 hover:text-green-700 dark:text-green-400 flex-shrink-0" title="Sauvegarder">
-                            <Check className="w-4 h-4" />
-                          </button>
-                          <button onClick={handleCancel} className="p-1 text-red-600 hover:text-red-700 dark:text-red-400 flex-shrink-0" title="Annuler">
-                            <X className="w-4 h-4" />
-                          </button>
-                        </div>
-                      ) : (
-                        <div 
-                          onClick={() => handleEdit(prospect, 'email')} 
-                          className="cursor-pointer hover:text-blue-600 dark:hover:text-blue-400 text-xs sm:text-sm break-words flex items-center" 
-                          title="Cliquer pour modifier l'email"
-                        >
-                          <span className="mr-1">📧</span> {prospect.email}
-                        </div>
-                      )}
-                      
-                      {editingField?.id === prospect.id && editingField.field === 'phone' ? (
-                        <div className="flex items-center space-x-2">
-                          <input
-                            type="tel"
-                            value={editingField.value}
-                            onChange={(e) => setEditingField({ ...editingField, value: e.target.value })}
-                            onKeyDown={handleKeyPress}
-                            className="w-full px-2 py-1 border border-blue-500 dark:border-blue-400 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-xs sm:text-sm"
-                            autoFocus
-                          />
-                          <button onClick={handleSave} className="p-1 text-green-600 hover:text-green-700 dark:text-green-400 flex-shrink-0" title="Sauvegarder">
-                            <Check className="w-4 h-4" />
-                          </button>
-                          <button onClick={handleCancel} className="p-1 text-red-600 hover:text-red-700 dark:text-red-400 flex-shrink-0" title="Annuler">
-                            <X className="w-4 h-4" />
-                          </button>
-                        </div>
-                      ) : (
-                        <div 
-                          onClick={() => handleEdit(prospect, 'phone')} 
-                          className="cursor-pointer hover:text-blue-600 dark:hover:text-blue-400 text-xs sm:text-sm break-words flex items-center" 
-                          title="Cliquer pour modifier le téléphone"
-                        >
-                          <span className="mr-1">📞</span> {prospect.phone}
-                        </div>
-                      )}
-                    </div>
+                  </div>
+                </th>
+                <th 
+                  className="p-2 sm:p-4 font-medium text-gray-600 dark:text-gray-200 cursor-pointer select-none min-w-[100px] bg-white dark:bg-gray-800"
+                  onClick={() => handleSort('availability')}
+                >
+                  <div className="flex items-center gap-1 sm:gap-2">
+                    <span className="text-xs sm:text-sm">Disponibilité</span>
+                    {getSortIcon('availability')}
+                  </div>
+                </th>
+                <th 
+                  className="p-2 sm:p-4 font-medium text-gray-600 dark:text-gray-200 cursor-pointer select-none min-w-[90px] bg-white dark:bg-gray-800"
+                  onClick={() => handleSort('dailyRate')}
+                >
+                  <div className="flex items-center gap-1 sm:gap-2">
+                    <span className="text-xs sm:text-sm">TJM/Salaire</span>
+                    {getSortIcon('dailyRate')}
+                  </div>
+                </th>
+                <th 
+                  className="p-2 sm:p-4 font-medium text-gray-600 dark:text-gray-200 cursor-pointer select-none min-w-[80px] bg-white dark:bg-gray-800"
+                  onClick={() => handleSort('residence')}
+                >
+                  <div className="flex items-center gap-1 sm:gap-2">
+                    <span className="text-xs sm:text-sm">Résidence</span>
+                    {getSortIcon('residence')}
+                  </div>
+                </th>
+                <th 
+                  className="p-2 sm:p-4 font-medium text-gray-600 dark:text-gray-200 cursor-pointer select-none min-w-[80px] bg-white dark:bg-gray-800"
+                  onClick={() => handleSort('mobility')}
+                >
+                  <div className="flex items-center gap-1 sm:gap-2">
+                    <span className="text-xs sm:text-sm">Mobilité</span>
+                    {getSortIcon('mobility')}
+                  </div>
+                </th>
+                <th className="p-2 sm:p-4 font-medium text-gray-600 dark:text-gray-200 min-w-[180px] bg-white dark:bg-gray-800">
+                  <span className="text-xs sm:text-sm">Contact</span>
+                </th>
+                <th className="p-2 sm:p-4 font-medium text-gray-600 dark:text-gray-200 min-w-[90px] bg-white dark:bg-gray-800">
+                  <span className="text-xs sm:text-sm">Statut</span>
+                </th>
+                <th className="p-2 sm:p-4 font-medium text-gray-600 dark:text-gray-200 min-w-[80px] bg-white dark:bg-gray-800">
+                  <span className="text-xs sm:text-sm">Commercial</span>
+                </th>
+                <th className="p-2 sm:p-4 font-medium text-gray-600 dark:text-gray-200 min-w-[80px] bg-white dark:bg-gray-800">
+                  <span className="text-xs sm:text-sm">Actions</span>
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {sortedProspects.length === 0 ? (
+                <tr>
+                  <td colSpan={9} className="p-8 text-center text-gray-500 dark:text-gray-400">
+                    Aucun profil trouvé pour les besoins clients
                   </td>
                 </tr>
               ) : (
@@ -609,64 +610,63 @@ export function ClientNeedsTable({
                       )}
                     </td>
 
-                    {/* Téléphone */}
+                    {/* Contact (Email + Téléphone) */}
                     <td className="p-2 sm:p-4 text-gray-900 dark:text-gray-100">
-                      {editingField?.id === prospect.id && editingField.field === 'phone' ? (
-                        <div className="flex items-center space-x-2">
-                          <input
-                            type="tel"
-                            value={editingField.value}
-                            onChange={(e) => setEditingField({ ...editingField, value: e.target.value })}
-                            onKeyDown={handleKeyPress}
-                            className="w-full px-2 py-1 border border-blue-500 dark:border-blue-400 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-xs sm:text-sm"
-                            autoFocus
-                          />
-                          <button onClick={handleSave} className="p-1 text-green-600 hover:text-green-700 dark:text-green-400 flex-shrink-0" title="Sauvegarder">
-                            <Check className="w-4 h-4" />
-                          </button>
-                          <button onClick={handleCancel} className="p-1 text-red-600 hover:text-red-700 dark:text-red-400 flex-shrink-0" title="Annuler">
-                            <X className="w-4 h-4" />
-                          </button>
-                        </div>
-                      ) : (
-                        <div 
-                          onClick={() => handleEdit(prospect, 'phone')} 
-                          className="cursor-pointer hover:text-blue-600 dark:hover:text-blue-400 text-xs sm:text-sm break-words" 
-                          title="Cliquer pour modifier"
-                        >
-                          {prospect.phone || '-'}
-                        </div>
-                      )}
-                    </td>
-
-                    {/* Email */}
-                    <td className="p-2 sm:p-4 text-gray-900 dark:text-gray-100">
-                      {editingField?.id === prospect.id && editingField.field === 'email' ? (
-                        <div className="flex items-center space-x-2">
-                          <input
-                            type="email"
-                            value={editingField.value}
-                            onChange={(e) => setEditingField({ ...editingField, value: e.target.value })}
-                            onKeyDown={handleKeyPress}
-                            className="w-full px-2 py-1 border border-blue-500 dark:border-blue-400 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-xs sm:text-sm"
-                            autoFocus
-                          />
-                          <button onClick={handleSave} className="p-1 text-green-600 hover:text-green-700 dark:text-green-400 flex-shrink-0" title="Sauvegarder">
-                            <Check className="w-4 h-4" />
-                          </button>
-                          <button onClick={handleCancel} className="p-1 text-red-600 hover:text-red-700 dark:text-red-400 flex-shrink-0" title="Annuler">
-                            <X className="w-4 h-4" />
-                          </button>
-                        </div>
-                      ) : (
-                        <div 
-                          onClick={() => handleEdit(prospect, 'email')} 
-                          className="cursor-pointer hover:text-blue-600 dark:hover:text-blue-400 text-xs sm:text-sm break-words" 
-                          title="Cliquer pour modifier"
-                        >
-                          {prospect.email || '-'}
-                        </div>
-                      )}
+                      <div className="space-y-1">
+                        {editingField?.id === prospect.id && editingField.field === 'email' ? (
+                          <div className="flex items-center space-x-2">
+                            <input
+                              type="email"
+                              value={editingField.value}
+                              onChange={(e) => setEditingField({ ...editingField, value: e.target.value })}
+                              onKeyDown={handleKeyPress}
+                              className="w-full px-2 py-1 border border-blue-500 dark:border-blue-400 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-xs sm:text-sm"
+                              autoFocus
+                            />
+                            <button onClick={handleSave} className="p-1 text-green-600 hover:text-green-700 dark:text-green-400 flex-shrink-0" title="Sauvegarder">
+                              <Check className="w-4 h-4" />
+                            </button>
+                            <button onClick={handleCancel} className="p-1 text-red-600 hover:text-red-700 dark:text-red-400 flex-shrink-0" title="Annuler">
+                              <X className="w-4 h-4" />
+                            </button>
+                          </div>
+                        ) : (
+                          <div 
+                            onClick={() => handleEdit(prospect, 'email')} 
+                            className="cursor-pointer hover:text-blue-600 dark:hover:text-blue-400 text-xs sm:text-sm break-words flex items-center" 
+                            title="Cliquer pour modifier l'email"
+                          >
+                            <span className="mr-1">📧</span> {prospect.email || '-'}
+                          </div>
+                        )}
+                        
+                        {editingField?.id === prospect.id && editingField.field === 'phone' ? (
+                          <div className="flex items-center space-x-2">
+                            <input
+                              type="tel"
+                              value={editingField.value}
+                              onChange={(e) => setEditingField({ ...editingField, value: e.target.value })}
+                              onKeyDown={handleKeyPress}
+                              className="w-full px-2 py-1 border border-blue-500 dark:border-blue-400 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-xs sm:text-sm"
+                              autoFocus
+                            />
+                            <button onClick={handleSave} className="p-1 text-green-600 hover:text-green-700 dark:text-green-400 flex-shrink-0" title="Sauvegarder">
+                              <Check className="w-4 h-4" />
+                            </button>
+                            <button onClick={handleCancel} className="p-1 text-red-600 hover:text-red-700 dark:text-red-400 flex-shrink-0" title="Annuler">
+                              <X className="w-4 h-4" />
+                            </button>
+                          </div>
+                        ) : (
+                          <div 
+                            onClick={() => handleEdit(prospect, 'phone')} 
+                            className="cursor-pointer hover:text-blue-600 dark:hover:text-blue-400 text-xs sm:text-sm break-words flex items-center" 
+                            title="Cliquer pour modifier le téléphone"
+                          >
+                            <span className="mr-1">📞</span> {prospect.phone || '-'}
+                          </div>
+                        )}
+                      </div>
                     </td>
 
                     {/* Statut */}
