@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Sidebar } from './components/Sidebar';
 import { TabContent } from './components/TabContent';
 import { SettingsModal } from './components/SettingsModal';
@@ -12,59 +12,15 @@ import { sendClientNeedNotification, getSalesRepCode } from './services/clientNe
 import { createProspect, fetchProspects, updateProspectStatus, updateProspectAssignee, updateProspectDateUpdate, updateProspectAvailability, updateProspectDailyRate, updateProspectResidence, updateProspectMobility, updateProspectPhone, updateProspectEmail, deleteProspect, markProspectAsRead } from './services/prospects';
 import { updateProspectTargetAccount } from './services/prospects';
 import { ThemeProvider } from './context/ThemeContext';
-import { supabase, checkSupabaseConnection } from './lib/supabase';
+import { supabase, checkSupabaseConnection } from './services/api/supabaseClient';
 import { LoginForm } from './components/LoginForm';
 import type { RFP, SalesRep, Prospect, BoondmanagerProspect } from './types';
 import type { Session } from '@supabase/supabase-js';
 import { Settings } from 'lucide-react';
-
-// Fonction pour récupérer les commerciaux
-async function fetchSalesReps(): Promise<SalesRep[]> {
-  console.log('Starting fetchSalesReps function...');
-  
-  try {
-    const { data: { session } } = await supabase.auth.getSession();
-    console.log('Auth check:', {
-      hasSession: !!session,
-      userEmail: session?.user?.email,
-      userId: session?.user?.id
-    });
-
-    if (!session) {
-      console.warn('No active session, cannot fetch sales reps');
-      return [];
-    }
-
-    console.log('Attempting to fetch from sales_reps table...');
-    const { data: salesReps, error: salesRepsError } = await supabase
-      .from('sales_reps')
-      .select('id, code, name, email, is_admin, created_at')
-      .order('code');
-
-    console.log('Supabase response:', {
-      hasData: !!salesReps,
-      dataLength: salesReps?.length,
-      error: salesRepsError,
-      firstRecord: salesReps?.[0]
-    });
-
-    if (salesRepsError) {
-      console.error('Error fetching sales reps:', salesRepsError);
-      // Ne pas lancer d'erreur si c'est juste un problème d'autorisation
-      if (salesRepsError.code === 'PGRST301' || salesRepsError.code === '42501') {
-        console.warn('Authorization issue, returning empty array');
-        return [];
-      }
-      throw salesRepsError;
-    }
-
-    return salesReps || [];
-  } catch (error) {
-    console.error('Failed to fetch sales reps:', error);
-    // Retourner un tableau vide plutôt que de lancer une erreur
-    return [];
-  }
-}
+import { ErrorBoundary } from './components/common/ErrorBoundary';
+import { LoadingSpinner } from './components/common/LoadingSpinner';
+import { useAuth } from './hooks/useAuth';
+import { fetchSalesReps } from './services/api/salesRepService';
 
 function App() {
   const [rfps, setRfps] = useState<RFP[]>([]);
@@ -75,69 +31,29 @@ function App() {
   const [isAnalyzingProspect, setIsAnalyzingProspect] = useState(false);
   const [isAnalyzingBoondmanagerProspect, setIsAnalyzingBoondmanagerProspect] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [session, setSession] = useState<Session | null>(null);
+  const { session, loading: authLoading, error: authError } = useAuth();
   const [error, setError] = useState<string | null>(null);
   const [isConnected, setIsConnected] = useState(false);
   const [activeTab, setActiveTab] = useState('rfp-extractor');
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
+  // Vérifier la connexion Supabase au démarrage
   useEffect(() => {
-    async function initializeApp() {
+    const checkConnection = async () => {
       try {
-        setIsLoading(true);
-        setError(null);
-        
-        // Vérifier la connexion Supabase
         const connected = await checkSupabaseConnection();
         setIsConnected(connected);
-        
-        // Récupérer la session
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-        
-        if (sessionError) {
-          console.error('Session error:', sessionError);
-          // Ne pas traiter les erreurs de session comme des erreurs fatales
-        }
-        
-        setSession(session);
-        console.log('App initialized:', { connected, hasSession: !!session });
-        
       } catch (err) {
-        console.error('Erreur d\'initialisation:', err);
-        // Ne pas afficher d'erreur si c'est juste un problème d'auth
-        if (err instanceof Error && !err.message.includes('auth')) {
-          setError('Une erreur est survenue lors de l\'initialisation de l\'application.');
-        }
-      } finally {
-        setIsLoading(false);
+        console.error('Connection check error:', err);
+        setIsConnected(false);
       }
-    }
+    };
     
-    initializeApp();
-
-    // Écouter les changements d'état d'authentification
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log('Auth state changed:', event, !!session);
-      setSession(session);
-      
-      if (event === 'SIGNED_IN' && session) {
-        // Recharger les données après connexion
-        setError(null);
-        loadInitialData(session);
-      } else if (event === 'SIGNED_OUT') {
-        // Nettoyer les données après déconnexion
-        setRfps([]);
-        setSalesReps([]);
-        setError(null);
-      }
-    });
-
-    return () => subscription.unsubscribe();
+    checkConnection();
   }, []);
 
-  const loadInitialData = async (currentSession?: Session | null) => {
+  // Fonction pour charger les données initiales
+  const loadInitialData = useCallback(async (currentSession?: Session | null) => {
     try {
       console.log('Loading initial data...');
       setIsLoading(true);
@@ -195,7 +111,7 @@ function App() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [isConnected]);
 
   // Charger les données quand la session et la connexion sont prêtes
   useEffect(() => {
@@ -221,36 +137,23 @@ function App() {
     loadClientNeeds();
   }, [session, isConnected]);
 
-  const handleLoginSuccess = (session: Session) => {
-    setSession(session);
-    setError(null);
-    loadInitialData(session);
-  };
-
   // Affichage de l'état de chargement initial
-  if (isLoading && !session) {
+  if ((isLoading || authLoading) && !session) {
     return (
       <ThemeProvider>
-        <div className="min-h-screen bg-gray-100 dark:bg-gray-900 flex flex-col items-center justify-center p-4">
-          <div className="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-lg max-w-md w-full">
-            <div className="text-center space-y-4">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-              <p className="text-gray-600 dark:text-gray-400">Chargement...</p>
-            </div>
-          </div>
-        </div>
+        <LoadingSpinner fullScreen text="Chargement..." />
       </ThemeProvider>
     );
   }
 
-  if (error) {
+  if (error || authError) {
     return (
       <ThemeProvider>
         <div className="min-h-screen bg-gray-100 dark:bg-gray-900 flex flex-col items-center justify-center p-4">
           <div className="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-lg max-w-md w-full">
             <div className="text-center space-y-4">
               <h1 className="text-2xl font-bold text-red-600 dark:text-red-400">Erreur</h1>
-              <p className="text-gray-600 dark:text-gray-400">{error}</p>
+              <p className="text-gray-600 dark:text-gray-400">{error || authError}</p>
               <div className="space-y-2">
                 <button
                   onClick={() => {
@@ -852,91 +755,118 @@ function App() {
   if (!session) {
     return (
       <ThemeProvider>
-        <LoginForm onLoginSuccess={handleLoginSuccess} />
+        <LoginForm onLoginSuccess={() => loadInitialData()} />
       </ThemeProvider>
     );
   }
 
   return (
     <ThemeProvider>
-      <div className="flex flex-col lg:flex-row h-screen bg-gray-100 dark:bg-gray-900">
-        <Sidebar 
-          activeTab={activeTab} 
-          onTabChange={setActiveTab}
-          rfps={rfps}
-          prospects={prospects}
-          boondmanagerProspects={boondmanagerProspects}
-        />
-        <div className="flex-1 flex flex-col">
-          <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 sm:px-6 py-4 flex flex-col sm:flex-row sm:justify-between sm:items-center space-y-2 sm:space-y-0">
-            <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
-              {activeTab === 'rfp-extractor' ? 'Extracteur d\'AO' : 
-               activeTab === 'rfp-list' ? 'Liste des AO' :
-               activeTab === 'prospects-extractor' ? 'Extracteur de Prospects' :
-               activeTab === 'boondmanager-prospects' ? 'Profils pour besoins clients' :
-               'Liste des Prospects'}
-            </h1>
-            <button
-              onClick={() => setIsSettingsOpen(true)}
-              className="self-end sm:self-auto p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors"
-              title="Paramètres"
-            >
-              <Settings className="w-5 h-5" />
-            </button>
+      <ErrorBoundary
+        fallback={(error, resetError) => (
+          <div className="min-h-screen bg-gray-100 dark:bg-gray-900 flex flex-col items-center justify-center p-4">
+            <div className="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-lg max-w-md w-full">
+              <div className="text-center space-y-4">
+                <h1 className="text-2xl font-bold text-red-600 dark:text-red-400">Erreur de l'application</h1>
+                <p className="text-gray-600 dark:text-gray-400">{error.message}</p>
+                <div className="space-y-2">
+                  <button
+                    onClick={resetError}
+                    className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                  >
+                    Réessayer
+                  </button>
+                  <button
+                    onClick={() => window.location.reload()}
+                    className="w-full px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+                  >
+                    Recharger la page
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
-          <div className="flex-1 overflow-hidden">
-            <TabContent
-              activeTab={activeTab}
-              rfps={rfps}
-              prospects={prospects}
-              boondmanagerProspects={boondmanagerProspects}
-              salesReps={salesReps}
-              isAnalyzing={isAnalyzing}
-              isAnalyzingProspect={isAnalyzingProspect}
-              isAnalyzingBoondmanagerProspect={isAnalyzingBoondmanagerProspect}
-              onAnalyzeRFP={handleAnalyzeRFP}
-              onAnalyzeProspect={handleAnalyzeProspect}
-              onAnalyzeBoondmanagerProspect={handleAnalyzeBoondmanagerProspect}
-              onStatusChange={handleStatusChange}
-              onAssigneeChange={handleAssigneeChange}
-              onClientChange={handleClientChange}
-              onMissionChange={handleMissionChange}
-              onLocationChange={handleLocationChange}
-              onMaxRateChange={handleMaxRateChange}
-              onStartDateChange={handleStartDateChange}
-              onCreatedAtChange={handleCreatedAtChange}
-              onDelete={handleDelete}
-              onView={handleViewRFP}
-              onProspectStatusChange={handleProspectStatusChange}
-              onProspectAssigneeChange={handleProspectAssigneeChange}
-              onProspectTargetAccountChange={handleProspectTargetAccountChange}
-              onProspectAvailabilityChange={handleProspectAvailabilityChange}
-              onProspectDailyRateChange={handleProspectDailyRateChange}
-              onProspectResidenceChange={handleProspectResidenceChange}
-              onProspectMobilityChange={handleProspectMobilityChange}
-              onProspectPhoneChange={handleProspectPhoneChange}
-              onProspectEmailChange={handleProspectEmailChange}
-              onProspectDelete={handleProspectDelete}
-              onProspectView={handleViewProspect}
-              onBoondmanagerProspectStatusChange={handleClientNeedStatusChange}
-              onBoondmanagerProspectAssigneeChange={handleClientNeedAssigneeChange}
-              onBoondmanagerProspectSelectedNeedChange={handleClientNeedSelectedNeedChange}
-              onBoondmanagerProspectAvailabilityChange={handleClientNeedAvailabilityChange}
-              onBoondmanagerProspectDailyRateChange={handleClientNeedDailyRateChange}
-              onBoondmanagerProspectResidenceChange={handleClientNeedResidenceChange}
-              onBoondmanagerProspectMobilityChange={handleClientNeedMobilityChange}
-              onBoondmanagerProspectPhoneChange={handleClientNeedPhoneChange}
-              onBoondmanagerProspectEmailChange={handleClientNeedEmailChange}
-              onBoondmanagerProspectView={handleClientNeedView}
-              onBoondmanagerProspectDelete={handleClientNeedDelete}
-            />
+        )}
+      >
+        <div className="flex h-screen bg-gray-100 dark:bg-gray-900">
+          <Sidebar 
+            activeTab={activeTab} 
+            onTabChange={setActiveTab}
+            rfps={rfps}
+            prospects={prospects}
+            boondmanagerProspects={boondmanagerProspects}
+          />
+          <div className="flex-1 flex flex-col">
+            <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-4 flex justify-between items-center">
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+                {activeTab === 'rfp-extractor' ? 'Extracteur d\'AO' : 
+                 activeTab === 'rfp-list' ? 'Liste des AO' :
+                 activeTab === 'prospects-extractor' ? 'Extracteur de Prospects' :
+                 activeTab === 'boondmanager-prospects' ? 'Profils pour besoins clients' :
+                 'Liste des Prospects'}
+              </h1>
+              <button
+                onClick={() => setIsSettingsOpen(true)}
+                className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors"
+                title="Paramètres"
+              >
+                <Settings className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="flex-1 overflow-hidden">
+              <TabContent
+                activeTab={activeTab}
+                rfps={rfps}
+                prospects={prospects}
+                boondmanagerProspects={boondmanagerProspects}
+                salesReps={salesReps}
+                isAnalyzing={isAnalyzing}
+                isAnalyzingProspect={isAnalyzingProspect}
+                isAnalyzingBoondmanagerProspect={isAnalyzingBoondmanagerProspect}
+                onAnalyzeRFP={handleAnalyzeRFP}
+                onAnalyzeProspect={handleAnalyzeProspect}
+                onAnalyzeBoondmanagerProspect={handleAnalyzeBoondmanagerProspect}
+                onStatusChange={handleStatusChange}
+                onAssigneeChange={handleAssigneeChange}
+                onClientChange={handleClientChange}
+                onMissionChange={handleMissionChange}
+                onLocationChange={handleLocationChange}
+                onMaxRateChange={handleMaxRateChange}
+                onStartDateChange={handleStartDateChange}
+                onCreatedAtChange={handleCreatedAtChange}
+                onDelete={handleDelete}
+                onView={handleViewRFP}
+                onProspectStatusChange={handleProspectStatusChange}
+                onProspectAssigneeChange={handleProspectAssigneeChange}
+                onProspectTargetAccountChange={handleProspectTargetAccountChange}
+                onProspectAvailabilityChange={handleProspectAvailabilityChange}
+                onProspectDailyRateChange={handleProspectDailyRateChange}
+                onProspectResidenceChange={handleProspectResidenceChange}
+                onProspectMobilityChange={handleProspectMobilityChange}
+                onProspectPhoneChange={handleProspectPhoneChange}
+                onProspectEmailChange={handleProspectEmailChange}
+                onProspectDelete={handleProspectDelete}
+                onProspectView={handleViewProspect}
+                onBoondmanagerProspectStatusChange={handleClientNeedStatusChange}
+                onBoondmanagerProspectAssigneeChange={handleClientNeedAssigneeChange}
+                onBoondmanagerProspectSelectedNeedChange={handleClientNeedSelectedNeedChange}
+                onBoondmanagerProspectAvailabilityChange={handleClientNeedAvailabilityChange}
+                onBoondmanagerProspectDailyRateChange={handleClientNeedDailyRateChange}
+                onBoondmanagerProspectResidenceChange={handleClientNeedResidenceChange}
+                onBoondmanagerProspectMobilityChange={handleClientNeedMobilityChange}
+                onBoondmanagerProspectPhoneChange={handleClientNeedPhoneChange}
+                onBoondmanagerProspectEmailChange={handleClientNeedEmailChange}
+                onBoondmanagerProspectView={handleClientNeedView}
+                onBoondmanagerProspectDelete={handleClientNeedDelete}
+              />
+            </div>
           </div>
+          <SettingsModal 
+            isOpen={isSettingsOpen}
+            onClose={() => setIsSettingsOpen(false)}
+          />
         </div>
-        <SettingsModal 
-          isOpen={isSettingsOpen}
-          onClose={() => setIsSettingsOpen(false)}
-        />
-      </div>
+      </ErrorBoundary>
     </ThemeProvider>
   );
 }

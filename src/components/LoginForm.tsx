@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { supabase } from '../lib/supabase';
+import { supabase } from '../services/api/supabaseClient';
 import type { Session } from '@supabase/supabase-js';
+import { LoadingSpinner } from './common/LoadingSpinner';
 
 interface LoginFormProps {
-  onLoginSuccess: (session: Session) => void;
+  onLoginSuccess: () => void;
 }
 
 export function LoginForm({ onLoginSuccess }: LoginFormProps) {
@@ -29,7 +30,7 @@ export function LoginForm({ onLoginSuccess }: LoginFormProps) {
       });
     
       if (error) throw error;
-      if (data.session) onLoginSuccess(data.session);
+      if (data.session) onLoginSuccess();
     } catch (error) {
       console.error('Login error:', error);
       setLoginError("Identifiants invalides. Veuillez réessayer.");
@@ -80,7 +81,14 @@ export function LoginForm({ onLoginSuccess }: LoginFormProps) {
             disabled={isLoading}
             className="w-full px-4 py-2 bg-[#1651EE] text-white rounded-lg hover:bg-[#1651EE]/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {isLoading ? 'Connexion...' : 'Se connecter'}
+            {isLoading ? (
+              <div className="flex items-center justify-center">
+                <LoadingSpinner size="sm" color="white" />
+                <span className="ml-2">Connexion...</span>
+              </div>
+            ) : (
+              'Se connecter'
+            )}
           </button>
         </form>
       </div>

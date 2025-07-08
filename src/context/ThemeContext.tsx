@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
+import { STORAGE_KEYS } from '../utils/constants';
 
 type Theme = 'light' | 'dark';
 
@@ -7,23 +8,38 @@ interface ThemeContextType {
   setTheme: (theme: Theme) => void;
 }
 
+interface ThemeProviderProps {
+  children: React.ReactNode;
+  initialTheme?: Theme;
+}
+
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
-export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setTheme] = useState<Theme>(() => {
-    // Thème par défaut, sera mis à jour après la connexion
-    return 'light';
+export function ThemeProvider({ children, initialTheme = 'light' }: ThemeProviderProps) {
+  const [theme, setThemeState] = useState<Theme>(() => {
+    // Essayer de récupérer le thème du localStorage
+    const savedTheme = localStorage.getItem(STORAGE_KEYS.THEME);
+    return (savedTheme === 'dark' || savedTheme === 'light') ? savedTheme : initialTheme;
   });
   const [userEmail, setUserEmail] = useState<string | null>(null);
 
-  useEffect(() => {
+  // Fonction pour changer le thème
+  const setTheme = (newTheme: Theme) => {
+    setThemeState(newTheme);
+    
     // Sauvegarder le thème pour l'utilisateur spécifique
     if (userEmail) {
-      localStorage.setItem(`theme_${userEmail}`, theme);
+      localStorage.setItem(
+        STORAGE_KEYS.getUserSpecificKey(STORAGE_KEYS.THEME, userEmail),
+        newTheme
+      );
     }
-    // Maintenir aussi le thème global pour la compatibilité
-    localStorage.setItem('theme', theme);
     
+    // Maintenir aussi le thème global pour la compatibilité
+    localStorage.setItem(STORAGE_KEYS.THEME, newTheme);
+  };
+
+  useEffect(() => {
     if (theme === 'dark') {
       document.documentElement.classList.add('dark');
     } else {
@@ -65,15 +81,16 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
           if (event === 'SIGNED_IN' && session?.user?.email) {
             setUserEmail(session.user.email);
             
-            // Charger le thème spécifique à l'utilisateur
-            const userTheme = localStorage.getItem(`theme_${session.user.email}`);
-            if (userTheme && (userTheme === 'light' || userTheme === 'dark')) {
-              setTheme(userTheme as Theme);
-            }
-          } else if (event === 'SIGNED_OUT') {
-            setUserEmail(null);
-            // Revenir au thème par défaut
-            setTheme('light');
+            const userThemeKey = STORAGE_KEYS.getUserSpecificKey(STORAGE_KEYS.THEME, session.user.email);
+            const userTheme = localStorage.getItem(userThemeKey);
+            
+            if (userTheme === 'light' || userTheme === 'dark') {
+              setThemeState(userTheme);
+
+          const userThemeKey = STORAGE_KEYS.getUserSpecificKey(STORAGE_KEYS.THEME, session.user.email);
+          const userTheme = localStorage.getItem(userThemeKey);
+          
+            setThemeState(initialTheme);
           }
         });
         
@@ -84,7 +101,8 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     };
     
     setupAuthListener();
-  }, []);
+  }, [initialTheme]);
+
   return (
     <ThemeContext.Provider value={{ theme, setTheme }}>
       {children}
