@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { ChevronDown, ChevronUp, Upload, X } from 'lucide-react';
 import { SalesRep, Need } from '../types';
-import { supabase } from '../services/api/supabaseClient';
+import { supabase } from '../lib/supabase';
 
 interface ClientNeedsFormProps {
   salesReps: SalesRep[];
@@ -22,8 +22,7 @@ export function ClientNeedsForm({ salesReps, onSubmit, isLoading = false }: Clie
   useEffect(() => {
     const initializeExpansionState = async () => {
       try {
-        const { data } = await supabase.auth.getSession();
-        const session = data.session;
+        const { data: { session } } = await supabase.auth.getSession();
         const email = session?.user?.email;
         setUserEmail(email);
 

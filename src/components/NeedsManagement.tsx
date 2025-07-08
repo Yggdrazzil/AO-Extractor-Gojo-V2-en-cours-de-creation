@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Edit, Trash2, Calendar, MapPin, DollarSign, Users, AlertCircle, Check, X } from 'lucide-react';
 import { fetchNeeds, createNeed, updateNeed, deleteNeed } from '../services/needs';
-import { supabase } from '../services/api/supabaseClient';
+import { supabase } from '../lib/supabase';
 import type { Need } from '../types';
 
 interface EditingNeed {
@@ -32,8 +32,7 @@ export function NeedsManagement() {
 
   const getCurrentUser = async () => {
     try {
-      const { data } = await supabase.auth.getSession();
-      const session = data.session;
+      const { data: { session } } = await supabase.auth.getSession();
       if (session?.user?.email) {
         // Récupérer l'ID du commercial basé sur l'email
         const { data: salesRep } = await supabase

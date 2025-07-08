@@ -2,8 +2,8 @@ import React from 'react';
 import { useState, useEffect } from 'react';
 import { Sun, Moon, X, KeyRound, LogOut } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
-import { supabase } from '../services/api/supabaseClient';
-import { checkAdminRights } from '../services/api/salesRepService';
+import { supabase } from '../lib/supabase';
+import { checkAdminRights } from '../services/auth';
 
 type SettingsModalProps = {
   isOpen: boolean;
@@ -26,8 +26,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
 
   useEffect(() => {
     const getUserInfo = async () => {
-      const { data } = await supabase.auth.getSession();
-      const session = data.session;
+      const { data: { session } } = await supabase.auth.getSession();
       setUserEmail(session?.user?.email || null);
       
       // Charger la clé API spécifique à l'utilisateur

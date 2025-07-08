@@ -2,49 +2,6 @@
 
 Une plateforme moderne de gestion des appels d'offres et prospects pour les équipes commerciales.
 
-## 📋 Structure du projet refactorisée
-
-```
-src/
-├── components/           # Composants React
-│   ├── common/           # Composants réutilisables
-│   │   ├── ErrorBoundary.tsx
-│   │   ├── LoadingSpinner.tsx
-│   │   ├── Pagination.tsx
-│   │   ├── SearchInput.tsx
-│   │   ├── StatusBadge.tsx
-│   │   ├── SortableHeader.tsx
-│   │   ├── EditableField.tsx
-│   │   └── ConfirmDialog.tsx
-│   └── ...               # Composants spécifiques aux fonctionnalités
-├── context/              # Contextes React
-│   └── ThemeContext.tsx
-├── hooks/                # Hooks personnalisés
-│   ├── useAuth.ts
-│   ├── useDataFetching.ts
-│   ├── useDebounce.ts
-│   ├── useLocalStorage.ts
-│   └── useVirtualization.ts
-├── services/             # Services et API
-│   ├── api/              # Services d'API
-│   │   ├── supabaseClient.ts
-│   │   ├── rfpService.ts
-│   │   ├── prospectService.ts
-│   │   ├── clientNeedsService.ts
-│   │   └── salesRepService.ts
-│   ├── __tests__/        # Tests des services
-│   └── ...               # Autres services
-├── types/                # Types TypeScript
-│   └── index.ts
-├── utils/                # Utilitaires
-│   ├── constants.ts
-│   ├── dateUtils.ts
-│   ├── errorHandling.ts
-│   ├── performance.ts
-│   └── testUtils.ts
-└── App.tsx               # Composant racine
-```
-
 ## ✨ Fonctionnalités
 
 ### 📋 Extracteur d'AO
@@ -75,19 +32,26 @@ src/
 ## 🛠️ Technologies
 
 - **Frontend** : React 18 + TypeScript + Tailwind CSS
-- **Backend** : Supabase (PostgreSQL + Edge Functions + Storage)
+- **Backend** : Supabase (PostgreSQL + Edge Functions)
 - **IA** : OpenAI GPT-4 pour l'analyse
 - **Email** : SendGrid pour les notifications
 - **Authentification** : Supabase Auth
 - **Storage** : Supabase Storage pour les fichiers
-- **Tests** : Jest + React Testing Library
 
-## 🧪 Tests
+## 🏗️ Architecture
 
-Pour exécuter les tests :
+```
+src/
+├── components/          # Composants React réutilisables
+├── services/           # Services API et logique métier
+├── types/              # Types TypeScript
+├── hooks/              # Hooks React personnalisés
+├── utils/              # Utilitaires et helpers
+└── context/            # Contextes React (thème, etc.)
 
-```bash
-npm test
+supabase/
+├── migrations/         # Migrations de base de données
+└── functions/          # Edge Functions Supabase
 ```
 
 ## 🚀 Démarrage rapide
@@ -126,15 +90,11 @@ npm run dev
 
 ## 📱 Interface utilisateur
 
-### 🎨 Composants réutilisables
-- **ErrorBoundary** : Capture et gère les erreurs dans l'arbre de composants
-- **LoadingSpinner** : Indicateur de chargement personnalisable
-- **Pagination** : Navigation entre les pages de résultats
-- **SearchInput** : Champ de recherche avec debounce
-- **StatusBadge** : Badge de statut avec styles adaptés
-- **SortableHeader** : En-tête de tableau triable
-- **EditableField** : Champ éditable en ligne
-- **ConfirmDialog** : Dialogue de confirmation
+### 🎨 Design System
+- **Design Apple-inspired** avec attention aux détails
+- **Mode sombre/clair** avec persistance par utilisateur
+- **Responsive design** optimisé mobile/desktop
+- **Micro-interactions** et animations fluides
 
 ### 🔐 Sécurité
 - **Authentification obligatoire** via Supabase
@@ -144,11 +104,10 @@ npm run dev
 
 ## 📈 Performance
 
-- **Virtualisation** des tableaux pour gros volumes de données
-- **Debounce** pour les recherches et filtres
-- **Optimisation des rendus** avec React.memo et useMemo
-- **Gestion efficace des erreurs** avec ErrorBoundary
-- **Lazy loading** des composants et des données
+- **Virtualisation** des tableaux pour gros volumes
+- **Pagination intelligente** et filtrage optimisé
+- **Cache client** pour les données fréquentes
+- **Lazy loading** des composants
 
 ## 🔄 Workflow
 
@@ -161,19 +120,11 @@ npm run dev
 
 La plateforme est déployée automatiquement sur Netlify avec intégration continue.
 
-## 🧩 Hooks personnalisés
-
-- **useAuth** : Gestion de l'authentification
-- **useDataFetching** : Récupération de données avec gestion d'état
-- **useDebounce** : Debounce pour les entrées utilisateur
-- **useLocalStorage** : Persistance des données dans localStorage
-- **useVirtualization** : Virtualisation pour les grandes listes
-
 ## 📞 Support
 
 Pour toute question ou problème, contactez l'équipe de développement.
 
 ---
 
-**Version** : 3.0.0  
-**Dernière mise à jour** : Juin 2025
+**Version** : 2.0.0  
+**Dernière mise à jour** : Janvier 2025

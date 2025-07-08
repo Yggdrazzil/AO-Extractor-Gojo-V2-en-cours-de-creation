@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import { SalesRep } from '../types';
-import { supabase } from '../services/api/supabaseClient';
+import { supabase } from '../lib/supabase';
 
 interface RFPFormProps {
   salesReps: SalesRep[];
@@ -19,8 +19,7 @@ export function RFPForm({ salesReps, onSubmit, isLoading = false }: RFPFormProps
   useEffect(() => {
     const initializeExpansionState = async () => {
       try {
-        const { data } = await supabase.auth.getSession();
-        const session = data.session;
+        const { data: { session } } = await supabase.auth.getSession();
         const email = session?.user?.email;
         setUserEmail(email);
 
@@ -86,7 +85,7 @@ export function RFPForm({ salesReps, onSubmit, isLoading = false }: RFPFormProps
 
   return (
     <form onSubmit={handleSubmit} className="bg-white dark:bg-gray-800 rounded-lg shadow-sm">
-      <div
+      <div 
         className="p-4 flex items-center justify-between border-b border-gray-200 dark:border-gray-700"
       >
         <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">
