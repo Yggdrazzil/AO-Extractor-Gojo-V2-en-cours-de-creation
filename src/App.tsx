@@ -12,11 +12,11 @@ import { sendClientNeedNotification, getSalesRepCode } from './services/clientNe
 import { createProspect, fetchProspects, updateProspectStatus, updateProspectAssignee, updateProspectDateUpdate, updateProspectAvailability, updateProspectDailyRate, updateProspectResidence, updateProspectMobility, updateProspectPhone, updateProspectEmail, deleteProspect, markProspectAsRead } from './services/prospects';
 import { updateProspectTargetAccount } from './services/prospects';
 import { ThemeProvider } from './context/ThemeContext';
-import { supabase, checkSupabaseConnection } from './services/api/supabaseClient';
+import { supabase, checkSupabaseConnection, resetSupabaseSession } from './services/api/supabaseClient';
 import { LoginForm } from './components/LoginForm';
 import type { RFP, SalesRep, Prospect, BoondmanagerProspect } from './types';
 import type { Session } from '@supabase/supabase-js';
-import { Settings } from 'lucide-react';
+import { Settings, XCircle } from 'lucide-react';
 import { ErrorBoundary } from './components/common/ErrorBoundary';
 import { LoadingSpinner } from './components/common/LoadingSpinner';
 import { useAuth } from './hooks/useAuth';
@@ -143,11 +143,26 @@ function App() {
     return (
       <ThemeProvider>
         <div className="min-h-screen bg-gray-100 dark:bg-gray-900 flex flex-col items-center justify-center p-4">
-          <div className="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-lg max-w-md w-full">
-            <div className="text-center space-y-4">
-              <h1 className="text-2xl font-bold text-red-600 dark:text-red-400">Erreur</h1>
-              <p className="text-gray-600 dark:text-gray-400">{error || authError}</p>
+          <div className="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-lg max-w-xl w-full">
+            <div className="text-center space-y-6">
+              <XCircle className="w-16 h-16 text-red-500 mx-auto" />
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Problème de connexion</h1>
+              <p className="text-lg text-red-600 dark:text-red-400 font-medium">{error || authError}</p>
+              <p className="text-gray-600 dark:text-gray-400 text-sm">
+                Il semble y avoir un problème avec la connexion à Supabase. 
+                Vérifiez votre connexion internet et les paramètres de l'application.
+              </p>
               <div className="space-y-2">
+                <button
+                  onClick={() => {
+                    setActiveTab('tools');
+                    setError(null);
+                    loadInitialData();
+                  }}
+                  className="w-full px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition-colors"
+                >
+                  Exécuter les diagnostics
+                </button>
                 <button
                   onClick={() => {
                     setError(null);
@@ -159,7 +174,7 @@ function App() {
                 </button>
                 <button
                   onClick={() => window.location.reload()}
-                  className="w-full px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                 >
                   Recharger la page
                 </button>
