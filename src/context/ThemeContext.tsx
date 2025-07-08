@@ -86,9 +86,10 @@ export function ThemeProvider({ children, initialTheme = 'light' }: ThemeProvide
             
             if (userTheme === 'light' || userTheme === 'dark') {
               setThemeState(userTheme);
+            }
 
-          const userThemeKey = STORAGE_KEYS.getUserSpecificKey(STORAGE_KEYS.THEME, session.user.email);
-          const userTheme = localStorage.getItem(userThemeKey);
+            const userThemeKey = STORAGE_KEYS.getUserSpecificKey(STORAGE_KEYS.THEME, session.user.email);
+            const userTheme = localStorage.getItem(userThemeKey);
           
             setThemeState(initialTheme);
           }
