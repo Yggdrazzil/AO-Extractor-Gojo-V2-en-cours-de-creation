@@ -13,14 +13,17 @@ export function LoginForm({ onLoginSuccess }: LoginFormProps) {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const form = e.currentTarget;
-    const email = (form.elements.namedItem('email') as HTMLInputElement).value.trim();
-    const password = (form.elements.namedItem('password') as HTMLInputElement).value;
+    
+    // Récupération des valeurs du formulaire
+    const formData = new FormData(e.currentTarget);
+    const email = formData.get('email') as string;
+    const password = formData.get('password') as string;
     
     try {
       setIsLoading(true);
       setLoginError(null);
       
+      console.log("Attempting login with email:", email);
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -30,10 +33,16 @@ export function LoginForm({ onLoginSuccess }: LoginFormProps) {
       });
     
       if (error) throw error;
-      if (data.session) onLoginSuccess();
+      
+      if (data.session) {
+        console.log("Login successful, session created");
+        onLoginSuccess();
+      } else {
+        throw new Error("Aucune session créée après connexion");
+      }
     } catch (error) {
       console.error('Login error:', error);
-      setLoginError("Identifiants invalides. Veuillez réessayer.");
+      setLoginError(error instanceof Error ? error.message : "Identifiants invalides. Veuillez réessayer.");
     } finally {
       setIsLoading(false);
     }

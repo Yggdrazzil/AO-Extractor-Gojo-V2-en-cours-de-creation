@@ -6,7 +6,7 @@ import { analyzeRFP, analyzeProspect } from './services/openai';
 import { createRFP, fetchRFPs, updateRFPStatus, updateRFPAssignee, updateRFPClient, updateRFPMission, updateRFPLocation, updateRFPMaxRate, updateRFPStartDate, updateRFPCreatedAt, deleteRFP } from './services/rfp';
 import { markRFPAsRead } from './services/rfp';
 import { fetchClientNeeds, addClientNeed, updateClientNeedStatus, updateClientNeedAssignee, updateClientNeedSelectedNeed, updateClientNeedAvailability, updateClientNeedDailyRate, updateClientNeedResidence, updateClientNeedMobility, updateClientNeedPhone, updateClientNeedEmail, deleteClientNeed, markClientNeedAsRead } from './services/clientNeeds';
-import { extractFileContent } from './services/fileUpload';
+import { extractFileContent } from './services/api/fileUpload';
 import { sendRFPNotification } from './services/emailNotification';
 import { sendClientNeedNotification, getSalesRepCode } from './services/clientNeedNotification';
 import { createProspect, fetchProspects, updateProspectStatus, updateProspectAssignee, updateProspectDateUpdate, updateProspectAvailability, updateProspectDailyRate, updateProspectResidence, updateProspectMobility, updateProspectPhone, updateProspectEmail, deleteProspect, markProspectAsRead } from './services/prospects';
@@ -23,6 +23,7 @@ import { useAuth } from './hooks/useAuth';
 import { fetchSalesReps } from './services/api/salesRepService';
 
 function App() {
+  console.log("App component initializing...");
   const [rfps, setRfps] = useState<RFP[]>([]);
   const [prospects, setProspects] = useState<Prospect[]>([]);
   const [boondmanagerProspects, setBoondmanagerProspects] = useState<BoondmanagerProspect[]>([]);
@@ -58,12 +59,12 @@ function App() {
       console.log('Loading initial data...');
       setIsLoading(true);
       setError(null);
-
-      const activeSession = currentSession || session;
       
+      const activeSession = currentSession || session;
+      console.log("loadInitialData with session:", !!activeSession);
       if (activeSession && isConnected) {
         try {
-          // Charger d'abord les commerciaux
+          // Charger les commerciaux
           console.log('Loading sales reps...');
           const salesRepsData = await fetchSalesReps();
           console.log('Sales reps loaded:', { count: salesRepsData.length });
@@ -80,6 +81,7 @@ function App() {
           const prospectsData = await fetchProspects();
           console.log('Prospects loaded:', { count: prospectsData.length });
           setProspects(prospectsData);
+          console.log("All data loaded successfully");
           
         } catch (err) {
           console.error('Error loading data:', err);
@@ -113,15 +115,6 @@ function App() {
     }
   }, [isConnected]);
 
-  // Charger les données quand la session et la connexion sont prêtes
-  useEffect(() => {
-    if (isConnected && session && !isLoading) {
-      console.log('Starting data load - connected and authenticated');
-      loadInitialData();
-    }
-  }, [session, isConnected]);
-
-  // Charger les données des besoins clients au démarrage
   useEffect(() => {
     const loadClientNeeds = async () => {
       try {
@@ -752,6 +745,12 @@ function App() {
     console.log('Viewing prospect:', prospect.id);
   };
 
+  console.log("Auth status:", { 
+    isSession: !!session, 
+    isConnected, 
+    salesRepsCount: salesReps.length 
+  });
+  
   if (!session) {
     return (
       <ThemeProvider>

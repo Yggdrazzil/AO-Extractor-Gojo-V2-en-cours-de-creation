@@ -1,11 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 
-// Constantes pour le stockage local
-const STORAGE_KEYS = {
-  THEME: 'theme',
-  getUserSpecificKey: (key: string, email: string) => `${key}_${email}`
-};
-
 type Theme = 'light' | 'dark';
 
 interface ThemeContextType {
@@ -53,7 +47,8 @@ export function ThemeProvider({ children, initialTheme = 'light' }: ThemeProvide
   const loadUserSettings = async () => {
     try {
       const { supabase } = await import('../services/api/supabaseClient');
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data } = await supabase.auth.getSession();
+      const session = data.session;
       
       if (session?.user?.email) {
         setUserEmail(session.user.email);
