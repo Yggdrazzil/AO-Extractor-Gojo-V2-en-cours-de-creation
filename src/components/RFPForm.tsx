@@ -19,7 +19,8 @@ export function RFPForm({ salesReps, onSubmit, isLoading = false }: RFPFormProps
   useEffect(() => {
     const initializeExpansionState = async () => {
       try {
-        const { data: { session } } = await supabase.auth.getSession();
+        const { data } = await supabase.auth.getSession();
+        const session = data.session;
         const email = session?.user?.email;
         setUserEmail(email);
 
@@ -85,7 +86,7 @@ export function RFPForm({ salesReps, onSubmit, isLoading = false }: RFPFormProps
 
   return (
     <form onSubmit={handleSubmit} className="bg-white dark:bg-gray-800 rounded-lg shadow-sm">
-      <div 
+      <div
         className="p-4 flex items-center justify-between border-b border-gray-200 dark:border-gray-700"
       >
         <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">

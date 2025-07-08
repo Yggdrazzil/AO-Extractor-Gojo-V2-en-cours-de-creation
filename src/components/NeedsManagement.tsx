@@ -32,7 +32,8 @@ export function NeedsManagement() {
 
   const getCurrentUser = async () => {
     try {
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data } = await supabase.auth.getSession();
+      const session = data.session;
       if (session?.user?.email) {
         // Récupérer l'ID du commercial basé sur l'email
         const { data: salesRep } = await supabase

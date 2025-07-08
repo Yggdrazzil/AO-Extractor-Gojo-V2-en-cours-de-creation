@@ -84,7 +84,8 @@ export function ProspectsTable({
   useEffect(() => {
     const initializeUserFilter = async () => {
       try {
-        const { data: { session } } = await import('../services/api/supabaseClient').then(m => m.supabase.auth.getSession());
+        const { data } = await import('../services/api/supabaseClient').then(m => m.supabase.auth.getSession());
+        const session = data.session;
         if (!session?.user?.email) {
           console.warn('No user session found');
           return;
@@ -117,7 +118,8 @@ export function ProspectsTable({
   const handleSalesRepChange = (value: string) => {
     const saveSelection = async () => {
       try {
-        const { data: { session } } = await import('../services/api/supabaseClient').then(m => m.supabase.auth.getSession());
+        const { data } = await import('../services/api/supabaseClient').then(m => m.supabase.auth.getSession());
+        const session = data.session;
         if (session?.user?.email) {
           const storageKey = `selectedSalesRepProspects_${session.user.email}`;
           localStorage.setItem(storageKey, value);

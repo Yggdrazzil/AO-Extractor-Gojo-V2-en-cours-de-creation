@@ -1,10 +1,8 @@
-import { supabase, safeSupabaseOperation } from './supabaseClient';
+import { supabase } from './supabaseClient';
 import type { SalesRep } from '../../types';
-import { SALES_REP_ORDER } from '../../utils/constants';
 
 /**
- * Récupère tous les commerciaux
- * @returns Liste des commerciaux
+ * Récupère tous les commerciaux depuis la base de données
  */
 export async function fetchSalesReps(): Promise<SalesRep[]> {
   console.log('Starting fetchSalesReps function...');
@@ -48,100 +46,12 @@ export async function fetchSalesReps(): Promise<SalesRep[]> {
     return salesReps || [];
   } catch (error) {
     console.error('Failed to fetch sales reps:', error);
-    // Retourner un tableau vide plutôt que de lancer une erreur
     return [];
   }
 }
 
 /**
- * Récupère un commercial par son ID
- * @param id - ID du commercial
- * @returns Commercial ou null si non trouvé
- */
-export async function getSalesRepById(id: string): Promise<SalesRep | null> {
-  try {
-    const { data, error } = await supabase
-      .from('sales_reps')
-      .select('id, code, name, email, is_admin, created_at')
-      .eq('id', id)
-      .single();
-
-    if (error) {
-      console.error('Error fetching sales rep by ID:', error);
-      return null;
-    }
-
-    return data;
-  } catch (error) {
-    console.error('Failed to get sales rep by ID:', error);
-    return null;
-  }
-}
-
-/**
- * Récupère un commercial par son email
- * @param email - Email du commercial
- * @returns Commercial ou null si non trouvé
- */
-export async function getSalesRepByEmail(email: string): Promise<SalesRep | null> {
-  try {
-    const { data, error } = await supabase
-      .from('sales_reps')
-      .select('id, code, name, email, is_admin, created_at')
-      .eq('email', email)
-      .single();
-
-    if (error) {
-      console.error('Error fetching sales rep by email:', error);
-      return null;
-    }
-
-    return data;
-  } catch (error) {
-    console.error('Failed to get sales rep by email:', error);
-    return null;
-  }
-}
-
-/**
- * Récupère le code d'un commercial par son ID
- * @param salesRepId - ID du commercial
- * @returns Code du commercial ou null si non trouvé
- */
-export async function getSalesRepCode(salesRepId: string): Promise<string | null> {
-  try {
-    const { data, error } = await supabase
-      .from('sales_reps')
-      .select('code')
-      .eq('id', salesRepId)
-      .single();
-
-    if (error || !data) {
-      console.error('Error fetching sales rep code:', error);
-      return null;
-    }
-
-    return data.code;
-  } catch (error) {
-    console.error('Failed to get sales rep code:', error);
-    return null;
-  }
-}
-
-/**
- * Trie les commerciaux selon l'ordre défini
- * @param salesReps - Liste des commerciaux à trier
- * @returns Liste triée des commerciaux
- */
-export function sortSalesReps(salesReps: SalesRep[]): SalesRep[] {
-  return [...salesReps].sort((a, b) => {
-    return SALES_REP_ORDER.indexOf(a.code) - SALES_REP_ORDER.indexOf(b.code);
-  });
-}
-
-/**
  * Vérifie si l'utilisateur connecté a des droits administrateur
- * @returns true si l'utilisateur est admin, false sinon
  */
 export async function checkAdminRights(): Promise<boolean> {
   try {
@@ -167,5 +77,57 @@ export async function checkAdminRights(): Promise<boolean> {
   } catch (error) {
     console.error('Error checking admin rights:', error);
     return false;
+  }
+}
+
+/**
+ * Récupère les informations du commercial connecté
+ */
+export async function getCurrentSalesRep() {
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    
+    if (!session?.user?.email) {
+      return null;
+    }
+
+    const { data: salesRep, error } = await supabase
+      .from('sales_reps')
+      .select('*')
+      .eq('email', session.user.email)
+      .single();
+
+    if (error || !salesRep) {
+      console.warn('Sales rep not found for email:', session.user.email);
+      return null;
+    }
+
+    return salesRep;
+  } catch (error) {
+    console.error('Error getting current sales rep:', error);
+    return null;
+  }
+}
+
+/**
+ * Récupère le code commercial depuis l'ID
+ */
+export async function getSalesRepCode(salesRepId: string): Promise<string | null> {
+  try {
+    const { data, error } = await supabase
+      .from('sales_reps')
+      .select('code')
+      .eq('id', salesRepId)
+      .single();
+
+    if (error || !data) {
+      console.error('Error fetching sales rep code:', error);
+      return null;
+    }
+
+    return data.code;
+  } catch (error) {
+    console.error('Failed to get sales rep code:', error);
+    return null;
   }
 }

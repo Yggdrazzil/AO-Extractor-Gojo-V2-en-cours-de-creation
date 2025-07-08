@@ -26,7 +26,8 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
 
   useEffect(() => {
     const getUserInfo = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data } = await supabase.auth.getSession();
+      const session = data.session;
       setUserEmail(session?.user?.email || null);
       
       // Charger la clé API spécifique à l'utilisateur

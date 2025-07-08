@@ -22,7 +22,8 @@ export function ClientNeedsForm({ salesReps, onSubmit, isLoading = false }: Clie
   useEffect(() => {
     const initializeExpansionState = async () => {
       try {
-        const { data: { session } } = await supabase.auth.getSession();
+        const { data } = await supabase.auth.getSession();
+        const session = data.session;
         const email = session?.user?.email;
         setUserEmail(email);
 

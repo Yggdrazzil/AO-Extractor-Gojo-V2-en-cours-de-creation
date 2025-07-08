@@ -16,7 +16,6 @@ interface UseAuthReturn {
 
 /**
  * Hook personnalisé pour gérer l'authentification
- * @returns Objet contenant l'état d'authentification et les fonctions associées
  */
 export function useAuth(): UseAuthReturn {
   const [session, setSession] = useState<Session | null>(null);
@@ -55,7 +54,8 @@ export function useAuth(): UseAuthReturn {
         setError(null);
 
         // Récupérer la session
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        const { data, error: sessionError } = await supabase.auth.getSession();
+        const session = data.session;
         
         if (sessionError) {
           throw sessionError;
@@ -83,6 +83,7 @@ export function useAuth(): UseAuthReturn {
     // Écouter les changements d'état d'authentification
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        console.log('Auth state changed:', event, !!session);
         setSession(session);
         setUser(session?.user || null);
 

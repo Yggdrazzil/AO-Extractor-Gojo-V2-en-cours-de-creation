@@ -22,7 +22,8 @@ export function ProspectsForm({ salesReps, onSubmit, isLoading = false }: Prospe
   useEffect(() => {
     const initializeExpansionState = async () => {
       try {
-        const { data: { session } } = await supabase.auth.getSession();
+        const { data } = await supabase.auth.getSession();
+        const session = data.session;
         const email = session?.user?.email;
         setUserEmail(email);
 
