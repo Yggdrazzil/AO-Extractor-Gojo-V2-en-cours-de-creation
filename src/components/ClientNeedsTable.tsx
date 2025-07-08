@@ -636,7 +636,7 @@ export function ClientNeedsTable({
                             className="cursor-pointer hover:text-blue-600 dark:hover:text-blue-400 text-xs sm:text-sm break-words flex items-center" 
                             title="Cliquer pour modifier l'email"
                           >
-                            <span className="mr-1">📧</span> {prospect.email || '-'}
+                            {prospect.email || '-'}
                           </div>
                         )}
                         
@@ -663,7 +663,7 @@ export function ClientNeedsTable({
                             className="cursor-pointer hover:text-blue-600 dark:hover:text-blue-400 text-xs sm:text-sm break-words flex items-center" 
                             title="Cliquer pour modifier le téléphone"
                           >
-                            <span className="mr-1">📞</span> {prospect.phone || '-'}
+                            {prospect.phone || '-'}
                           </div>
                         )}
                       </div>
