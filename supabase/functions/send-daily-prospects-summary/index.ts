@@ -312,7 +312,7 @@ function generateDailyProspectsSummaryHTML(salesRepName: string, prospects: Pros
       <div class="email-container">
         <div class="header">
           <h1>Récapitulatif quotidien</h1>
-          <p>Vos prospects à traiter</p>
+          <p>Vos références chez vos clients à obtenir</p>
         </div>
         
         <div class="content">
@@ -321,7 +321,7 @@ function generateDailyProspectsSummaryHTML(salesRepName: string, prospects: Pros
           </div>
           
           <p class="summary-text">
-            Voici le récapitulatif de vos prospects en statut "À traiter" pour ce ${new Date().toLocaleDateString('fr-FR', { 
+            Voici le récapitulatif de vos prises de références en statut "À traiter" pour ce ${new Date().toLocaleDateString('fr-FR', { 
               weekday: 'long', 
               day: 'numeric', 
               month: 'long', 
@@ -331,7 +331,7 @@ function generateDailyProspectsSummaryHTML(salesRepName: string, prospects: Pros
           
           <div class="stats-card">
             <div class="stats-number">${prospectCount}</div>
-            <div class="stats-label">Prospect${pluriel} à traiter</div>
+            <div class="stats-label">Référence${pluriel} à obtenir</div>
           </div>
           
           <div class="table-container">
@@ -364,20 +364,20 @@ function generateDailyProspectsSummaryText(salesRepName: string, prospects: Pros
   ).join('\n')
   
   return `
-Récapitulatif quotidien des prospects
+Récapitulatif quotidien des références
 
 Bonjour ${salesRepName},
 
-Vous avez ${prospects.length} prospect(s) en statut "À traiter" :
+Vous avez ${prospects.length} référence(s) en statut "À traiter" :
 
 ${prospectList}
 
-Accédez à la plateforme pour traiter ces prospects :
+Accédez à la plateforme pour traiter ces références :
 ${platformUrl}
 
 ---
 Email automatique quotidien - Ne pas répondre
-GOJO - Plateforme de gestion des prospects - Envoyé à 9h01
+GOJO - Plateforme de gestion des références - Envoyé à 9h01
   `.trim()
 }
 
