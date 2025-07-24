@@ -90,9 +90,6 @@ function generateRFPTable(rfps: RFP[]): string {
       <td style="padding: 16px 12px; font-size: 15px; color: #6e6e73; text-align: center;">
         ${rfp.max_rate ? `${rfp.max_rate}€` : '-'}
       </td>
-      <td style="padding: 16px 12px; font-size: 15px; color: #6e6e73; text-align: center;">
-        ${formatDate(rfp.start_date)}
-      </td>
     </tr>
   `).join('')
 
@@ -111,9 +108,6 @@ function generateRFPTable(rfps: RFP[]): string {
           </th>
           <th style="padding: 20px 12px; text-align: center; font-size: 14px; font-weight: 600; color: #374151; text-transform: uppercase; letter-spacing: 0.5px;">
             TJM Max
-          </th>
-          <th style="padding: 20px 12px; text-align: center; font-size: 14px; font-weight: 600; color: #374151; text-transform: uppercase; letter-spacing: 0.5px;">
-            Démarrage
           </th>
         </tr>
       </thead>
