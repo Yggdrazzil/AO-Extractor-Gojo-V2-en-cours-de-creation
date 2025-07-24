@@ -306,18 +306,8 @@ function generateEmailHTML(data: RFPNotificationData, salesRepName: string, plat
           </div>
           
           <p class="intro-text">
-            Un nouvel appel d'offres vient d'être analysé et vous a été assigné automatiquement pour ce ${new Date().toLocaleDateString('fr-FR', { 
-              weekday: 'long', 
-              day: 'numeric', 
-              month: 'long', 
-              year: 'numeric' 
-            })} :
+            Un nouvel Appel d'Offres vient vous a été assigné :
           </p>
-          
-          <div class="stats-card">
-            <div class="stats-number">1</div>
-            <div class="stats-label">AO à traiter</div>
-          </div>
           
           <div class="table-container">
             <table>
