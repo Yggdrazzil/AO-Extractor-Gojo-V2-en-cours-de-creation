@@ -61,9 +61,7 @@ export async function fetchRFPs(): Promise<RFP[]> {
     console.log('Supabase query result:', {
       hasData: !!data,
       dataLength: data?.length,
-      error: error,
-      errorCode: error?.code,
-      errorMessage: error?.message
+      error: error
     });
 
     if (error) {
@@ -84,13 +82,6 @@ export async function fetchRFPs(): Promise<RFP[]> {
     }
   
     console.log('Successfully fetched RFPs:', { count: data.length });
-    
-    // Debug: vérifier les commentaires dans les données
-    data.forEach((rfp, index) => {
-      if (rfp.comments) {
-        console.log(`📝 RFP ${index + 1} has comments:`, rfp.comments.substring(0, 50) + '...');
-      }
-    });
     
     return data.map(rfp => ({
       id: rfp.id,
@@ -276,30 +267,12 @@ export async function updateRFPCreatedAt(id: string, createdAt: string | null): 
 
 export async function updateRFPComments(id: string, comments: string): Promise<void> {
   try {
-    console.log('🔧 updateRFPComments called with:', { id, comments: comments.substring(0, 50) + '...' });
+    console.log('Updating RFP comments for ID:', id);
     
     if (!id) {
       console.error('No RFP ID provided for comments update');
       return;
     }
-    
-    // Vérifier d'abord si la colonne comments existe
-    console.log('🔍 Testing if comments column exists...');
-    const { data: testData, error: testError } = await supabase
-      .from('rfps')
-      .select('comments')
-      .eq('id', id)
-      .limit(1);
-    
-    if (testError) {
-      console.error('❌ Comments column test failed:', testError);
-      if (testError.message.includes('comments')) {
-        throw new Error('La colonne commentaires n\'existe pas encore en base de données. Veuillez contacter l\'administrateur.');
-      }
-      throw testError;
-    }
-    
-    console.log('✅ Comments column exists, proceeding with update...');
     
     const { error } = await supabase
       .from('rfps')
@@ -311,7 +284,7 @@ export async function updateRFPComments(id: string, comments: string): Promise<v
       throw error;
     }
     
-    console.log('✅ Comments updated successfully in database');
+    console.log('Comments updated successfully in database');
   } catch (error) {
     console.error('Error in updateRFPComments:', error);
     throw error;
