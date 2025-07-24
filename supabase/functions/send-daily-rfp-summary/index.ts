@@ -71,17 +71,6 @@ function formatDate(dateStr: string | null): string {
     return 'Non spécifiée'
   }
 }
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric'
-    })
-    console.log('📅 Formatted date result:', formatted)
-    return formatted
-  } catch {
-    console.log('📅 Error formatting date, returning default')
-    return 'Non spécifiée'
-  }
-}
 
 /**
  * Génère le tableau HTML des AOs
