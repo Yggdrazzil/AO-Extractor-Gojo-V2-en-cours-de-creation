@@ -51,13 +51,13 @@ export async function fetchRFPs(): Promise<RFP[]> {
       userId: session?.user?.id
     });
 
-    // Essayer d'abord avec la colonne comments, puis sans si elle n'existe pas
+    // Essayer d'abord avec tous les champs y compris comments
     let { data, error } = await supabase
       .from('rfps')
       .select('id, client, mission, location, max_rate, created_at, start_date, status, assigned_to, raw_content, is_read, comments')
       .order('created_at', { ascending: false });
     
-    // Si erreur de colonne inexistante, essayer sans comments
+    // Si erreur de colonne comments inexistante, essayer sans
     if (error && error.message.includes('comments')) {
       console.log('Comments column not found, fetching without it...');
       const fallbackResult = await supabase
@@ -73,7 +73,8 @@ export async function fetchRFPs(): Promise<RFP[]> {
     console.log('Supabase query result:', {
       hasData: !!data,
       dataLength: data?.length,
-      error: error
+      error: error,
+      firstItemHasComments: data?.[0] ? 'comments' in data[0] : false
     });
 
     if (error) {
@@ -93,7 +94,10 @@ export async function fetchRFPs(): Promise<RFP[]> {
       return [];
     }
   
-    console.log('Successfully fetched RFPs:', { count: data.length });
+    console.log('Successfully fetched RFPs:', { 
+      count: data.length,
+      commentsFields: data.map(rfp => ({ id: rfp.id, hasComments: !!(rfp as any).comments }))
+    });
     
     return data.map(rfp => ({
       id: rfp.id,
