@@ -138,7 +138,7 @@ export function ClientNeedsForm({ salesReps, onSubmit, isLoading = false }: Clie
     <form onSubmit={handleSubmit} className="bg-white dark:bg-gray-800 rounded-lg shadow-sm relative">
       <div className="p-4 flex items-center justify-between border-b border-gray-200 dark:border-gray-700">
         <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">
-          Profils pour besoins clients
+          Profils pour Besoins Clients
         </h2>
         <button
           type="button"

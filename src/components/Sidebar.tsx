@@ -24,9 +24,9 @@ const tabs = [
   },
   {
     id: 'boondmanager-prospects',
-    label: 'Profils pour besoins clients',
+    label: 'Profils pour Besoins Clients',
     icon: Users,
-    description: 'Analyse de profils pour besoins clients'
+    description: 'Analyse de profils pour Besoins Clients'
   },
   {
     id: 'analytics',

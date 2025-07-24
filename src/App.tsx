@@ -915,7 +915,7 @@ function App() {
               {activeTab === 'rfp-extractor' ? 'Extracteur d\'AO' : 
                activeTab === 'rfp-list' ? 'Liste des AO' :
                activeTab === 'prospects-extractor' ? 'Extracteur de Prospects' :
-               activeTab === 'boondmanager-prospects' ? 'Profils pour besoins clients' :
+               activeTab === 'boondmanager-prospects' ? 'Profils pour Besoins Clients' :
                'Profils pour Prise de Références'}
             </h1>
             <button
