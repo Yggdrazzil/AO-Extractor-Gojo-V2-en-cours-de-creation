@@ -27,27 +27,50 @@ const corsHeaders = {
  * Formate une date pour l'affichage
  */
 function formatDate(dateStr: string | null): string {
-  console.log('📅 formatDate called with:', dateStr)
+  console.log('📅 formatDate called with:', dateStr, 'type:', typeof dateStr)
   
   if (!dateStr) return 'Non spécifiée'
   
   try {
-    // Si la date est déjà au format DD/MM/YYYY, la retourner telle quelle
     const cleanDate = dateStr.trim()
+    console.log('📅 Clean date:', cleanDate)
+    
+    // Si la date est déjà au format DD/MM/YYYY, la retourner telle quelle
     if (/^\d{2}\/\d{2}\/\d{4}$/.test(cleanDate)) {
       console.log('📅 Date already in French format:', cleanDate)
       return cleanDate
     }
     
-    // Pour les dates ISO, les convertir en format français sans problème de timezone
-    console.log('📅 Converting ISO date:', cleanDate)
-    const date = new Date(cleanDate + 'T12:00:00Z') // Forcer UTC midi pour éviter les décalages de timezone
+    // Pour les dates ISO, les convertir en format français
+    let date: Date
+    
+    // Si c'est juste une date YYYY-MM-DD, ajouter l'heure UTC
+    if (/^\d{4}-\d{2}-\d{2}$/.test(cleanDate)) {
+      console.log('📅 Date format YYYY-MM-DD, adding time:', cleanDate)
+      date = new Date(cleanDate + 'T00:00:00.000Z')
+    } else {
+      console.log('📅 Date with time, parsing directly:', cleanDate)
+      date = new Date(cleanDate)
+    }
+    
     if (isNaN(date.getTime())) {
       console.log('📅 Invalid date, returning default')
       return 'Non spécifiée'
     }
     
-    const formatted = date.toLocaleDateString('fr-FR', {
+    // Utiliser getUTCDate, getUTCMonth, getUTCFullYear pour éviter les problèmes de timezone
+    const day = date.getUTCDate().toString().padStart(2, '0')
+    const month = (date.getUTCMonth() + 1).toString().padStart(2, '0')
+    const year = date.getUTCFullYear()
+    const formatted = `${day}/${month}/${year}`
+    
+    console.log('📅 Formatted date result:', formatted)
+    return formatted
+  } catch (error) {
+    console.log('📅 Error formatting date:', error, 'returning default')
+    return 'Non spécifiée'
+  }
+}
       day: '2-digit',
       month: '2-digit',
       year: 'numeric'
