@@ -10,6 +10,7 @@ export interface RFP {
   status: 'À traiter' | 'Traité';
   assignedTo: string;
   isRead: boolean;
+  comments?: string;
 }
 
 export interface SalesRep {

@@ -27,6 +27,7 @@ interface TabContentProps {
   onMaxRateChange?: (id: string, maxRate: string) => Promise<void>;
   onStartDateChange?: (id: string, startDate: string) => Promise<void>;
   onCreatedAtChange?: (id: string, createdAt: string) => Promise<void>;
+  onCommentsChange?: (id: string, comments: string) => Promise<void>;
   onView?: (rfp: RFP) => Promise<void>;
   onDelete?: (id: string) => Promise<void>;
   
@@ -97,6 +98,7 @@ export function TabContent({
   onMaxRateChange,
   onStartDateChange,
   onCreatedAtChange,
+  onCommentsChange,
   onView,
   onDelete,
   onAnalyzeProspect,
@@ -148,6 +150,7 @@ export function TabContent({
             onMaxRateChange={onMaxRateChange || (() => Promise.resolve())}
             onStartDateChange={onStartDateChange || (() => Promise.resolve())}
             onCreatedAtChange={onCreatedAtChange || (() => Promise.resolve())}
+            onCommentsChange={onCommentsChange || (() => Promise.resolve())}
             onView={onView || (() => Promise.resolve())}
             onDelete={onDelete || (() => Promise.resolve())}
           />

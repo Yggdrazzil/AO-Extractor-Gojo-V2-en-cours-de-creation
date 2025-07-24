@@ -4,6 +4,7 @@ import { TabContent } from './components/TabContent';
 import { SettingsModal } from './components/SettingsModal';
 import { analyzeRFP, analyzeProspect } from './services/openai';
 import { createRFP, fetchRFPs, updateRFPStatus, updateRFPAssignee, updateRFPClient, updateRFPMission, updateRFPLocation, updateRFPMaxRate, updateRFPStartDate, updateRFPCreatedAt, deleteRFP } from './services/rfp';
+import { updateRFPComments } from './services/rfp';
 import { markRFPAsRead } from './services/rfp';
 import { fetchClientNeeds, addClientNeed, updateClientNeedStatus, updateClientNeedAssignee, updateClientNeedSelectedNeed, updateClientNeedAvailability, updateClientNeedDailyRate, updateClientNeedResidence, updateClientNeedMobility, updateClientNeedPhone, updateClientNeedEmail, deleteClientNeed, markClientNeedAsRead } from './services/clientNeeds';
 import { extractFileContent } from './services/fileUpload';
@@ -426,6 +427,16 @@ function App() {
     } catch (error) {
       console.error('Failed to update creation date:', error);
       alert('Erreur lors de la mise à jour de la date de création');
+    }
+  };
+
+  const handleCommentsChange = async (id: string, comments: string) => {
+    try {
+      await updateRFPComments(id, comments);
+      setRfps(prev => prev.map(rfp => rfp.id === id ? { ...rfp, comments } : rfp));
+    } catch (error) {
+      console.error('Failed to update comments:', error);
+      alert('Erreur lors de la mise à jour des commentaires');
     }
   };
 
@@ -905,6 +916,7 @@ function App() {
               onMaxRateChange={handleMaxRateChange}
               onStartDateChange={handleStartDateChange}
               onCreatedAtChange={handleCreatedAtChange}
+              onCommentsChange={handleCommentsChange}
               onDelete={handleDelete}
               onView={handleViewRFP}
               onProspectStatusChange={handleProspectStatusChange}

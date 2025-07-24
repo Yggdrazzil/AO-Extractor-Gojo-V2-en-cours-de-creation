@@ -1,8 +1,9 @@
 import React, { useState, useMemo, useCallback, useRef, useEffect } from 'react';
 import type { RFP, SalesRep } from '../types';
-import { Eye, Trash2, ArrowUpDown, ArrowUp, ArrowDown, Check, X, Users } from 'lucide-react';
+import { Eye, Trash2, ArrowUpDown, ArrowUp, ArrowDown, Check, X, Users, MessageSquare } from 'lucide-react';
 import { RFPContentModal } from './RFPContentModal';
 import { LinkedInModal } from './LinkedInModal';
+import { RFPCommentsModal } from './RFPCommentsModal';
 import { getLinkedInLinkCounts } from '../services/linkedin';
 import { VirtualizedTable } from './VirtualizedTable';
 
@@ -62,6 +63,7 @@ interface RFPTableProps {
   onMaxRateChange: (id: string, maxRate: string) => Promise<void>;
   onStartDateChange: (id: string, startDate: string) => Promise<void>;
   onCreatedAtChange: (id: string, createdAt: string) => Promise<void>;
+  onCommentsChange: (id: string, comments: string) => Promise<void>;
   onView: (rfp: RFP) => Promise<void>;
   onDelete: (id: string) => Promise<void>;
 }
@@ -77,6 +79,7 @@ export function RFPTable({
   onMaxRateChange,
   onStartDateChange,
   onCreatedAtChange,
+  onCommentsChange,
   onView,
   onDelete,
 }: RFPTableProps) {
@@ -86,6 +89,7 @@ export function RFPTable({
   const [editingField, setEditingField] = useState<EditingField | null>(null);
   const [selectedRFP, setSelectedRFP] = useState<RFP | null>(null);
   const [selectedRFPForLinkedIn, setSelectedRFPForLinkedIn] = useState<string | null>(null);
+  const [selectedRFPForComments, setSelectedRFPForComments] = useState<RFP | null>(null);
   const tableRef = useRef<HTMLDivElement>(null);
   const [isScrolling, setIsScrolling] = useState(false);
   const [urlCounts, setUrlCounts] = useState<Map<string, number>>(new Map());
@@ -349,6 +353,12 @@ export function RFPTable({
             setUrlCounts(newCounts);
           }
         }}
+      />
+      <RFPCommentsModal
+        isOpen={!!selectedRFPForComments}
+        onClose={() => setSelectedRFPForComments(null)}
+        rfp={selectedRFPForComments || { id: '', client: '', mission: '', comments: '' }}
+        onSave={onCommentsChange}
       />
       <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm">
         <div className="flex flex-col space-y-4">
@@ -745,6 +755,18 @@ export function RFPTable({
                       {urlCounts.get(rfp.id) > 0 && (
                         <span className="absolute -top-1 -right-1 bg-blue-500 text-white text-xs font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1">
                           {urlCounts.get(rfp.id)}
+                        </span>
+                      )}
+                    </button>
+                    <button
+                      onClick={() => setSelectedRFPForComments(rfp)}
+                      title="Commentaires"
+                      className="relative p-1 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+                    >
+                      <MessageSquare className="w-5 h-5" />
+                      {rfp.comments && rfp.comments.trim() && (
+                        <span className="absolute -top-1 -right-1 bg-orange-500 text-white text-xs font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1">
+                          !
                         </span>
                       )}
                     </button>

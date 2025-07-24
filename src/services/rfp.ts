@@ -53,7 +53,7 @@ export async function fetchRFPs(): Promise<RFP[]> {
 
     const { data, error } = await supabase
       .from('rfps')
-      .select('id, client, mission, location, max_rate, created_at, start_date, status, assigned_to, raw_content, is_read')
+      .select('id, client, mission, location, max_rate, created_at, start_date, status, assigned_to, raw_content, is_read, comments')
       .order('created_at', { ascending: false });
 
     console.log('Supabase query result:', {
@@ -94,7 +94,8 @@ export async function fetchRFPs(): Promise<RFP[]> {
       status: rfp.status,
       assignedTo: rfp.assigned_to,
       content: rfp.raw_content || '',
-      isRead: rfp.is_read || false
+      isRead: rfp.is_read || false,
+      comments: rfp.comments || ''
     }));
   } catch (error) {
     console.error('Failed to fetch RFPs:', error);
@@ -137,8 +138,8 @@ export async function createRFP(rfp: Omit<RFP, 'id'>): Promise<RFP> {
 
     const { data, error } = await supabase
       .from('rfps')
-      .insert([insertData])
-      .select('id, client, mission, location, max_rate, created_at, start_date, status, assigned_to, raw_content, is_read')
+      .insert([insertData]) 
+      .select('id, client, mission, location, max_rate, created_at, start_date, status, assigned_to, raw_content, is_read, comments')
       .single();
 
     if (error) {
@@ -163,7 +164,8 @@ export async function createRFP(rfp: Omit<RFP, 'id'>): Promise<RFP> {
       status: data.status,
       assignedTo: data.assigned_to,
       content: data.raw_content,
-      isRead: data.is_read || false
+      isRead: data.is_read || false,
+      comments: data.comments || ''
     };
   } catch (error) {
     console.error('Failed to create RFP:', error);
@@ -257,6 +259,23 @@ export async function updateRFPCreatedAt(id: string, createdAt: string | null): 
 
   if (error) {
     console.error('Failed to update created at:', error);
+    throw error;
+  }
+}
+
+export async function updateRFPComments(id: string, comments: string): Promise<void> {
+  if (!id) {
+    console.error('No RFP ID provided for comments update');
+    return;
+  }
+  
+  const { error } = await supabase
+    .from('rfps')
+    .update({ comments })
+    .eq('id', id);
+
+  if (error) {
+    console.error('Failed to update comments:', error);
     throw error;
   }
 }
