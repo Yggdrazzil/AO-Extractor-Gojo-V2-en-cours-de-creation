@@ -1,7 +1,8 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import type { Prospect, SalesRep } from '../types';
-import { Eye, Trash2, ArrowUpDown, ArrowUp, ArrowDown, Check, X, Download } from 'lucide-react';
+import { Eye, Trash2, ArrowUpDown, ArrowUp, ArrowDown, Check, X, Download, MessageSquare } from 'lucide-react';
 import { ProspectContentModal } from './ProspectContentModal';
+import { ProspectCommentsModal } from './ProspectCommentsModal';
 import { ConfirmDialog } from './common/ConfirmDialog';
 
 interface EditingField {
@@ -55,6 +56,7 @@ interface ProspectsTableProps {
   onEmailChange: (id: string, email: string) => Promise<void>;
   onView: (prospect: Prospect) => Promise<void>;
   onDelete: (id: string) => Promise<void>;
+  onCommentsChange: (id: string, comments: string) => Promise<void>;
 }
 
 export function ProspectsTable({
@@ -71,12 +73,14 @@ export function ProspectsTable({
   onEmailChange,
   onView,
   onDelete,
+  onCommentsChange,
 }: ProspectsTableProps) {
   const statusOptions: Prospect['status'][] = ['À traiter', 'Traité'];
   const [sort, setSort] = useState<SortState>({ field: null, direction: null });
   const [selectedSalesRep, setSelectedSalesRep] = useState<string>('');
   const [editingField, setEditingField] = useState<EditingField | null>(null);
   const [selectedProspect, setSelectedProspect] = useState<Prospect | null>(null);
+  const [selectedProspectForComments, setSelectedProspectForComments] = useState<Prospect | null>(null);
   const tableRef = useRef<HTMLDivElement>(null);
   const [isScrolling, setIsScrolling] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -324,6 +328,13 @@ export function ProspectsTable({
         fileName={selectedProspect?.fileName || ''}
         fileUrl={selectedProspect?.fileUrl || ''}
         fileContent={selectedProspect?.fileContent}
+      />
+      
+      <ProspectCommentsModal
+        isOpen={!!selectedProspectForComments}
+        onClose={() => setSelectedProspectForComments(null)}
+        prospect={selectedProspectForComments || { id: '', targetAccount: '', comments: '' }}
+        onSave={onCommentsChange}
       />
       
       <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm">
@@ -712,6 +723,18 @@ export function ProspectsTable({
                         title="Voir le profil"
                       >
                         <Eye className="w-4 h-4 sm:w-5 sm:h-5" />
+                      </button>
+                      <button
+                        onClick={() => setSelectedProspectForComments(prospect)}
+                        title="Commentaires"
+                        className="relative p-1 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+                      >
+                        <MessageSquare className="w-4 h-4 sm:w-5 sm:h-5" />
+                        {prospect.comments && prospect.comments.trim() && (
+                          <span className="absolute -top-1 -right-1 bg-orange-500 text-white text-xs font-bold rounded-full min-w-[16px] h-[16px] flex items-center justify-center px-1">
+                            !
+                          </span>
+                        )}
                       </button>
                       <button
                         onClick={() => handleDeleteClick(prospect)}

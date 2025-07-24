@@ -22,7 +22,7 @@ export async function fetchClientNeeds(): Promise<BoondmanagerProspect[]> {
 
     const { data, error } = await supabase
       .from('client_needs')
-      .select('id, text_content, file_name, file_url, file_content, selected_need_id, selected_need_title, availability, daily_rate, residence, mobility, phone, email, status, assigned_to, is_read, created_at')
+      .select('id, text_content, file_name, file_url, file_content, selected_need_id, selected_need_title, availability, daily_rate, residence, mobility, phone, email, status, assigned_to, is_read, created_at, comments')
       .order('created_at', { ascending: false });
 
     if (error) {
@@ -61,7 +61,8 @@ export async function fetchClientNeeds(): Promise<BoondmanagerProspect[]> {
       email: need.email || '-',
       status: need.status,
       assignedTo: need.assigned_to,
-      isRead: need.is_read || false
+      isRead: need.is_read || false,
+      comments: (need as any).comments || ''
     }));
   } catch (error) {
     console.error('Failed to fetch client needs:', error);
@@ -117,8 +118,8 @@ export async function addClientNeed(newProspect: BoondmanagerProspect): Promise<
 
     const { data, error } = await supabase
       .from('client_needs')
-      .insert([insertData])
-      .select('id, text_content, file_name, file_url, file_content, selected_need_id, selected_need_title, availability, daily_rate, salary_expectations, residence, mobility, phone, email, status, assigned_to, is_read, created_at')
+      .insert([{ ...insertData, comments: '' }])
+      .select('id, text_content, file_name, file_url, file_content, selected_need_id, selected_need_title, availability, daily_rate, salary_expectations, residence, mobility, phone, email, status, assigned_to, is_read, created_at, comments')
       .single();
 
     if (error) {
@@ -175,7 +176,8 @@ export async function addClientNeed(newProspect: BoondmanagerProspect): Promise<
       email: data.email || '-',
       status: data.status,
       assignedTo: data.assigned_to,
-      isRead: data.is_read
+      isRead: data.is_read,
+      comments: (data as any).comments || ''
     };
   } catch (error) {
     console.error('Failed to add client need:', error);
@@ -183,6 +185,26 @@ export async function addClientNeed(newProspect: BoondmanagerProspect): Promise<
   }
 }
 
+export async function updateClientNeedComments(id: string, comments: string): Promise<void> {
+  try {
+    console.log('💾 Updating client need comments for ID:', id);
+    
+    const { error } = await supabase
+      .from('client_needs')
+      .update({ comments })
+      .eq('id', id);
+
+    if (error) {
+      console.error('Failed to update client need comments:', error);
+      throw error;
+    }
+    
+    console.log('✅ Client need comments updated successfully');
+  } catch (error) {
+    console.error('Error in updateClientNeedComments:', error);
+    throw error;
+  }
+}
 /**
  * Met à jour le statut d'un profil
  */

@@ -49,7 +49,7 @@ export async function fetchProspects(): Promise<Prospect[]> {
 
     const { data, error } = await supabase
       .from('prospects')
-      .select('id, text_content, file_name, file_url, file_content, target_account, availability, daily_rate, residence, mobility, phone, email, status, assigned_to, is_read, created_at')
+      .select('id, text_content, file_name, file_url, file_content, target_account, availability, daily_rate, residence, mobility, phone, email, status, assigned_to, is_read, created_at, comments')
       .order('created_at', { ascending: false });
 
     if (error) {
@@ -86,7 +86,8 @@ export async function fetchProspects(): Promise<Prospect[]> {
       email: prospect.email || '-',
       status: prospect.status,
       assignedTo: prospect.assigned_to,
-      isRead: prospect.is_read || false
+      isRead: prospect.is_read || false,
+      comments: (prospect as any).comments || ''
     }));
   } catch (error) {
     console.error('Failed to fetch prospects:', error);
@@ -153,8 +154,8 @@ export async function createProspect(prospect: Omit<Prospect, 'id'>, file?: File
 
     const { data, error } = await supabase
       .from('prospects')
-      .insert([insertData])
-      .select('id, text_content, file_name, file_url, file_content, target_account, availability, daily_rate, salary_expectations, residence, mobility, phone, email, status, assigned_to, is_read')
+      .insert([{ ...insertData, comments: '' }])
+      .select('id, text_content, file_name, file_url, file_content, target_account, availability, daily_rate, salary_expectations, residence, mobility, phone, email, status, assigned_to, is_read, comments')
       .single();
 
     if (error) {
@@ -210,7 +211,8 @@ export async function createProspect(prospect: Omit<Prospect, 'id'>, file?: File
       email: data.email || '-',
       status: data.status,
       assignedTo: data.assigned_to,
-      isRead: data.is_read
+      isRead: data.is_read,
+      comments: (data as any).comments || ''
     };
   } catch (error) {
     console.error('Failed to create prospect:', error);
@@ -218,6 +220,26 @@ export async function createProspect(prospect: Omit<Prospect, 'id'>, file?: File
   }
 }
 
+export async function updateProspectComments(id: string, comments: string): Promise<void> {
+  try {
+    console.log('💾 Updating prospect comments for ID:', id);
+    
+    const { error } = await supabase
+      .from('prospects')
+      .update({ comments })
+      .eq('id', id);
+
+    if (error) {
+      console.error('Failed to update prospect comments:', error);
+      throw error;
+    }
+    
+    console.log('✅ Prospect comments updated successfully');
+  } catch (error) {
+    console.error('Error in updateProspectComments:', error);
+    throw error;
+  }
+}
 export async function updateProspectStatus(id: string, status: Prospect['status']): Promise<void> {
   const { error } = await supabase
     .from('prospects')

@@ -39,6 +39,7 @@ export interface Prospect {
   status: 'À traiter' | 'Traité';
   assignedTo: string;
   isRead: boolean;
+  comments?: string;
 }
 
 export interface RFPFormData {
@@ -64,6 +65,7 @@ export interface BoondmanagerProspect {
   status: 'À traiter' | 'Traité';
   assignedTo: string;
   isRead: boolean;
+  comments?: string;
 }
 
 export interface Need {

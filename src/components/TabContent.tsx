@@ -49,6 +49,7 @@ interface TabContentProps {
   onProspectEmailChange?: (id: string, email: string) => Promise<void>;
   onProspectView?: (prospect: Prospect) => Promise<void>;
   onProspectDelete?: (id: string) => Promise<void>;
+  onProspectCommentsChange?: (id: string, comments: string) => Promise<void>;
   
   // Props pour les besoins clients
   onBoondmanagerProspectStatusChange?: (id: string, status: 'À traiter' | 'Traité') => Promise<void>;
@@ -62,6 +63,7 @@ interface TabContentProps {
   onBoondmanagerProspectEmailChange?: (id: string, email: string) => Promise<void>;
   onBoondmanagerProspectView?: (prospect: BoondmanagerProspect) => Promise<void>;
   onBoondmanagerProspectDelete?: (id: string) => Promise<void>;
+  onBoondmanagerProspectCommentsChange?: (id: string, comments: string) => Promise<void>;
 }
 
 function PlaceholderTab({ title, description }: { title: string; description: string }) {
@@ -116,6 +118,7 @@ export function TabContent({
   onProspectEmailChange,
   onProspectView,
   onProspectDelete,
+  onProspectCommentsChange,
   onBoondmanagerProspectStatusChange,
   onBoondmanagerProspectAssigneeChange,
   onBoondmanagerProspectSelectedNeedChange,
@@ -127,6 +130,7 @@ export function TabContent({
   onBoondmanagerProspectEmailChange,
   onBoondmanagerProspectView,
   onBoondmanagerProspectDelete
+  onBoondmanagerProspectCommentsChange
 }: TabContentProps) {
   switch (activeTab) {
     case 'rfp-extractor':
@@ -181,6 +185,7 @@ export function TabContent({
             onEmailChange={onProspectEmailChange || (() => Promise.resolve())}
             onView={onProspectView || (() => Promise.resolve())}
             onDelete={onProspectDelete || (() => Promise.resolve())}
+            onCommentsChange={onProspectCommentsChange || (() => Promise.resolve())}
           />
         </div>
       );
@@ -211,6 +216,7 @@ export function TabContent({
             onEmailChange={onBoondmanagerProspectEmailChange || (() => Promise.resolve())}
             onView={onBoondmanagerProspectView || (() => Promise.resolve())}
             onDelete={onBoondmanagerProspectDelete || (() => Promise.resolve())}
+            onCommentsChange={onBoondmanagerProspectCommentsChange || (() => Promise.resolve())}
           />
         </div>
       );
