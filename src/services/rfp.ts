@@ -143,29 +143,18 @@ export async function createRFP(rfp: Omit<RFP, 'id'>): Promise<RFP> {
       status: rfp.status,
       assigned_to: rfp.assignedTo,
       raw_content: rfp.content || '',
-      is_read: false
+      is_read: false,
+      comments: ''
     };
 
     console.log('Creating RFP with data:', insertData);
 
-    // Essayer d'abord avec la colonne comments, sinon sans
-    let { data, error } = await supabase
+    const { data, error } = await supabase
       .from('rfps')
       .insert([insertData]) 
       .select('id, client, mission, location, max_rate, created_at, start_date, status, assigned_to, raw_content, is_read, comments')
       .single();
 
-    // Si erreur avec comments, réessayer sans
-    if (error && error.message.includes('comments')) {
-      console.log('Comments column not found during insert, trying without it...');
-      const result = await supabase
-        .from('rfps')
-        .insert([insertData]) 
-        .select('id, client, mission, location, max_rate, created_at, start_date, status, assigned_to, raw_content, is_read')
-        .single();
-      data = result.data;
-      error = result.error;
-    }
 
     if (error) {
       console.error('Error creating RFP:', error);
@@ -190,7 +179,7 @@ export async function createRFP(rfp: Omit<RFP, 'id'>): Promise<RFP> {
       assignedTo: data.assigned_to,
       content: data.raw_content,
       isRead: data.is_read || false,
-      comments: (data as any).comments || ''
+      comments: data.comments || ''
     };
   } catch (error) {
     console.error('Failed to create RFP:', error);
