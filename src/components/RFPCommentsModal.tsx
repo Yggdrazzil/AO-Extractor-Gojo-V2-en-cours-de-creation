@@ -87,8 +87,18 @@ export function RFPCommentsModal({ isOpen, onClose, rfp, onSave }: RFPCommentsMo
                   e.preventDefault();
                   handleSave();
                 } else if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
-                  // Laisser le comportement par défaut pour ajouter une nouvelle ligne
-                  // Ne pas appeler preventDefault() pour permettre le retour à la ligne
+                  e.preventDefault();
+                  // Insérer manuellement un retour à la ligne
+                  const textarea = e.target as HTMLTextAreaElement;
+                  const start = textarea.selectionStart;
+                  const end = textarea.selectionEnd;
+                  const value = textarea.value;
+                  const newValue = value.substring(0, start) + '\n' + value.substring(end);
+                  setComments(newValue);
+                  // Positionner le curseur après le retour à la ligne
+                  setTimeout(() => {
+                    textarea.selectionStart = textarea.selectionEnd = start + 1;
+                  }, 0);
                 }
               }}
               className="w-full h-32 px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
