@@ -12,6 +12,8 @@ import { sendRFPNotification } from './services/emailNotification';
 import { sendClientNeedNotification, getSalesRepCode } from './services/clientNeedNotification';
 import { createProspect, fetchProspects, updateProspectStatus, updateProspectAssignee, updateProspectDateUpdate, updateProspectAvailability, updateProspectDailyRate, updateProspectResidence, updateProspectMobility, updateProspectPhone, updateProspectEmail, deleteProspect, markProspectAsRead } from './services/prospects';
 import { updateProspectTargetAccount } from './services/prospects';
+import { updateProspectComments } from './services/prospects';
+import { updateClientNeedComments } from './services/clientNeeds';
 import { ThemeProvider } from './context/ThemeContext';
 import { supabase, checkSupabaseConnection } from './lib/supabase';
 import { LoginForm } from './components/LoginForm';
@@ -731,6 +733,19 @@ function App() {
     }
   };
 
+  const handleClientNeedCommentsChange = async (id: string, comments: string) => {
+    try {
+      console.log('🔄 App.tsx handleClientNeedCommentsChange called:', { id, comments: comments.substring(0, 50) + '...' });
+      await updateClientNeedComments(id, comments);
+      console.log('✅ updateClientNeedComments completed, updating local state...');
+      setBoondmanagerProspects(prev => prev.map(prospect => prospect.id === id ? { ...prospect, comments } : prospect));
+      console.log('✅ Client need local state updated');
+    } catch (error) {
+      console.error('Failed to update client need comments:', error);
+      alert('Erreur lors de la mise à jour des commentaires');
+    }
+  };
+
   const handleClientNeedDelete = async (id: string) => {
     try {
       await deleteClientNeed(id);
@@ -841,6 +856,19 @@ function App() {
     }
   };
 
+  const handleProspectCommentsChange = async (id: string, comments: string) => {
+    try {
+      console.log('🔄 App.tsx handleProspectCommentsChange called:', { id, comments: comments.substring(0, 50) + '...' });
+      await updateProspectComments(id, comments);
+      console.log('✅ updateProspectComments completed, updating local state...');
+      setProspects(prev => prev.map(prospect => prospect.id === id ? { ...prospect, comments } : prospect));
+      console.log('✅ Prospect local state updated');
+    } catch (error) {
+      console.error('Failed to update prospect comments:', error);
+      alert('Erreur lors de la mise à jour des commentaires');
+    }
+  };
+
   const handleProspectDelete = async (id: string) => {
     try {
       await deleteProspect(id);
@@ -933,6 +961,7 @@ function App() {
               onProspectEmailChange={handleProspectEmailChange}
               onProspectDelete={handleProspectDelete}
               onProspectView={handleViewProspect}
+              onProspectCommentsChange={handleProspectCommentsChange}
               onBoondmanagerProspectStatusChange={handleClientNeedStatusChange}
               onBoondmanagerProspectAssigneeChange={handleClientNeedAssigneeChange}
               onBoondmanagerProspectSelectedNeedChange={handleClientNeedSelectedNeedChange}
@@ -944,6 +973,7 @@ function App() {
               onBoondmanagerProspectEmailChange={handleClientNeedEmailChange}
               onBoondmanagerProspectView={handleClientNeedView}
               onBoondmanagerProspectDelete={handleClientNeedDelete}
+              onBoondmanagerProspectCommentsChange={handleClientNeedCommentsChange}
             />
           </div>
         </div>
