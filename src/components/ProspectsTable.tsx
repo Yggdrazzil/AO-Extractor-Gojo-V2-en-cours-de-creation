@@ -2,6 +2,7 @@ import React, { useState, useMemo, useRef, useEffect } from 'react';
 import type { Prospect, SalesRep } from '../types';
 import { Eye, Trash2, ArrowUpDown, ArrowUp, ArrowDown, Check, X, Download } from 'lucide-react';
 import { ProspectContentModal } from './ProspectContentModal';
+import { ConfirmDialog } from './common/ConfirmDialog';
 
 interface EditingField {
   id: string;
@@ -79,6 +80,11 @@ export function ProspectsTable({
   const tableRef = useRef<HTMLDivElement>(null);
   const [isScrolling, setIsScrolling] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [deleteConfirm, setDeleteConfirm] = useState<{ isOpen: boolean; prospectId: string; prospectTitle: string }>({
+    isOpen: false,
+    prospectId: '',
+    prospectTitle: ''
+  });
 
   // Effet pour initialiser le filtre avec le commercial connecté
   useEffect(() => {
@@ -266,6 +272,20 @@ export function ProspectsTable({
   const handleViewProspect = async (prospect: Prospect) => {
     await onView(prospect);
     setSelectedProspect(prospect);
+  };
+  const handleDeleteClick = (prospect: Prospect) => {
+    setDeleteConfirm({
+      isOpen: true,
+      prospectId: prospect.id,
+      prospectTitle: `${prospect.targetAccount || 'Prospect'}`
+    });
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (deleteConfirm.prospectId) {
+      await onDelete(deleteConfirm.prospectId);
+      setDeleteConfirm({ isOpen: false, prospectId: '', prospectTitle: '' });
+    }
   };
 
   useEffect(() => {
@@ -694,7 +714,7 @@ export function ProspectsTable({
                         <Eye className="w-4 h-4 sm:w-5 sm:h-5" />
                       </button>
                       <button
-                        onClick={() => onDelete(prospect.id)}
+                        onClick={() => handleDeleteClick(prospect)}
                         title="Supprimer"
                         className="p-1 text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
                       >
@@ -708,6 +728,17 @@ export function ProspectsTable({
           </table>
         </div>
       </div>
+      
+      <ConfirmDialog
+        isOpen={deleteConfirm.isOpen}
+        onClose={() => setDeleteConfirm({ isOpen: false, prospectId: '', prospectTitle: '' })}
+        onConfirm={handleDeleteConfirm}
+        title="Confirmer la suppression"
+        message={`Êtes-vous sûr de vouloir supprimer ce prospect ?\n\n"${deleteConfirm.prospectTitle}"\n\nCette action est irréversible.`}
+        confirmText="Supprimer"
+        cancelText="Annuler"
+        isDestructive={true}
+      />
     </div>
   );
 }

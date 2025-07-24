@@ -2,6 +2,7 @@ import React, { useState, useMemo, useRef, useEffect } from 'react';
 import type { BoondmanagerProspect, SalesRep } from '../types';
 import { Eye, Trash2, ArrowUpDown, ArrowUp, ArrowDown, Check, X, Download } from 'lucide-react';
 import { ProspectContentModal } from './ProspectContentModal';
+import { ConfirmDialog } from './common/ConfirmDialog';
 
 interface EditingField {
   id: string;
@@ -79,6 +80,11 @@ export function ClientNeedsTable({
   const tableRef = useRef<HTMLDivElement>(null);
   const [isScrolling, setIsScrolling] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [deleteConfirm, setDeleteConfirm] = useState<{ isOpen: boolean; prospectId: string; prospectTitle: string }>({
+    isOpen: false,
+    prospectId: '',
+    prospectTitle: ''
+  });
 
   // Effet pour initialiser le filtre avec le commercial connecté
   useEffect(() => {
@@ -275,6 +281,20 @@ export function ClientNeedsTable({
   const handleViewProspect = async (prospect: BoondmanagerProspect) => {
     await onView(prospect);
     setSelectedProspect(prospect);
+  };
+  const handleDeleteClick = (prospect: BoondmanagerProspect) => {
+    setDeleteConfirm({
+      isOpen: true,
+      prospectId: prospect.id,
+      prospectTitle: `${prospect.selectedNeedTitle || 'Profil pour besoin client'}`
+    });
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (deleteConfirm.prospectId) {
+      await onDelete(deleteConfirm.prospectId);
+      setDeleteConfirm({ isOpen: false, prospectId: '', prospectTitle: '' });
+    }
   };
 
   useEffect(() => {
@@ -675,7 +695,7 @@ export function ClientNeedsTable({
                         value={prospect.status}
                         onChange={(e) => {
                           const newStatus = e.target.value as 'À traiter' | 'Traité';
-                          onStatusChange(prospect.id, newStatus);
+                        onClick={() => handleDeleteClick(prospect)}
                         }}
                         className="w-full p-1 sm:p-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-xs sm:text-sm"
                       >
@@ -727,6 +747,17 @@ export function ClientNeedsTable({
           </table>
         </div>
       </div>
+      
+      <ConfirmDialog
+        isOpen={deleteConfirm.isOpen}
+        onClose={() => setDeleteConfirm({ isOpen: false, prospectId: '', prospectTitle: '' })}
+        onConfirm={handleDeleteConfirm}
+        title="Confirmer la suppression"
+        message={`Êtes-vous sûr de vouloir supprimer ce profil ?\n\n"${deleteConfirm.prospectTitle}"\n\nCette action est irréversible.`}
+        confirmText="Supprimer"
+        cancelText="Annuler"
+        isDestructive={true}
+      />
     </div>
   );
 }

@@ -4,6 +4,7 @@ import { Eye, Trash2, ArrowUpDown, ArrowUp, ArrowDown, Check, X, Users, MessageS
 import { RFPContentModal } from './RFPContentModal';
 import { LinkedInModal } from './LinkedInModal';
 import { RFPCommentsModal } from './RFPCommentsModal';
+import { ConfirmDialog } from './common/ConfirmDialog';
 import { getLinkedInLinkCounts } from '../services/linkedin';
 import { VirtualizedTable } from './VirtualizedTable';
 
@@ -94,6 +95,11 @@ export function RFPTable({
   const [isScrolling, setIsScrolling] = useState(false);
   const [urlCounts, setUrlCounts] = useState<Map<string, number>>(new Map());
   const [searchTerm, setSearchTerm] = useState('');
+  const [deleteConfirm, setDeleteConfirm] = useState<{ isOpen: boolean; rfpId: string; rfpTitle: string }>({
+    isOpen: false,
+    rfpId: '',
+    rfpTitle: ''
+  });
 
   // Charger le nombre d'URLs LinkedIn pour chaque AO
   useEffect(() => {
@@ -300,6 +306,20 @@ export function RFPTable({
   const handleViewRFP = async (rfp: RFP) => {
     await onView(rfp);
     setSelectedRFP(rfp);
+  };
+  const handleDeleteClick = (rfp: RFP) => {
+    setDeleteConfirm({
+      isOpen: true,
+      rfpId: rfp.id,
+      rfpTitle: `${rfp.mission} - ${rfp.client}`
+    });
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (deleteConfirm.rfpId) {
+      await onDelete(deleteConfirm.rfpId);
+      setDeleteConfirm({ isOpen: false, rfpId: '', rfpTitle: '' });
+    }
   };
 
   useEffect(() => {
@@ -771,7 +791,7 @@ export function RFPTable({
                       )}
                     </button>
                     <button
-                      onClick={() => onDelete(rfp.id)}
+                      onClick={() => handleDeleteClick(rfp)}
                       title="Supprimer"
                       className="p-1 text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
                     >
@@ -784,6 +804,17 @@ export function RFPTable({
           </tbody>
         </table>
       </div>
+      
+      <ConfirmDialog
+        isOpen={deleteConfirm.isOpen}
+        onClose={() => setDeleteConfirm({ isOpen: false, rfpId: '', rfpTitle: '' })}
+        onConfirm={handleDeleteConfirm}
+        title="Confirmer la suppression"
+        message={`Êtes-vous sûr de vouloir supprimer cet AO ?\n\n"${deleteConfirm.rfpTitle}"\n\nCette action est irréversible.`}
+        confirmText="Supprimer"
+        cancelText="Annuler"
+        isDestructive={true}
+      />
     </div>
   );
 }
