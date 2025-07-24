@@ -695,7 +695,7 @@ export function ClientNeedsTable({
                         value={prospect.status}
                         onChange={(e) => {
                           const newStatus = e.target.value as 'À traiter' | 'Traité';
-                        onClick={() => handleDeleteClick(prospect)}
+                          onStatusChange(prospect.id, newStatus);
                         }}
                         className="w-full p-1 sm:p-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-xs sm:text-sm"
                       >
@@ -732,7 +732,7 @@ export function ClientNeedsTable({
                           <Eye className="w-4 h-4 sm:w-5 sm:h-5" />
                         </button>
                         <button
-                          onClick={() => onDelete(prospect.id)}
+                          onClick={() => handleDeleteClick(prospect)}
                           title="Supprimer"
                           className="p-1 text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
                         >
