@@ -975,7 +975,6 @@ function App() {
               onBoondmanagerProspectEmailChange={handleClientNeedEmailChange}
               onBoondmanagerProspectView={handleClientNeedView}
               onBoondmanagerProspectDelete={handleClientNeedDelete}
-              onBoondmanagerProspectFavoriteToggle={handleClientNeedFavoriteToggle}
               onBoondmanagerProspectCommentsChange={handleClientNeedCommentsChange}
             />
           </div>

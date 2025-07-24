@@ -22,7 +22,7 @@ export async function fetchClientNeeds(): Promise<BoondmanagerProspect[]> {
 
     const { data, error } = await supabase
       .from('client_needs')
-      .select('id, text_content, file_name, file_url, file_content, selected_need_id, selected_need_title, availability, daily_rate, residence, mobility, phone, email, status, assigned_to, is_read, created_at, comments, is_favorite')
+      .select('id, text_content, file_name, file_url, file_content, selected_need_id, selected_need_title, availability, daily_rate, residence, mobility, phone, email, status, assigned_to, is_read, created_at, comments')
       .order('created_at', { ascending: false });
 
     if (error) {
@@ -62,7 +62,6 @@ export async function fetchClientNeeds(): Promise<BoondmanagerProspect[]> {
       status: need.status,
       assignedTo: need.assigned_to,
       isRead: need.is_read || false,
-      isFavorite: (need as any).is_favorite || false,
       comments: (need as any).comments || ''
     }));
   } catch (error) {
@@ -119,8 +118,8 @@ export async function addClientNeed(newProspect: BoondmanagerProspect): Promise<
 
     const { data, error } = await supabase
       .from('client_needs')
-      .insert([{ ...insertData, comments: '', is_favorite: false }])
-      .select('id, text_content, file_name, file_url, file_content, selected_need_id, selected_need_title, availability, daily_rate, salary_expectations, residence, mobility, phone, email, status, assigned_to, is_read, created_at, comments, is_favorite')
+      .insert([{ ...insertData, comments: '' }])
+      .select('id, text_content, file_name, file_url, file_content, selected_need_id, selected_need_title, availability, daily_rate, salary_expectations, residence, mobility, phone, email, status, assigned_to, is_read, created_at, comments')
       .single();
 
     if (error) {
@@ -178,7 +177,6 @@ export async function addClientNeed(newProspect: BoondmanagerProspect): Promise<
       status: data.status,
       assignedTo: data.assigned_to,
       isRead: data.is_read,
-      isFavorite: (data as any).is_favorite || false,
       comments: (data as any).comments || ''
     };
   } catch (error) {
@@ -310,18 +308,6 @@ export async function updateClientNeedEmail(id: string, email: string): Promise<
   const { error } = await supabase
     .from('client_needs')
     .update({ email })
-    .eq('id', id);
-
-  if (error) throw error;
-}
-
-/**
- * Met à jour le statut favori d'un profil
- */
-export async function updateClientNeedFavorite(id: string, isFavorite: boolean): Promise<void> {
-  const { error } = await supabase
-    .from('client_needs')
-    .update({ is_favorite: isFavorite })
     .eq('id', id);
 
   if (error) throw error;

@@ -729,17 +729,6 @@ export function ClientNeedsTable({
                     <td className="p-2 sm:p-4">
                       <div className="flex space-x-1 sm:space-x-2">
                         <button
-                          onClick={() => onFavoriteToggle(prospect.id, !prospect.isFavorite)}
-                          className={`p-1 transition-colors ${
-                            prospect.isFavorite
-                              ? 'text-yellow-500 hover:text-yellow-600'
-                              : 'text-gray-400 hover:text-yellow-500'
-                          }`}
-                          title={prospect.isFavorite ? "Retirer des favoris" : "Ajouter aux favoris"}
-                        >
-                          <Star className={`w-4 h-4 sm:w-5 sm:h-5 ${prospect.isFavorite ? 'fill-current' : ''}`} />
-                        </button>
-                        <button
                           onClick={() => {
                             // Marquer comme lu sans ouvrir la modal
                             onView(prospect);
