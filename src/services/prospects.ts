@@ -213,8 +213,6 @@ export async function createProspect(prospect: Omit<Prospect, 'id'>, file?: File
       assignedTo: data.assigned_to,
       isRead: data.is_read,
       isFavorite: (data as any).is_favorite || false,
-      isFavorite: (data as any).is_favorite || false,
-      isFavorite: (data as any).is_favorite || false,
       comments: (data as any).comments || ''
     };
   } catch (error) {
@@ -327,15 +325,6 @@ export async function updateProspectEmail(id: string, email: string): Promise<vo
   const { error } = await supabase
     .from('prospects')
     .update({ email })
-    .eq('id', id);
-
-  if (error) throw error;
-}
-
-export async function updateProspectFavorite(id: string, isFavorite: boolean): Promise<void> {
-  const { error } = await supabase
-    .from('prospects')
-    .update({ is_favorite: isFavorite })
     .eq('id', id);
 
   if (error) throw error;

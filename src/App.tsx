@@ -733,16 +733,6 @@ function App() {
     }
   };
 
-  const handleClientNeedFavoriteToggle = async (id: string, isFavorite: boolean) => {
-    try {
-      const { updateClientNeedFavorite } = await import('./services/clientNeeds');
-      await updateClientNeedFavorite(id, isFavorite);
-      setBoondmanagerProspects(prev => prev.map(prospect => prospect.id === id ? { ...prospect, isFavorite } : prospect));
-    } catch (error) {
-      console.error('Failed to update client need favorite:', error);
-    }
-  };
-
   const handleClientNeedCommentsChange = async (id: string, comments: string) => {
     try {
       console.log('🔄 App.tsx handleClientNeedCommentsChange called:', { id, comments: comments.substring(0, 50) + '...' });
@@ -866,16 +856,6 @@ function App() {
     }
   };
 
-  const handleProspectFavoriteToggle = async (id: string, isFavorite: boolean) => {
-    try {
-      const { updateProspectFavorite } = await import('./services/prospects');
-      await updateProspectFavorite(id, isFavorite);
-      setProspects(prev => prev.map(prospect => prospect.id === id ? { ...prospect, isFavorite } : prospect));
-    } catch (error) {
-      console.error('Failed to update prospect favorite:', error);
-    }
-  };
-
   const handleProspectCommentsChange = async (id: string, comments: string) => {
     try {
       console.log('🔄 App.tsx handleProspectCommentsChange called:', { id, comments: comments.substring(0, 50) + '...' });
@@ -984,7 +964,6 @@ function App() {
               onProspectDelete={handleProspectDelete}
               onProspectView={handleViewProspect}
               onProspectCommentsChange={handleProspectCommentsChange}
-              onProspectFavoriteToggle={handleProspectFavoriteToggle}
               onBoondmanagerProspectStatusChange={handleClientNeedStatusChange}
               onBoondmanagerProspectAssigneeChange={handleClientNeedAssigneeChange}
               onBoondmanagerProspectSelectedNeedChange={handleClientNeedSelectedNeedChange}

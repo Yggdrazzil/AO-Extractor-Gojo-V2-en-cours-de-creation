@@ -50,7 +50,6 @@ interface TabContentProps {
   onProspectView?: (prospect: Prospect) => Promise<void>;
   onProspectDelete?: (id: string) => Promise<void>;
   onProspectCommentsChange?: (id: string, comments: string) => Promise<void>;
-  onProspectFavoriteToggle?: (id: string, isFavorite: boolean) => Promise<void>;
   
   // Props pour les besoins clients
   onBoondmanagerProspectStatusChange?: (id: string, status: 'À traiter' | 'Traité') => Promise<void>;
@@ -187,7 +186,6 @@ export function TabContent({
             onView={onProspectView || (() => Promise.resolve())}
             onDelete={onProspectDelete || (() => Promise.resolve())}
             onCommentsChange={onProspectCommentsChange || (() => Promise.resolve())}
-            onFavoriteToggle={onProspectFavoriteToggle || (() => Promise.resolve())}
           />
         </div>
       );
@@ -218,8 +216,8 @@ export function TabContent({
             onEmailChange={onBoondmanagerProspectEmailChange || (() => Promise.resolve())}
             onView={onBoondmanagerProspectView || (() => Promise.resolve())}
             onDelete={onBoondmanagerProspectDelete || (() => Promise.resolve())}
+            onFavoriteToggle={onBoondmanagerProspectFavoriteToggle || (() => Promise.resolve())}
             onCommentsChange={onBoondmanagerProspectCommentsChange || (() => Promise.resolve())}
-            onFavoriteToggle={onBoondmanagerProspectFavoriteToggle}
           />
         </div>
       );

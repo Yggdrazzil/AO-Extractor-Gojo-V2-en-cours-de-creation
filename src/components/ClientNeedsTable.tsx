@@ -56,7 +56,6 @@ interface ClientNeedsTableProps {
   onEmailChange: (id: string, email: string) => Promise<void>;
   onView: (prospect: BoondmanagerProspect) => Promise<void>;
   onDelete: (id: string) => Promise<void>;
-  onFavoriteToggle?: (id: string, isFavorite: boolean) => Promise<void>;
   onCommentsChange: (id: string, comments: string) => Promise<void>;
 }
 
@@ -74,7 +73,6 @@ export function ClientNeedsTable({
   onEmailChange,
   onView,
   onDelete,
-  onFavoriteToggle = async () => {},
   onCommentsChange,
 }: ClientNeedsTableProps) {
   const statusOptions: BoondmanagerProspect['status'][] = ['À traiter', 'Traité'];
@@ -86,7 +84,6 @@ export function ClientNeedsTable({
   const tableRef = useRef<HTMLDivElement>(null);
   const [isScrolling, setIsScrolling] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const [showOnlyFavorites, setShowOnlyFavorites] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState<{ isOpen: boolean; prospectId: string; prospectTitle: string }>({
     isOpen: false,
     prospectId: '',
@@ -156,11 +153,6 @@ export function ClientNeedsTable({
     // Filtrage par commercial
     if (selectedSalesRep) {
       filtered = prospects.filter(prospect => prospect.assignedTo === selectedSalesRep);
-    }
-    
-    // Filtrage par favoris
-    if (showOnlyFavorites) {
-      filtered = filtered.filter(prospect => prospect.isFavorite);
     }
     
     // Filtrage par recherche textuelle
@@ -402,18 +394,6 @@ export function ClientNeedsTable({
                 </button>
               )}
             </div>
-          </div>
-          
-          <div className="flex items-center space-x-2">
-            <label className="flex items-center space-x-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-              <input
-                type="checkbox"
-                checked={showOnlyFavorites}
-                onChange={(e) => setShowOnlyFavorites(e.target.checked)}
-                className="rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500"
-              />
-              <span>Favoris seulement</span>
-            </label>
           </div>
         </div>
       </div>
@@ -748,17 +728,6 @@ export function ClientNeedsTable({
                     {/* Actions */}
                     <td className="p-2 sm:p-4">
                       <div className="flex space-x-1 sm:space-x-2">
-                        <button
-                          onClick={() => onFavoriteToggle && onFavoriteToggle(prospect.id, !prospect.isFavorite)}
-                          className={`p-1 transition-colors ${
-                            prospect.isFavorite
-                              ? 'text-yellow-500 hover:text-yellow-600'
-                              : 'text-gray-400 hover:text-yellow-500'
-                          }`}
-                          title={prospect.isFavorite ? "Retirer des favoris" : "Ajouter aux favoris"}
-                        >
-                          <Star className={`w-4 h-4 sm:w-5 sm:h-5 ${prospect.isFavorite ? 'fill-current' : ''}`} />
-                        </button>
                         <button
                           onClick={() => onFavoriteToggle(prospect.id, !prospect.isFavorite)}
                           className={`p-1 transition-colors ${
