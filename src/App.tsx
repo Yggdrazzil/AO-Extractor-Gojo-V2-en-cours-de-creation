@@ -910,7 +910,7 @@ function App() {
           boondmanagerProspects={boondmanagerProspects}
         />
         <div className="flex-1 flex flex-col">
-          <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 sm:px-6 py-4 flex items-center justify-center relative">
+          <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 sm:px-6 py-6 flex items-center justify-center relative">
             <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white text-center absolute left-1/2 transform -translate-x-1/2" style={{ marginLeft: '-32px' }}>
               {activeTab === 'rfp-extractor' ? 'Extracteur d\'AO' : 
                activeTab === 'rfp-list' ? 'Liste des AO' :
