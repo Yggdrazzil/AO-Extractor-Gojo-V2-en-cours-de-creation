@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import type { Prospect, SalesRep } from '../types';
-import { Eye, Trash2, ArrowUpDown, ArrowUp, ArrowDown, Check, X, Download, MessageSquare, Star } from 'lucide-react';
+import { Eye, Trash2, ArrowUpDown, ArrowUp, ArrowDown, Check, X, MessageSquare, Star } from 'lucide-react';
 import { ProspectContentModal } from './ProspectContentModal';
 import { ProspectCommentsModal } from './ProspectCommentsModal';
 import { ConfirmDialog } from './common/ConfirmDialog';
@@ -56,7 +56,7 @@ interface ProspectsTableProps {
   onEmailChange: (id: string, email: string) => Promise<void>;
   onView: (prospect: Prospect) => Promise<void>;
   onDelete: (id: string) => Promise<void>;
-  onFavoriteToggle: (id: string, isFavorite: boolean) => Promise<void>;
+  onFavoriteToggle?: (id: string, isFavorite: boolean) => Promise<void>;
   onCommentsChange: (id: string, comments: string) => Promise<void>;
 }
 
@@ -74,7 +74,7 @@ export function ProspectsTable({
   onEmailChange,
   onView,
   onDelete,
-  onFavoriteToggle,
+  onFavoriteToggle = async () => {},
   onCommentsChange,
 }: ProspectsTableProps) {
   const statusOptions: Prospect['status'][] = ['À traiter', 'Traité'];

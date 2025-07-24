@@ -218,8 +218,8 @@ export function TabContent({
             onEmailChange={onBoondmanagerProspectEmailChange || (() => Promise.resolve())}
             onView={onBoondmanagerProspectView || (() => Promise.resolve())}
             onDelete={onBoondmanagerProspectDelete || (() => Promise.resolve())}
-            onFavoriteToggle={onBoondmanagerProspectFavoriteToggle || (() => Promise.resolve())}
             onCommentsChange={onBoondmanagerProspectCommentsChange || (() => Promise.resolve())}
+            onFavoriteToggle={onBoondmanagerProspectFavoriteToggle}
           />
         </div>
       );
