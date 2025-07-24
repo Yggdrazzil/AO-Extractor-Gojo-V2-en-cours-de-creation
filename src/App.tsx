@@ -918,7 +918,7 @@ function App() {
                activeTab === 'boondmanager-prospects' ? 'Profils pour Besoins Clients' :
                activeTab === 'analytics' ? 'A Venir' :
                activeTab === 'tools' ? 'Back Office' :
-               'Prises de Référence'}
+               'Prises de Références'}
             </h1>
             <button
               onClick={() => setIsSettingsOpen(true)}
