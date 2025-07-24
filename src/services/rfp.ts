@@ -51,10 +51,22 @@ export async function fetchRFPs(): Promise<RFP[]> {
       userId: session?.user?.id
     });
 
-    const { data, error } = await supabase
+    // Essayer d'abord avec la colonne comments, sinon sans
+    let { data, error } = await supabase
       .from('rfps')
       .select('id, client, mission, location, max_rate, created_at, start_date, status, assigned_to, raw_content, is_read, comments')
       .order('created_at', { ascending: false });
+
+    // Si erreur avec comments, réessayer sans
+    if (error && error.message.includes('comments')) {
+      console.log('Comments column not found, fetching without it...');
+      const result = await supabase
+        .from('rfps')
+        .select('id, client, mission, location, max_rate, created_at, start_date, status, assigned_to, raw_content, is_read')
+        .order('created_at', { ascending: false });
+      data = result.data;
+      error = result.error;
+    }
 
     console.log('Supabase query result:', {
       hasData: !!data,
@@ -95,7 +107,7 @@ export async function fetchRFPs(): Promise<RFP[]> {
       assignedTo: rfp.assigned_to,
       content: rfp.raw_content || '',
       isRead: rfp.is_read || false,
-      comments: rfp.comments || ''
+      comments: (rfp as any).comments || ''
     }));
   } catch (error) {
     console.error('Failed to fetch RFPs:', error);
@@ -136,11 +148,24 @@ export async function createRFP(rfp: Omit<RFP, 'id'>): Promise<RFP> {
 
     console.log('Creating RFP with data:', insertData);
 
-    const { data, error } = await supabase
+    // Essayer d'abord avec la colonne comments, sinon sans
+    let { data, error } = await supabase
       .from('rfps')
       .insert([insertData]) 
       .select('id, client, mission, location, max_rate, created_at, start_date, status, assigned_to, raw_content, is_read, comments')
       .single();
+
+    // Si erreur avec comments, réessayer sans
+    if (error && error.message.includes('comments')) {
+      console.log('Comments column not found during insert, trying without it...');
+      const result = await supabase
+        .from('rfps')
+        .insert([insertData]) 
+        .select('id, client, mission, location, max_rate, created_at, start_date, status, assigned_to, raw_content, is_read')
+        .single();
+      data = result.data;
+      error = result.error;
+    }
 
     if (error) {
       console.error('Error creating RFP:', error);
@@ -165,7 +190,7 @@ export async function createRFP(rfp: Omit<RFP, 'id'>): Promise<RFP> {
       assignedTo: data.assigned_to,
       content: data.raw_content,
       isRead: data.is_read || false,
-      comments: data.comments || ''
+      comments: (data as any).comments || ''
     };
   } catch (error) {
     console.error('Failed to create RFP:', error);
@@ -264,18 +289,28 @@ export async function updateRFPCreatedAt(id: string, createdAt: string | null): 
 }
 
 export async function updateRFPComments(id: string, comments: string): Promise<void> {
-  if (!id) {
-    console.error('No RFP ID provided for comments update');
-    return;
-  }
-  
-  const { error } = await supabase
-    .from('rfps')
-    .update({ comments })
-    .eq('id', id);
+  try {
+    if (!id) {
+      console.error('No RFP ID provided for comments update');
+      return;
+    }
+    
+    const { error } = await supabase
+      .from('rfps')
+      .update({ comments })
+      .eq('id', id);
 
-  if (error) {
-    console.error('Failed to update comments:', error);
+    if (error) {
+      // Si la colonne comments n'existe pas, on ignore silencieusement
+      if (error.message.includes('comments')) {
+        console.warn('Comments column does not exist yet, skipping update');
+        return;
+      }
+      console.error('Failed to update comments:', error);
+      throw error;
+    }
+  } catch (error) {
+    console.error('Error in updateRFPComments:', error);
     throw error;
   }
 }
