@@ -129,7 +129,7 @@ export function TabContent({
   onBoondmanagerProspectPhoneChange,
   onBoondmanagerProspectEmailChange,
   onBoondmanagerProspectView,
-  onBoondmanagerProspectDelete
+ onBoondmanagerProspectDelete,
   onBoondmanagerProspectCommentsChange
 }: TabContentProps) {
   switch (activeTab) {
