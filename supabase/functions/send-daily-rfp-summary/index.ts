@@ -27,26 +27,35 @@ const corsHeaders = {
  * Formate une date pour l'affichage
  */
 function formatDate(dateStr: string | null): string {
+  console.log('📅 formatDate called with:', dateStr)
+  
   if (!dateStr) return 'Non spécifiée'
   
   try {
     // Si la date est déjà au format DD/MM/YYYY, la retourner telle quelle
-    if (/^\d{2}\/\d{2}\/\d{4}$/.test(dateStr.trim())) {
-      return dateStr.trim()
+    const cleanDate = dateStr.trim()
+    if (/^\d{2}\/\d{2}\/\d{4}$/.test(cleanDate)) {
+      console.log('📅 Date already in French format:', cleanDate)
+      return cleanDate
     }
     
-    // Pour les dates ISO, les convertir en format français
-    const date = new Date(dateStr)
+    // Pour les dates ISO, les convertir en format français sans problème de timezone
+    console.log('📅 Converting ISO date:', cleanDate)
+    const date = new Date(cleanDate + 'T12:00:00Z') // Forcer UTC midi pour éviter les décalages de timezone
     if (isNaN(date.getTime())) {
+      console.log('📅 Invalid date, returning default')
       return 'Non spécifiée'
     }
     
-    return date.toLocaleDateString('fr-FR', {
+    const formatted = date.toLocaleDateString('fr-FR', {
       day: '2-digit',
       month: '2-digit',
       year: 'numeric'
     })
+    console.log('📅 Formatted date result:', formatted)
+    return formatted
   } catch {
+    console.log('📅 Error formatting date, returning default')
     return 'Non spécifiée'
   }
 }
@@ -419,6 +428,14 @@ async function getPendingRFPsForSalesRep(salesRepId: string): Promise<RFP[]> {
       return []
     }
 
+    // Debug: afficher les données récupérées
+    console.log(`📊 Raw RFP data for ${salesRepId}:`, JSON.stringify(data, null, 2))
+    
+    if (data && data.length > 0) {
+      data.forEach((rfp, index) => {
+        console.log(`📅 RFP ${index + 1} start_date:`, rfp.start_date, 'type:', typeof rfp.start_date)
+      })
+    }
     return data || []
   } catch (error) {
     console.error('Failed to get RFPs for sales rep:', salesRepId, error)
