@@ -18,9 +18,9 @@ const tabs = [
   },
   {
     id: 'prospects',
-    label: 'Profils pour prise de Références',
+    label: 'Prises de Référence',
     icon: Users,
-    description: 'Analyse de profils pour références'
+    description: 'Prise de références'
   },
   {
     id: 'boondmanager-prospects',
