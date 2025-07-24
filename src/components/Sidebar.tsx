@@ -30,13 +30,13 @@ const tabs = [
   },
   {
     id: 'analytics',
-    label: 'Analytics',
+    label: 'A Venir',
     icon: BarChart3,
     description: 'Tableaux de bord'
   },
   {
     id: 'tools',
-    label: 'Outils',
+    label: 'Back Office',
     icon: Settings,
     description: 'Outils additionnels'
   }
