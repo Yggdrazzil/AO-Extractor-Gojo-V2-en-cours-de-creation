@@ -432,8 +432,11 @@ function App() {
 
   const handleCommentsChange = async (id: string, comments: string) => {
     try {
+      console.log('🔄 App.tsx handleCommentsChange called:', { id, comments: comments.substring(0, 50) + '...' });
       await updateRFPComments(id, comments);
+      console.log('✅ updateRFPComments completed, updating local state...');
       setRfps(prev => prev.map(rfp => rfp.id === id ? { ...rfp, comments } : rfp));
+      console.log('✅ Local state updated');
     } catch (error) {
       console.error('Failed to update comments:', error);
       alert('Erreur lors de la mise à jour des commentaires');

@@ -28,7 +28,9 @@ export function RFPCommentsModal({ isOpen, onClose, rfp, onSave }: RFPCommentsMo
   const handleSave = async () => {
     try {
       setIsSaving(true);
+      console.log('💾 Saving comment for RFP:', rfp.id, 'Content:', comments);
       await onSave(rfp.id, comments);
+      console.log('✅ Comment saved successfully');
       onClose();
     } catch (error) {
       console.error('Error saving comments:', error);
