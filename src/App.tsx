@@ -910,22 +910,23 @@ function App() {
           boondmanagerProspects={boondmanagerProspects}
         />
         <div className="flex-1 flex flex-col">
-          <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 sm:px-6 h-16 flex items-center justify-center relative">
-            <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white text-center absolute left-1/2 transform -translate-x-1/2" style={{ marginLeft: '-32px' }}>
-              {activeTab === 'rfp-extractor' ? 'Extracteur d\'AO' : 
-               activeTab === 'rfp-list' ? 'Liste des AO' :
-               activeTab === 'prospects-extractor' ? 'Extracteur de Prospects' :
-               activeTab === 'boondmanager-prospects' ? 'Profils pour Besoins Clients' :
-               'Prises de Référence'}
-            </h1>
-            <button
-              onClick={() => setIsSettingsOpen(true)}
-              className="absolute right-4 sm:right-6 p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors"
-              title="Paramètres"
-            >
-              <Settings className="w-5 h-5" />
-            </button>
-          </div>
+          <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 sm:px-6 py-6 flex items-center justify-center relative">
+            <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 sm:px-6 h-16 flex items-center justify-center relative">
+              <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white text-center absolute left-1/2 transform -translate-x-1/2" style={{ marginLeft: '-32px' }}>
+                {activeTab === 'rfp-extractor' ? 'Extracteur d\'AO' : 
+                 activeTab === 'rfp-list' ? 'Liste des AO' :
+                 activeTab === 'prospects-extractor' ? 'Extracteur de Prospects' :
+                 activeTab === 'boondmanager-prospects' ? 'Profils pour Besoins Clients' :
+                 'Prises de Référence'}
+              </h1>
+              <button
+                onClick={() => setIsSettingsOpen(true)}
+                className="absolute right-4 sm:right-6 p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors"
+                title="Paramètres"
+              >
+                <Settings className="w-5 h-5" />
+              </button>
+            </div>
           </div>
           <div className="flex-1 overflow-hidden">
             <TabContent
@@ -978,14 +979,10 @@ function App() {
             />
           </div>
         </div>
-      </div>
-      <SettingsModal 
-        isOpen={isSettingsOpen}
-        onClose={() => setIsSettingsOpen(false)}
-      />
-    </ThemeProvider>
-  );
-}</SettingsModal>
+        <SettingsModal 
+          isOpen={isSettingsOpen}
+          onClose={() => setIsSettingsOpen(false)}
+        />
       </div>
     </ThemeProvider>
   );
