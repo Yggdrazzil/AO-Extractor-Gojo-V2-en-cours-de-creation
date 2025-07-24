@@ -1,5 +1,5 @@
 import React from 'react';
-import { FileText, Users, BarChart3, Settings } from 'lucide-react';
+import { FileText, Users, Target, BarChart3, Settings } from 'lucide-react';
 
 interface SidebarProps {
   activeTab: string;
@@ -19,13 +19,13 @@ const tabs = [
   {
     id: 'prospects',
     label: 'Profils pour prise de Références',
-    icon: Users,
+    icon: Target,
     description: 'Analyse de profils pour références'
   },
   {
     id: 'boondmanager-prospects',
     label: 'Profils pour Besoins Clients',
-    icon: Users,
+    icon: Target,
     description: 'Analyse de profils pour Besoins Clients'
   },
   {
