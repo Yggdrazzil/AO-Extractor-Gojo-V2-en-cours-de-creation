@@ -137,8 +137,8 @@ export async function createRFP(rfp: Omit<RFP, 'id'>): Promise<RFP> {
       throw new Error('Commercial non trouvé');
     }
 
-    // Essayer d'abord avec comments, puis sans si ça échoue
-    let insertData: any = {
+    // Préparer les données de base
+    const baseInsertData = {
       client: rfp.client,
       mission: rfp.mission,
       location: rfp.location,
@@ -151,29 +151,22 @@ export async function createRFP(rfp: Omit<RFP, 'id'>): Promise<RFP> {
       is_read: false
     };
     
-    // Essayer d'ajouter comments seulement si la colonne existe
-    try {
-      insertData.comments = '';
-    } catch (e) {
-      console.log('Comments column not available for insert');
-    }
 
-    console.log('Creating RFP with data:', insertData);
+    console.log('Creating RFP with data:', baseInsertData);
 
     // Essayer d'abord avec comments
     let { data, error } = await supabase
       .from('rfps')
-      .insert([insertData])
+      .insert([{ ...baseInsertData, comments: '' }])
       .select('id, client, mission, location, max_rate, created_at, start_date, status, assigned_to, raw_content, is_read, comments')
       .single();
     
     // Si erreur de colonne, essayer sans comments
-    if (error && error.message.includes('comments')) {
+    if (error && (error.message.includes('comments') || error.code === '42703')) {
       console.log('Creating RFP without comments column...');
-      const { comments, ...insertDataWithoutComments } = insertData;
       const fallbackResult = await supabase
         .from('rfps')
-        .insert([insertDataWithoutComments])
+        .insert([baseInsertData])
         .select('id, client, mission, location, max_rate, created_at, start_date, status, assigned_to, raw_content, is_read')
         .single();
       
