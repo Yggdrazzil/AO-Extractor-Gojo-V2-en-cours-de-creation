@@ -30,7 +30,24 @@ function formatDate(dateStr: string | null): string {
   if (!dateStr) return 'Non spécifiée'
   
   try {
-    const date = new Date(dateStr)
+    // Gérer les dates au format français DD/MM/YYYY et ISO
+    let date: Date;
+    
+    // Vérifier si c'est une date au format français DD/MM/YYYY
+    const frenchDateMatch = dateStr.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+    if (frenchDateMatch) {
+      const [, day, month, year] = frenchDateMatch;
+      // Créer la date en UTC pour éviter les problèmes de timezone
+      date = new Date(Date.UTC(parseInt(year), parseInt(month) - 1, parseInt(day)));
+    } else {
+      // Format ISO ou autre
+      date = new Date(dateStr);
+    }
+    
+    if (isNaN(date.getTime())) {
+      return 'Non spécifiée';
+    }
+    
     return date.toLocaleDateString('fr-FR', {
       day: '2-digit',
       month: '2-digit',
