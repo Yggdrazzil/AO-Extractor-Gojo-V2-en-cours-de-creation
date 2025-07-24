@@ -46,7 +46,7 @@ function generateEmailHTML(data: RFPNotificationData, salesRepName: string, plat
         }
         
         .email-container { 
-          max-width: 600px; 
+          max-width: 800px; 
           margin: 0 auto; 
           background: #ffffff; 
           border-radius: 18px; 
@@ -91,33 +91,74 @@ function generateEmailHTML(data: RFPNotificationData, salesRepName: string, plat
           line-height: 1.6;
         }
         
-        .mission-card { 
+        .stats-card {
           background: #f5f5f7; 
-          padding: 32px; 
+          padding: 24px;
           border-radius: 16px; 
           margin: 32px 0; 
+          text-align: center;
         }
         
-        .mission-title { 
-          font-weight: 600; 
-          color: #1d1d1f; 
-          font-size: 22px; 
-          margin-bottom: 16px; 
-          line-height: 1.3;
-        }
-        
-        .mission-details { 
-          color: #6e6e73; 
-          font-size: 17px; 
-          line-height: 1.6;
-        }
-        
-        .mission-details div {
+        .stats-number {
+          font-size: 48px;
+          font-weight: 700;
+          color: #1651EE;
           margin-bottom: 8px;
+          line-height: 1;
         }
         
-        .mission-details div:last-child {
-          margin-bottom: 0;
+        .stats-label {
+          font-size: 17px;
+          color: #6e6e73;
+          font-weight: 500;
+        }
+        
+        .table-container {
+          margin: 32px 0;
+          border-radius: 12px;
+          overflow: hidden;
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        
+        table {
+          width: 100%;
+          border-collapse: collapse;
+          background: #ffffff;
+        }
+        
+        thead tr {
+          background: #f8f9fa;
+          border-bottom: 2px solid #e5e7eb;
+        }
+        
+        th {
+          padding: 20px 12px;
+          text-align: left;
+          font-size: 14px;
+          font-weight: 600;
+          color: #374151;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+        }
+        
+        tbody tr {
+          border-bottom: 1px solid #e5e7eb;
+        }
+        
+        td {
+          padding: 16px 12px;
+          font-size: 15px;
+          color: #1d1d1f;
+          line-height: 1.4;
+        }
+        
+        .mission-title {
+          font-weight: 500;
+          color: #1d1d1f;
+        }
+        
+        .client-name {
+          color: #6e6e73;
         }
         
         .action-section { 
@@ -165,6 +206,18 @@ function generateEmailHTML(data: RFPNotificationData, salesRepName: string, plat
           box-shadow: 0 4px 12px rgba(22, 81, 238, 0.4);
         }
         
+        .cta-button:visited {
+          color: #ffffff !important;
+        }
+        
+        .cta-button:active {
+          color: #ffffff !important;
+        }
+        
+        .cta-button:link {
+          color: #ffffff !important;
+        }
+        
         .reminder-section {
           margin-top: 32px;
           padding: 24px;
@@ -201,6 +254,10 @@ function generateEmailHTML(data: RFPNotificationData, salesRepName: string, plat
             padding: 16px 8px;
           }
           
+          .email-container {
+            max-width: 100%;
+          }
+          
           .header {
             padding: 32px 24px;
           }
@@ -213,7 +270,10 @@ function generateEmailHTML(data: RFPNotificationData, salesRepName: string, plat
             padding: 32px 24px;
           }
           
-          .mission-card,
+          .stats-number {
+            font-size: 36px;
+          }
+          
           .action-section {
             padding: 24px;
           }
@@ -221,6 +281,14 @@ function generateEmailHTML(data: RFPNotificationData, salesRepName: string, plat
           .cta-button {
             padding: 14px 28px;
             font-size: 16px;
+          }
+          
+          table {
+            font-size: 14px;
+          }
+          
+          th, td {
+            padding: 12px 8px !important;
           }
         }
       </style>
@@ -237,14 +305,41 @@ function generateEmailHTML(data: RFPNotificationData, salesRepName: string, plat
             Bonjour <strong>${salesRepName}</strong>,
           </div>
           
-          <p class="intro-text">Un nouvel appel d'offres vient d'être analysé et vous a été assigné automatiquement :</p>
+          <p class="intro-text">
+            Un nouvel appel d'offres vient d'être analysé et vous a été assigné automatiquement pour ce ${new Date().toLocaleDateString('fr-FR', { 
+              weekday: 'long', 
+              day: 'numeric', 
+              month: 'long', 
+              year: 'numeric' 
+            })} :
+          </p>
           
-          <div class="mission-card">
-            <div class="mission-title">${data.mission}</div>
-            <div class="mission-details">
-              <div><strong>Client :</strong> ${data.client}</div>
-              <div><strong>Localisation :</strong> ${data.location || 'Non spécifiée'}</div>
-            </div>
+          <div class="stats-card">
+            <div class="stats-number">1</div>
+            <div class="stats-label">AO à traiter</div>
+          </div>
+          
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>Client</th>
+                  <th>Mission</th>
+                  <th>Localisation</th>
+                  <th style="text-align: center;">TJM Max</th>
+                  <th style="text-align: center;">Démarrage</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="client-name">${data.client}</td>
+                  <td class="mission-title">${data.mission}</td>
+                  <td class="client-name">${data.location || 'Non spécifiée'}</td>
+                  <td style="text-align: center;" class="client-name">-</td>
+                  <td style="text-align: center;" class="client-name">-</td>
+                </tr>
+              </tbody>
+            </table>
           </div>
           
           <div class="action-section">
