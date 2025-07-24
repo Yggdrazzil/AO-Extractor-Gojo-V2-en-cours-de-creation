@@ -10,6 +10,7 @@ export interface RFP {
   status: 'À traiter' | 'Traité';
   assignedTo: string;
   isRead: boolean;
+  isFavorite?: boolean;
   comments?: string;
 }
 
@@ -39,6 +40,7 @@ export interface Prospect {
   status: 'À traiter' | 'Traité';
   assignedTo: string;
   isRead: boolean;
+  isFavorite?: boolean;
   comments?: string;
 }
 
@@ -65,6 +67,7 @@ export interface BoondmanagerProspect {
   status: 'À traiter' | 'Traité';
   assignedTo: string;
   isRead: boolean;
+  isFavorite?: boolean;
   comments?: string;
 }
 

@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import type { Prospect, SalesRep } from '../types';
-import { Eye, Trash2, ArrowUpDown, ArrowUp, ArrowDown, Check, X, Download, MessageSquare } from 'lucide-react';
+import { Eye, Trash2, ArrowUpDown, ArrowUp, ArrowDown, Check, X, Download, MessageSquare, Star } from 'lucide-react';
 import { ProspectContentModal } from './ProspectContentModal';
 import { ProspectCommentsModal } from './ProspectCommentsModal';
 import { ConfirmDialog } from './common/ConfirmDialog';
@@ -56,6 +56,7 @@ interface ProspectsTableProps {
   onEmailChange: (id: string, email: string) => Promise<void>;
   onView: (prospect: Prospect) => Promise<void>;
   onDelete: (id: string) => Promise<void>;
+  onFavoriteToggle: (id: string, isFavorite: boolean) => Promise<void>;
   onCommentsChange: (id: string, comments: string) => Promise<void>;
 }
 
@@ -73,6 +74,7 @@ export function ProspectsTable({
   onEmailChange,
   onView,
   onDelete,
+  onFavoriteToggle,
   onCommentsChange,
 }: ProspectsTableProps) {
   const statusOptions: Prospect['status'][] = ['À traiter', 'Traité'];
@@ -84,6 +86,7 @@ export function ProspectsTable({
   const tableRef = useRef<HTMLDivElement>(null);
   const [isScrolling, setIsScrolling] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [showOnlyFavorites, setShowOnlyFavorites] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState<{ isOpen: boolean; prospectId: string; prospectTitle: string }>({
     isOpen: false,
     prospectId: '',
@@ -153,6 +156,11 @@ export function ProspectsTable({
     // Filtrage par commercial
     if (selectedSalesRep) {
       filtered = prospects.filter(prospect => prospect.assignedTo === selectedSalesRep);
+    }
+    
+    // Filtrage par favoris
+    if (showOnlyFavorites) {
+      filtered = filtered.filter(prospect => prospect.isFavorite);
     }
     
     // Filtrage par recherche textuelle
@@ -385,6 +393,18 @@ export function ProspectsTable({
                 </button>
               )}
             </div>
+          </div>
+          
+          <div className="flex items-center space-x-2">
+            <label className="flex items-center space-x-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+              <input
+                type="checkbox"
+                checked={showOnlyFavorites}
+                onChange={(e) => setShowOnlyFavorites(e.target.checked)}
+                className="rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500"
+              />
+              <span>Favoris seulement</span>
+            </label>
           </div>
           
         </div>
