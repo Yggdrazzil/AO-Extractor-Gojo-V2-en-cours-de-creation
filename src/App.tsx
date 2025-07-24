@@ -978,10 +978,14 @@ function App() {
             />
           </div>
         </div>
-        <SettingsModal 
-          isOpen={isSettingsOpen}
-          onClose={() => setIsSettingsOpen(false)}
-        />
+      </div>
+      <SettingsModal 
+        isOpen={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
+      />
+    </ThemeProvider>
+  );
+}</SettingsModal>
       </div>
     </ThemeProvider>
   );
