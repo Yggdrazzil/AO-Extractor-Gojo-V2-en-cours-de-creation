@@ -874,7 +874,7 @@ function App() {
                activeTab === 'rfp-list' ? 'Liste des AO' :
                activeTab === 'prospects-extractor' ? 'Extracteur de Prospects' :
                activeTab === 'boondmanager-prospects' ? 'Profils pour besoins clients' :
-               'Liste des Prospects'}
+               'Profils pour Prise de Références'}
             </h1>
             <button
               onClick={() => setIsSettingsOpen(true)}
