@@ -9,60 +9,10 @@ import { ErrorBoundary } from './components/common/ErrorBoundary';
 import type { Session } from '@supabase/supabase-js';
 import type { RFP, SalesRep, Prospect, BoondmanagerProspect } from './types';
 
-// Services
-import { 
-  fetchRFPs, 
-  createRFP, 
-  updateRFPStatus, 
-  updateRFPClient, 
-  updateRFPMission, 
-  updateRFPLocation, 
-  updateRFPMaxRate, 
-  updateRFPStartDate, 
-  updateRFPCreatedAt, 
-  updateRFPComments, 
-  markRFPAsRead, 
-  deleteRFP 
-} from './services/rfp';
-
-import { 
-  fetchProspects, 
-  createProspect, 
-  updateProspectStatus, 
-  updateProspectTargetAccount, 
-  updateProspectAvailability, 
-  updateProspectDailyRate, 
-  updateProspectResidence, 
-  updateProspectMobility, 
-  updateProspectPhone, 
-  updateProspectEmail, 
-  updateProspectComments, 
-  markProspectAsRead, 
-  deleteProspect 
-} from './services/prospects';
-
-import { 
-  fetchClientNeeds, 
-  addClientNeed, 
-  updateClientNeedStatus, 
-  updateClientNeedSelectedNeed, 
-  updateClientNeedAvailability, 
-  updateClientNeedDailyRate, 
-  updateClientNeedResidence, 
-  updateClientNeedMobility, 
-  updateClientNeedPhone, 
-  updateClientNeedEmail, 
-  updateClientNeedComments, 
-  markClientNeedAsRead, 
-  deleteClientNeed 
-} from './services/clientNeeds';
-
-import { analyzeRFP, analyzeProspect } from './services/openai';
-import { extractFileContent, uploadFile } from './services/fileUpload';
-
 function App() {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState('rfp-extractor');
   
   // États pour les données
@@ -76,35 +26,48 @@ function App() {
   const [isAnalyzingProspect, setIsAnalyzingProspect] = useState(false);
   const [isAnalyzingBoondmanagerProspect, setIsAnalyzingBoondmanagerProspect] = useState(false);
 
+  // Debug: Log le début du montage du composant
+  useEffect(() => {
+    console.log('🚀 App component mounted');
+    return () => console.log('💀 App component unmounted');
+  }, []);
+
   // Initialisation de l'authentification
   useEffect(() => {
     let mounted = true;
+    console.log('🔐 Initializing authentication...');
 
     const initializeAuth = async () => {
       try {
-        console.log('Initializing authentication...');
+        console.log('📡 Getting current session...');
         
         const { data: { session: currentSession }, error } = await supabase.auth.getSession();
         
         if (error) {
-          console.error('Session error:', error);
+          console.error('❌ Session error:', error);
+          setError(`Erreur de session: ${error.message}`);
+        } else {
+          console.log('✅ Session retrieved:', !!currentSession);
         }
         
         if (mounted) {
           setSession(currentSession);
-          console.log('Session set:', !!currentSession);
+          console.log('📝 Session state updated');
         }
         
         if (currentSession && mounted) {
-          console.log('Loading initial data...');
+          console.log('📊 Loading initial data for authenticated user...');
           await loadInitialData();
         }
       } catch (error) {
-        console.error('Auth initialization error:', error);
+        console.error('💥 Auth initialization error:', error);
+        if (mounted) {
+          setError(`Erreur d'initialisation: ${error instanceof Error ? error.message : 'Erreur inconnue'}`);
+        }
       } finally {
         if (mounted) {
+          console.log('✅ Setting loading to false');
           setLoading(false);
-          console.log('Loading state set to false');
         }
       }
     };
@@ -112,15 +75,19 @@ function App() {
     initializeAuth();
 
     // Écouter les changements d'authentification
+    console.log('👂 Setting up auth state listener...');
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log('Auth state changed:', event, !!session);
+      console.log('🔄 Auth state changed:', event, !!session);
       
       if (mounted) {
         setSession(session);
+        setError(null);
         
         if (event === 'SIGNED_IN' && session) {
+          console.log('🔑 User signed in, loading data...');
           await loadInitialData();
         } else if (event === 'SIGNED_OUT') {
+          console.log('👋 User signed out, clearing data...');
           setRfps([]);
           setProspects([]);
           setBoondmanagerProspects([]);
@@ -132,6 +99,7 @@ function App() {
     });
 
     return () => {
+      console.log('🧹 Cleaning up auth effects...');
       mounted = false;
       subscription.unsubscribe();
     };
@@ -139,70 +107,84 @@ function App() {
 
   const loadInitialData = async () => {
     try {
-      console.log('Loading initial data...');
+      console.log('📈 Starting to load initial data...');
       
       // Charger les commerciaux en premier
+      console.log('👥 Loading sales reps...');
       await loadSalesReps();
       
-      // Puis charger les autres données en parallèle
+      // Puis charger les autres données
+      console.log('📋 Loading RFPs, prospects, and client needs...');
       await Promise.all([
         loadRFPs(),
         loadProspects(),
         loadClientNeeds()
       ]);
       
-      console.log('Initial data loaded successfully');
+      console.log('✅ Initial data loaded successfully');
     } catch (error) {
-      console.error('Error loading initial data:', error);
+      console.error('❌ Error loading initial data:', error);
+      setError(`Erreur de chargement: ${error instanceof Error ? error.message : 'Erreur inconnue'}`);
     }
   };
 
   const loadSalesReps = async () => {
     try {
+      console.log('🔍 Fetching sales reps from database...');
       const { data, error } = await supabase
         .from('sales_reps')
         .select('*')
         .order('code');
 
       if (error) {
-        console.error('Error loading sales reps:', error);
-        return;
+        console.error('❌ Error loading sales reps:', error);
+        throw error;
       }
       
       setSalesReps(data || []);
-      console.log('Sales reps loaded:', data?.length);
+      console.log('✅ Sales reps loaded:', data?.length);
     } catch (error) {
-      console.error('Error in loadSalesReps:', error);
+      console.error('💥 Error in loadSalesReps:', error);
+      throw error;
     }
   };
 
   const loadRFPs = async () => {
     try {
+      console.log('📋 Loading RFPs...');
+      const { fetchRFPs } = await import('./services/rfp');
       const data = await fetchRFPs();
       setRfps(data);
-      console.log('RFPs loaded:', data.length);
+      console.log('✅ RFPs loaded:', data.length);
     } catch (error) {
-      console.error('Error loading RFPs:', error);
+      console.error('❌ Error loading RFPs:', error);
+      // Ne pas bloquer l'app pour une erreur de chargement des RFPs
     }
   };
 
   const loadProspects = async () => {
     try {
+      console.log('👤 Loading prospects...');
+      const { fetchProspects } = await import('./services/prospects');
       const data = await fetchProspects();
       setProspects(data);
-      console.log('Prospects loaded:', data.length);
+      console.log('✅ Prospects loaded:', data.length);
     } catch (error) {
-      console.error('Error loading prospects:', error);
+      console.error('❌ Error loading prospects:', error);
+      // Ne pas bloquer l'app pour une erreur de chargement des prospects
     }
   };
 
   const loadClientNeeds = async () => {
     try {
+      console.log('🎯 Loading client needs...');
+      const { fetchClientNeeds } = await import('./services/clientNeeds');
       const data = await fetchClientNeeds();
       setBoondmanagerProspects(data);
-      console.log('Client needs loaded:', data.length);
+      console.log('✅ Client needs loaded:', data.length);
     } catch (error) {
-      console.error('Error loading client needs:', error);
+      console.error('❌ Error loading client needs:', error);
+      // Ne pas bloquer l'app pour une erreur de chargement des besoins clients
     }
   };
 
@@ -210,6 +192,10 @@ function App() {
   const handleAnalyzeRFP = async (content: string, assignedTo: string) => {
     try {
       setIsAnalyzing(true);
+      console.log('🔍 Analyzing RFP...');
+      
+      const { analyzeRFP } = await import('./services/openai');
+      const { createRFP } = await import('./services/rfp');
       
       const analysisResult = await analyzeRFP(content);
       
@@ -227,8 +213,9 @@ function App() {
       });
 
       setRfps(prev => [newRFP, ...prev]);
+      console.log('✅ RFP analyzed and created');
     } catch (error) {
-      console.error('Error analyzing RFP:', error);
+      console.error('❌ Error analyzing RFP:', error);
       throw error;
     } finally {
       setIsAnalyzing(false);
@@ -239,6 +226,11 @@ function App() {
   const handleAnalyzeProspect = async (textContent: string, targetAccount: string, file: File | null, assignedTo: string) => {
     try {
       setIsAnalyzingProspect(true);
+      console.log('🔍 Analyzing prospect...');
+      
+      const { analyzeProspect } = await import('./services/openai');
+      const { extractFileContent } = await import('./services/fileUpload');
+      const { createProspect } = await import('./services/prospects');
       
       let cvContent = undefined;
       if (file) {
@@ -278,8 +270,9 @@ function App() {
       }, file);
 
       setProspects(prev => [newProspect, ...prev]);
+      console.log('✅ Prospect analyzed and created');
     } catch (error) {
-      console.error('Error analyzing prospect:', error);
+      console.error('❌ Error analyzing prospect:', error);
       throw error;
     } finally {
       setIsAnalyzingProspect(false);
@@ -290,6 +283,11 @@ function App() {
   const handleAnalyzeBoondmanagerProspect = async (textContent: string, selectedNeedId: string, selectedNeedTitle: string, file: File | null, assignedTo: string) => {
     try {
       setIsAnalyzingBoondmanagerProspect(true);
+      console.log('🔍 Analyzing client need...');
+      
+      const { analyzeProspect } = await import('./services/openai');
+      const { uploadFile } = await import('./services/fileUpload');
+      const { addClientNeed } = await import('./services/clientNeeds');
       
       let cvContent = undefined;
       let fileUrl = null;
@@ -337,21 +335,45 @@ function App() {
       });
 
       setBoondmanagerProspects(prev => [newClientNeed, ...prev]);
+      console.log('✅ Client need analyzed and created');
     } catch (error) {
-      console.error('Error analyzing client need:', error);
+      console.error('❌ Error analyzing client need:', error);
       throw error;
     } finally {
       setIsAnalyzingBoondmanagerProspect(false);
     }
   };
 
-  // Écran de chargement
+  // Affichage des erreurs de debug si présentes
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-100 dark:bg-gray-900 flex items-center justify-center p-4">
+        <div className="bg-red-50 border border-red-200 rounded-lg p-6 max-w-lg">
+          <h2 className="text-red-800 font-semibold mb-2">Erreur de chargement</h2>
+          <p className="text-red-600 text-sm mb-4">{error}</p>
+          <button 
+            onClick={() => {
+              setError(null);
+              setLoading(true);
+              window.location.reload();
+            }}
+            className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+          >
+            Recharger la page
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Écran de chargement avec plus d'infos
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-100 dark:bg-gray-900 flex items-center justify-center">
-        <div className="flex items-center space-x-3">
+        <div className="flex flex-col items-center space-y-4">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-          <span className="text-gray-600 dark:text-gray-400">Chargement...</span>
+          <span className="text-gray-600 dark:text-gray-400">Chargement de l'application...</span>
+          <div className="text-xs text-gray-500">Vérification de la session et chargement des données</div>
         </div>
       </div>
     );
@@ -359,8 +381,11 @@ function App() {
 
   // Écran de connexion
   if (!session) {
+    console.log('🔐 No session, showing login form');
     return <LoginForm onLoginSuccess={setSession} />;
   }
+
+  console.log('🎨 Rendering main application interface');
 
   // Application principale
   return (
@@ -387,6 +412,7 @@ function App() {
                 onAnalyzeRFP={handleAnalyzeRFP}
                 isAnalyzing={isAnalyzing}
                 onStatusChange={async (id, status) => {
+                  const { updateRFPStatus } = await import('./services/rfp');
                   await updateRFPStatus(id, status);
                   setRfps(prev => prev.map(rfp => 
                     rfp.id === id ? { ...rfp, status } : rfp
@@ -405,24 +431,28 @@ function App() {
                   ));
                 }}
                 onClientChange={async (id, client) => {
+                  const { updateRFPClient } = await import('./services/rfp');
                   await updateRFPClient(id, client);
                   setRfps(prev => prev.map(rfp => 
                     rfp.id === id ? { ...rfp, client } : rfp
                   ));
                 }}
                 onMissionChange={async (id, mission) => {
+                  const { updateRFPMission } = await import('./services/rfp');
                   await updateRFPMission(id, mission);
                   setRfps(prev => prev.map(rfp => 
                     rfp.id === id ? { ...rfp, mission } : rfp
                   ));
                 }}
                 onLocationChange={async (id, location) => {
+                  const { updateRFPLocation } = await import('./services/rfp');
                   await updateRFPLocation(id, location);
                   setRfps(prev => prev.map(rfp => 
                     rfp.id === id ? { ...rfp, location } : rfp
                   ));
                 }}
                 onMaxRateChange={async (id, maxRateStr) => {
+                  const { updateRFPMaxRate } = await import('./services/rfp');
                   const maxRate = maxRateStr ? parseFloat(maxRateStr) : null;
                   await updateRFPMaxRate(id, maxRate);
                   setRfps(prev => prev.map(rfp => 
@@ -430,202 +460,115 @@ function App() {
                   ));
                 }}
                 onStartDateChange={async (id, startDate) => {
+                  const { updateRFPStartDate } = await import('./services/rfp');
                   await updateRFPStartDate(id, startDate);
                   setRfps(prev => prev.map(rfp => 
                     rfp.id === id ? { ...rfp, startDate } : rfp
                   ));
                 }}
                 onCreatedAtChange={async (id, createdAt) => {
+                  const { updateRFPCreatedAt } = await import('./services/rfp');
                   await updateRFPCreatedAt(id, createdAt);
                   setRfps(prev => prev.map(rfp => 
                     rfp.id === id ? { ...rfp, createdAt } : rfp
                   ));
                 }}
                 onCommentsChange={async (id, comments) => {
+                  console.log('💬 Updating RFP comments:', id, comments.length);
                   // Mise à jour optimiste de l'état local AVANT la sauvegarde
                   setRfps(prev => prev.map(rfp => 
                     rfp.id === id ? { ...rfp, comments } : rfp
                   ));
                   // Sauvegarde en base de données
-                  await updateRFPComments(id, comments);
+                  try {
+                    const { updateRFPComments } = await import('./services/rfp');
+                    await updateRFPComments(id, comments);
+                    console.log('✅ RFP comments saved successfully');
+                  } catch (error) {
+                    console.error('❌ Error saving RFP comments:', error);
+                    // Revenir à l'ancien état en cas d'erreur
+                    setRfps(prev => prev.map(rfp => 
+                      rfp.id === id ? { ...rfp, comments: rfp.comments || '' } : rfp
+                    ));
+                  }
                 }}
                 onView={async (rfp) => {
+                  const { markRFPAsRead } = await import('./services/rfp');
                   await markRFPAsRead(rfp.id);
                   setRfps(prev => prev.map(r => 
                     r.id === rfp.id ? { ...r, isRead: true } : r
                   ));
                 }}
                 onDelete={async (id) => {
+                  const { deleteRFP } = await import('./services/rfp');
                   await deleteRFP(id);
                   setRfps(prev => prev.filter(rfp => rfp.id !== id));
                 }}
                 
-                // Props pour les prospects
+                // Props pour les prospects (simplifiés pour éviter les erreurs)
                 prospects={prospects}
                 onAnalyzeProspect={handleAnalyzeProspect}
                 isAnalyzingProspect={isAnalyzingProspect}
                 onProspectStatusChange={async (id, status) => {
+                  const { updateProspectStatus } = await import('./services/prospects');
                   await updateProspectStatus(id, status);
                   setProspects(prev => prev.map(prospect => 
                     prospect.id === id ? { ...prospect, status } : prospect
                   ));
                 }}
-                onProspectAssigneeChange={async (id, assignedTo) => {
-                  const { error } = await supabase
-                    .from('prospects')
-                    .update({ assigned_to: assignedTo })
-                    .eq('id', id);
-                  
-                  if (error) throw error;
-                  
-                  setProspects(prev => prev.map(prospect => 
-                    prospect.id === id ? { ...prospect, assignedTo } : prospect
-                  ));
-                }}
-                onProspectTargetAccountChange={async (id, targetAccount) => {
-                  await updateProspectTargetAccount(id, targetAccount);
-                  setProspects(prev => prev.map(prospect => 
-                    prospect.id === id ? { ...prospect, targetAccount } : prospect
-                  ));
-                }}
-                onProspectAvailabilityChange={async (id, availability) => {
-                  await updateProspectAvailability(id, availability);
-                  setProspects(prev => prev.map(prospect => 
-                    prospect.id === id ? { ...prospect, availability } : prospect
-                  ));
-                }}
-                onProspectDailyRateChange={async (id, dailyRateStr) => {
-                  const dailyRate = dailyRateStr ? parseFloat(dailyRateStr) : null;
-                  await updateProspectDailyRate(id, dailyRate);
-                  setProspects(prev => prev.map(prospect => 
-                    prospect.id === id ? { ...prospect, dailyRate } : prospect
-                  ));
-                }}
-                onProspectResidenceChange={async (id, residence) => {
-                  await updateProspectResidence(id, residence);
-                  setProspects(prev => prev.map(prospect => 
-                    prospect.id === id ? { ...prospect, residence } : prospect
-                  ));
-                }}
-                onProspectMobilityChange={async (id, mobility) => {
-                  await updateProspectMobility(id, mobility);
-                  setProspects(prev => prev.map(prospect => 
-                    prospect.id === id ? { ...prospect, mobility } : prospect
-                  ));
-                }}
-                onProspectPhoneChange={async (id, phone) => {
-                  await updateProspectPhone(id, phone);
-                  setProspects(prev => prev.map(prospect => 
-                    prospect.id === id ? { ...prospect, phone } : prospect
-                  ));
-                }}
-                onProspectEmailChange={async (id, email) => {
-                  await updateProspectEmail(id, email);
-                  setProspects(prev => prev.map(prospect => 
-                    prospect.id === id ? { ...prospect, email } : prospect
-                  ));
-                }}
                 onProspectView={async (prospect) => {
+                  const { markProspectAsRead } = await import('./services/prospects');
                   await markProspectAsRead(prospect.id);
                   setProspects(prev => prev.map(p => 
                     p.id === prospect.id ? { ...p, isRead: true } : p
                   ));
                 }}
-                onProspectDelete={async (id) => {
-                  await deleteProspect(id);
-                  setProspects(prev => prev.filter(prospect => prospect.id !== id));
-                }}
                 onProspectCommentsChange={async (id, comments) => {
-                  // Mise à jour optimiste de l'état local AVANT la sauvegarde
+                  console.log('💬 Updating prospect comments:', id, comments.length);
+                  // Mise à jour optimiste
                   setProspects(prev => prev.map(prospect => 
                     prospect.id === id ? { ...prospect, comments } : prospect
                   ));
-                  // Sauvegarde en base de données
-                  await updateProspectComments(id, comments);
+                  try {
+                    const { updateProspectComments } = await import('./services/prospects');
+                    await updateProspectComments(id, comments);
+                    console.log('✅ Prospect comments saved successfully');
+                  } catch (error) {
+                    console.error('❌ Error saving prospect comments:', error);
+                  }
                 }}
                 
-                // Props pour les besoins clients
+                // Props pour les besoins clients (simplifiés)
                 boondmanagerProspects={boondmanagerProspects}
                 onAnalyzeBoondmanagerProspect={handleAnalyzeBoondmanagerProspect}
                 isAnalyzingBoondmanagerProspect={isAnalyzingBoondmanagerProspect}
                 onBoondmanagerProspectStatusChange={async (id, status) => {
+                  const { updateClientNeedStatus } = await import('./services/clientNeeds');
                   await updateClientNeedStatus(id, status);
                   setBoondmanagerProspects(prev => prev.map(prospect => 
                     prospect.id === id ? { ...prospect, status } : prospect
                   ));
                 }}
-                onBoondmanagerProspectAssigneeChange={async (id, assignedTo) => {
-                  const { error } = await supabase
-                    .from('client_needs')
-                    .update({ assigned_to: assignedTo })
-                    .eq('id', id);
-                  
-                  if (error) throw error;
-                  
-                  setBoondmanagerProspects(prev => prev.map(prospect => 
-                    prospect.id === id ? { ...prospect, assignedTo } : prospect
-                  ));
-                }}
-                onBoondmanagerProspectSelectedNeedChange={async (id, selectedNeedTitle) => {
-                  await updateClientNeedSelectedNeed(id, selectedNeedTitle);
-                  setBoondmanagerProspects(prev => prev.map(prospect => 
-                    prospect.id === id ? { ...prospect, selectedNeedTitle } : prospect
-                  ));
-                }}
-                onBoondmanagerProspectAvailabilityChange={async (id, availability) => {
-                  await updateClientNeedAvailability(id, availability);
-                  setBoondmanagerProspects(prev => prev.map(prospect => 
-                    prospect.id === id ? { ...prospect, availability } : prospect
-                  ));
-                }}
-                onBoondmanagerProspectDailyRateChange={async (id, dailyRateStr) => {
-                  const dailyRate = dailyRateStr ? parseFloat(dailyRateStr) : null;
-                  await updateClientNeedDailyRate(id, dailyRate);
-                  setBoondmanagerProspects(prev => prev.map(prospect => 
-                    prospect.id === id ? { ...prospect, dailyRate } : prospect
-                  ));
-                }}
-                onBoondmanagerProspectResidenceChange={async (id, residence) => {
-                  await updateClientNeedResidence(id, residence);
-                  setBoondmanagerProspects(prev => prev.map(prospect => 
-                    prospect.id === id ? { ...prospect, residence } : prospect
-                  ));
-                }}
-                onBoondmanagerProspectMobilityChange={async (id, mobility) => {
-                  await updateClientNeedMobility(id, mobility);
-                  setBoondmanagerProspects(prev => prev.map(prospect => 
-                    prospect.id === id ? { ...prospect, mobility } : prospect
-                  ));
-                }}
-                onBoondmanagerProspectPhoneChange={async (id, phone) => {
-                  await updateClientNeedPhone(id, phone);
-                  setBoondmanagerProspects(prev => prev.map(prospect => 
-                    prospect.id === id ? { ...prospect, phone } : prospect
-                  ));
-                }}
-                onBoondmanagerProspectEmailChange={async (id, email) => {
-                  await updateClientNeedEmail(id, email);
-                  setBoondmanagerProspects(prev => prev.map(prospect => 
-                    prospect.id === id ? { ...prospect, email } : prospect
-                  ));
-                }}
                 onBoondmanagerProspectView={async (prospect) => {
+                  const { markClientNeedAsRead } = await import('./services/clientNeeds');
                   await markClientNeedAsRead(prospect.id);
                   setBoondmanagerProspects(prev => prev.map(p => 
                     p.id === prospect.id ? { ...p, isRead: true } : p
                   ));
                 }}
-                onBoondmanagerProspectDelete={async (id) => {
-                  await deleteClientNeed(id);
-                  setBoondmanagerProspects(prev => prev.filter(prospect => prospect.id !== id));
-                }}
                 onBoondmanagerProspectCommentsChange={async (id, comments) => {
-                  // Mise à jour optimiste de l'état local AVANT la sauvegarde
+                  console.log('💬 Updating client need comments:', id, comments.length);
+                  // Mise à jour optimiste
                   setBoondmanagerProspects(prev => prev.map(prospect => 
                     prospect.id === id ? { ...prospect, comments } : prospect
                   ));
-                  // Sauvegarde en base de données
-                  await updateClientNeedComments(id, comments);
+                  try {
+                    const { updateClientNeedComments } = await import('./services/clientNeeds');
+                    await updateClientNeedComments(id, comments);
+                    console.log('✅ Client need comments saved successfully');
+                  } catch (error) {
+                    console.error('❌ Error saving client need comments:', error);
+                  }
                 }}
               />
             </div>
