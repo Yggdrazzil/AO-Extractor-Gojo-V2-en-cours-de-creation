@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from './lib/supabase';
 import { LoginForm } from './components/LoginForm';
+import { Header } from './components/Header';
 import { Sidebar } from './components/Sidebar';
 import { TabContent } from './components/TabContent';
 import { ThemeProvider } from './context/ThemeContext';
@@ -8,10 +9,54 @@ import { ErrorBoundary } from './components/common/ErrorBoundary';
 import type { Session } from '@supabase/supabase-js';
 import type { RFP, SalesRep, Prospect, BoondmanagerProspect } from './types';
 
-// Importation des services
-import { fetchRFPs, createRFP, updateRFPStatus, updateRFPAssignee, updateRFPClient, updateRFPMission, updateRFPLocation, updateRFPMaxRate, updateRFPStartDate, updateRFPCreatedAt, updateRFPComments, markRFPAsRead, deleteRFP } from './services/rfp';
-import { fetchProspects, createProspect, updateProspectStatus, updateProspectAssignee, updateProspectTargetAccount, updateProspectAvailability, updateProspectDailyRate, updateProspectResidence, updateProspectMobility, updateProspectPhone, updateProspectEmail, updateProspectComments, markProspectAsRead, deleteProspect } from './services/prospects';
-import { fetchClientNeeds, addClientNeed, updateClientNeedStatus, updateClientNeedAssignee, updateClientNeedSelectedNeed, updateClientNeedAvailability, updateClientNeedDailyRate, updateClientNeedResidence, updateClientNeedMobility, updateClientNeedPhone, updateClientNeedEmail, updateClientNeedComments, markClientNeedAsRead, deleteClientNeed } from './services/clientNeeds';
+// Services
+import { 
+  fetchRFPs, 
+  createRFP, 
+  updateRFPStatus, 
+  updateRFPClient, 
+  updateRFPMission, 
+  updateRFPLocation, 
+  updateRFPMaxRate, 
+  updateRFPStartDate, 
+  updateRFPCreatedAt, 
+  updateRFPComments, 
+  markRFPAsRead, 
+  deleteRFP 
+} from './services/rfp';
+
+import { 
+  fetchProspects, 
+  createProspect, 
+  updateProspectStatus, 
+  updateProspectTargetAccount, 
+  updateProspectAvailability, 
+  updateProspectDailyRate, 
+  updateProspectResidence, 
+  updateProspectMobility, 
+  updateProspectPhone, 
+  updateProspectEmail, 
+  updateProspectComments, 
+  markProspectAsRead, 
+  deleteProspect 
+} from './services/prospects';
+
+import { 
+  fetchClientNeeds, 
+  addClientNeed, 
+  updateClientNeedStatus, 
+  updateClientNeedSelectedNeed, 
+  updateClientNeedAvailability, 
+  updateClientNeedDailyRate, 
+  updateClientNeedResidence, 
+  updateClientNeedMobility, 
+  updateClientNeedPhone, 
+  updateClientNeedEmail, 
+  updateClientNeedComments, 
+  markClientNeedAsRead, 
+  deleteClientNeed 
+} from './services/clientNeeds';
+
 import { analyzeRFP, analyzeProspect } from './services/openai';
 import { extractFileContent, uploadFile } from './services/fileUpload';
 
@@ -31,51 +76,82 @@ function App() {
   const [isAnalyzingProspect, setIsAnalyzingProspect] = useState(false);
   const [isAnalyzingBoondmanagerProspect, setIsAnalyzingBoondmanagerProspect] = useState(false);
 
-  // Initialisation et gestion de la session
+  // Initialisation de l'authentification
   useEffect(() => {
+    let mounted = true;
+
     const initializeAuth = async () => {
       try {
-        const { data: { session: currentSession } } = await supabase.auth.getSession();
-        setSession(currentSession);
+        console.log('Initializing authentication...');
         
-        if (currentSession) {
+        const { data: { session: currentSession }, error } = await supabase.auth.getSession();
+        
+        if (error) {
+          console.error('Session error:', error);
+        }
+        
+        if (mounted) {
+          setSession(currentSession);
+          console.log('Session set:', !!currentSession);
+        }
+        
+        if (currentSession && mounted) {
+          console.log('Loading initial data...');
           await loadInitialData();
         }
       } catch (error) {
         console.error('Auth initialization error:', error);
       } finally {
-        setLoading(false);
+        if (mounted) {
+          setLoading(false);
+          console.log('Loading state set to false');
+        }
       }
     };
 
     initializeAuth();
 
+    // Écouter les changements d'authentification
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      setSession(session);
+      console.log('Auth state changed:', event, !!session);
       
-      if (event === 'SIGNED_IN' && session) {
-        await loadInitialData();
-      } else if (event === 'SIGNED_OUT') {
-        setRfps([]);
-        setProspects([]);
-        setBoondmanagerProspects([]);
-        setSalesReps([]);
+      if (mounted) {
+        setSession(session);
+        
+        if (event === 'SIGNED_IN' && session) {
+          await loadInitialData();
+        } else if (event === 'SIGNED_OUT') {
+          setRfps([]);
+          setProspects([]);
+          setBoondmanagerProspects([]);
+          setSalesReps([]);
+        }
+        
+        setLoading(false);
       }
-      
-      setLoading(false);
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   const loadInitialData = async () => {
     try {
+      console.log('Loading initial data...');
+      
+      // Charger les commerciaux en premier
+      await loadSalesReps();
+      
+      // Puis charger les autres données en parallèle
       await Promise.all([
-        loadSalesReps(),
         loadRFPs(),
         loadProspects(),
         loadClientNeeds()
       ]);
+      
+      console.log('Initial data loaded successfully');
     } catch (error) {
       console.error('Error loading initial data:', error);
     }
@@ -88,10 +164,15 @@ function App() {
         .select('*')
         .order('code');
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error loading sales reps:', error);
+        return;
+      }
+      
       setSalesReps(data || []);
+      console.log('Sales reps loaded:', data?.length);
     } catch (error) {
-      console.error('Error loading sales reps:', error);
+      console.error('Error in loadSalesReps:', error);
     }
   };
 
@@ -99,6 +180,7 @@ function App() {
     try {
       const data = await fetchRFPs();
       setRfps(data);
+      console.log('RFPs loaded:', data.length);
     } catch (error) {
       console.error('Error loading RFPs:', error);
     }
@@ -108,6 +190,7 @@ function App() {
     try {
       const data = await fetchProspects();
       setProspects(data);
+      console.log('Prospects loaded:', data.length);
     } catch (error) {
       console.error('Error loading prospects:', error);
     }
@@ -117,12 +200,13 @@ function App() {
     try {
       const data = await fetchClientNeeds();
       setBoondmanagerProspects(data);
+      console.log('Client needs loaded:', data.length);
     } catch (error) {
       console.error('Error loading client needs:', error);
     }
   };
 
-  // Handlers pour les RFPs
+  // Handler pour analyser un RFP
   const handleAnalyzeRFP = async (content: string, assignedTo: string) => {
     try {
       setIsAnalyzing(true);
@@ -151,57 +235,7 @@ function App() {
     }
   };
 
-  const handleRFPStatusChange = async (id: string, status: RFP['status']) => {
-    try {
-      await updateRFPStatus(id, status);
-      setRfps(prev => prev.map(rfp => 
-        rfp.id === id ? { ...rfp, status } : rfp
-      ));
-    } catch (error) {
-      console.error('Error updating RFP status:', error);
-      throw error;
-    }
-  };
-
-  const handleRFPCommentsChange = async (id: string, comments: string) => {
-    try {
-      // Mettre à jour l'état local immédiatement
-      setRfps(prev => prev.map(rfp => 
-        rfp.id === id ? { ...rfp, comments } : rfp
-      ));
-      
-      // Puis sauvegarder en base
-      await updateRFPComments(id, comments);
-    } catch (error) {
-      console.error('Error updating RFP comments:', error);
-      // En cas d'erreur, revenir à l'état précédent
-      await loadRFPs();
-      throw error;
-    }
-  };
-
-  const handleRFPView = async (rfp: RFP) => {
-    try {
-      await markRFPAsRead(rfp.id);
-      setRfps(prev => prev.map(r => 
-        r.id === rfp.id ? { ...r, isRead: true } : r
-      ));
-    } catch (error) {
-      console.error('Error marking RFP as read:', error);
-    }
-  };
-
-  const handleRFPDelete = async (id: string) => {
-    try {
-      await deleteRFP(id);
-      setRfps(prev => prev.filter(rfp => rfp.id !== id));
-    } catch (error) {
-      console.error('Error deleting RFP:', error);
-      throw error;
-    }
-  };
-
-  // Handlers pour les prospects
+  // Handler pour analyser un prospect
   const handleAnalyzeProspect = async (textContent: string, targetAccount: string, file: File | null, assignedTo: string) => {
     try {
       setIsAnalyzingProspect(true);
@@ -252,24 +286,7 @@ function App() {
     }
   };
 
-  const handleProspectCommentsChange = async (id: string, comments: string) => {
-    try {
-      // Mettre à jour l'état local immédiatement
-      setProspects(prev => prev.map(prospect => 
-        prospect.id === id ? { ...prospect, comments } : prospect
-      ));
-      
-      // Puis sauvegarder en base
-      await updateProspectComments(id, comments);
-    } catch (error) {
-      console.error('Error updating prospect comments:', error);
-      // En cas d'erreur, revenir à l'état précédent
-      await loadProspects();
-      throw error;
-    }
-  };
-
-  // Handlers pour les besoins clients
+  // Handler pour analyser un besoin client
   const handleAnalyzeBoondmanagerProspect = async (textContent: string, selectedNeedId: string, selectedNeedTitle: string, file: File | null, assignedTo: string) => {
     try {
       setIsAnalyzingBoondmanagerProspect(true);
@@ -328,23 +345,7 @@ function App() {
     }
   };
 
-  const handleClientNeedCommentsChange = async (id: string, comments: string) => {
-    try {
-      // Mettre à jour l'état local immédiatement
-      setBoondmanagerProspects(prev => prev.map(prospect => 
-        prospect.id === id ? { ...prospect, comments } : prospect
-      ));
-      
-      // Puis sauvegarder en base
-      await updateClientNeedComments(id, comments);
-    } catch (error) {
-      console.error('Error updating client need comments:', error);
-      // En cas d'erreur, revenir à l'état précédent
-      await loadClientNeeds();
-      throw error;
-    }
-  };
-
+  // Écran de chargement
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-100 dark:bg-gray-900 flex items-center justify-center">
@@ -356,10 +357,12 @@ function App() {
     );
   }
 
+  // Écran de connexion
   if (!session) {
     return <LoginForm onLoginSuccess={setSession} />;
   }
 
+  // Application principale
   return (
     <ErrorBoundary>
       <ThemeProvider>
@@ -372,15 +375,7 @@ function App() {
             boondmanagerProspects={boondmanagerProspects}
           />
           <div className="flex-1 flex flex-col">
-            <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-4 flex justify-between items-center">
-              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-                {activeTab === 'rfp-extractor' ? 'Extracteur d\'AO' : 
-                 activeTab === 'prospects' ? 'Prises de Référence' :
-                 activeTab === 'boondmanager-prospects' ? 'Profils pour Besoins Clients' :
-                 activeTab === 'analytics' ? 'Analytics' :
-                 activeTab === 'tools' ? 'Back Office' : 'Dashboard'}
-              </h1>
-            </div>
+            <Header />
             
             <div className="flex-1 overflow-hidden">
               <TabContent
@@ -391,9 +386,20 @@ function App() {
                 salesReps={salesReps}
                 onAnalyzeRFP={handleAnalyzeRFP}
                 isAnalyzing={isAnalyzing}
-                onStatusChange={handleRFPStatusChange}
+                onStatusChange={async (id, status) => {
+                  await updateRFPStatus(id, status);
+                  setRfps(prev => prev.map(rfp => 
+                    rfp.id === id ? { ...rfp, status } : rfp
+                  ));
+                }}
                 onAssigneeChange={async (id, assignedTo) => {
-                  await updateRFPAssignee(id, assignedTo);
+                  const { error } = await supabase
+                    .from('rfps')
+                    .update({ assigned_to: assignedTo })
+                    .eq('id', id);
+                  
+                  if (error) throw error;
+                  
                   setRfps(prev => prev.map(rfp => 
                     rfp.id === id ? { ...rfp, assignedTo } : rfp
                   ));
@@ -435,9 +441,22 @@ function App() {
                     rfp.id === id ? { ...rfp, createdAt } : rfp
                   ));
                 }}
-                onCommentsChange={handleRFPCommentsChange}
-                onView={handleRFPView}
-                onDelete={handleRFPDelete}
+                onCommentsChange={async (id, comments) => {
+                  setRfps(prev => prev.map(rfp => 
+                    rfp.id === id ? { ...rfp, comments } : rfp
+                  ));
+                  await updateRFPComments(id, comments);
+                }}
+                onView={async (rfp) => {
+                  await markRFPAsRead(rfp.id);
+                  setRfps(prev => prev.map(r => 
+                    r.id === rfp.id ? { ...r, isRead: true } : r
+                  ));
+                }}
+                onDelete={async (id) => {
+                  await deleteRFP(id);
+                  setRfps(prev => prev.filter(rfp => rfp.id !== id));
+                }}
                 
                 // Props pour les prospects
                 prospects={prospects}
@@ -450,7 +469,13 @@ function App() {
                   ));
                 }}
                 onProspectAssigneeChange={async (id, assignedTo) => {
-                  await updateProspectAssignee(id, assignedTo);
+                  const { error } = await supabase
+                    .from('prospects')
+                    .update({ assigned_to: assignedTo })
+                    .eq('id', id);
+                  
+                  if (error) throw error;
+                  
                   setProspects(prev => prev.map(prospect => 
                     prospect.id === id ? { ...prospect, assignedTo } : prospect
                   ));
@@ -508,7 +533,12 @@ function App() {
                   await deleteProspect(id);
                   setProspects(prev => prev.filter(prospect => prospect.id !== id));
                 }}
-                onProspectCommentsChange={handleProspectCommentsChange}
+                onProspectCommentsChange={async (id, comments) => {
+                  setProspects(prev => prev.map(prospect => 
+                    prospect.id === id ? { ...prospect, comments } : prospect
+                  ));
+                  await updateProspectComments(id, comments);
+                }}
                 
                 // Props pour les besoins clients
                 boondmanagerProspects={boondmanagerProspects}
@@ -521,7 +551,13 @@ function App() {
                   ));
                 }}
                 onBoondmanagerProspectAssigneeChange={async (id, assignedTo) => {
-                  await updateClientNeedAssignee(id, assignedTo);
+                  const { error } = await supabase
+                    .from('client_needs')
+                    .update({ assigned_to: assignedTo })
+                    .eq('id', id);
+                  
+                  if (error) throw error;
+                  
                   setBoondmanagerProspects(prev => prev.map(prospect => 
                     prospect.id === id ? { ...prospect, assignedTo } : prospect
                   ));
@@ -579,7 +615,12 @@ function App() {
                   await deleteClientNeed(id);
                   setBoondmanagerProspects(prev => prev.filter(prospect => prospect.id !== id));
                 }}
-                onBoondmanagerProspectCommentsChange={handleClientNeedCommentsChange}
+                onBoondmanagerProspectCommentsChange={async (id, comments) => {
+                  setBoondmanagerProspects(prev => prev.map(prospect => 
+                    prospect.id === id ? { ...prospect, comments } : prospect
+                  ));
+                  await updateClientNeedComments(id, comments);
+                }}
               />
             </div>
           </div>
