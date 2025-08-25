@@ -507,7 +507,7 @@ Deno.serve(async (req) => {
     console.log('Processing daily client needs summary request...')
     
     // URL de la plateforme
-    const platformUrl = Deno.env.get('PLATFORM_URL') || 'https://hito-gojo-platform.netlify.app/'
+    const platformUrl = Deno.env.get('PLATFORM_URL') || 'https://ao-extractor-v2-en-c-l194.bolt.host'
     
     // Récupérer tous les commerciaux
     const salesReps = await getAllSalesReps()

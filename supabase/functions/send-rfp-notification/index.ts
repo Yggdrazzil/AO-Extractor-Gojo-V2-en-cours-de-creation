@@ -559,7 +559,7 @@ Deno.serve(async (req) => {
     const firstName = salesRepInfo.name.split(' ')[0]
     
     // URL de la plateforme
-    const platformUrl = Deno.env.get('PLATFORM_URL') || 'https://hito-gojo-platform.netlify.app/'
+    const platformUrl = Deno.env.get('PLATFORM_URL') || 'https://ao-extractor-v2-en-c-l194.bolt.host'
     
     // Génération du contenu email avec le nom du client dans l'objet
     const subject = `Nouvel AO assigné : ${data.mission} - ${data.client}`
