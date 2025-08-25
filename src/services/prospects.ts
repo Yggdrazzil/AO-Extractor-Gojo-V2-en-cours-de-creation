@@ -222,7 +222,12 @@ export async function createProspect(prospect: Omit<Prospect, 'id'>, file?: File
 
 export async function updateProspectComments(id: string, comments: string): Promise<void> {
   try {
-    console.log('💾 Updating prospect comments for ID:', id);
+    console.log('💾 Updating prospect comments for ID:', id, 'Content length:', comments.length);
+    
+    if (!id) {
+      console.error('No prospect ID provided for comments update');
+      return;
+    }
     
     const { error } = await supabase
       .from('prospects')

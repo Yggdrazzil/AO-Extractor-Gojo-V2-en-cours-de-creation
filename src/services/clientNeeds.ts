@@ -187,7 +187,12 @@ export async function addClientNeed(newProspect: BoondmanagerProspect): Promise<
 
 export async function updateClientNeedComments(id: string, comments: string): Promise<void> {
   try {
-    console.log('💾 Updating client need comments for ID:', id);
+    console.log('💾 Updating client need comments for ID:', id, 'Content length:', comments.length);
+    
+    if (!id) {
+      console.error('No client need ID provided for comments update');
+      return;
+    }
     
     const { error } = await supabase
       .from('client_needs')

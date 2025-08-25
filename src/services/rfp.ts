@@ -298,7 +298,21 @@ export async function updateRFPCreatedAt(id: string, createdAt: string | null): 
 
 export async function updateRFPComments(id: string, comments: string): Promise<void> {
   try {
-    console.log('Updating RFP comments for ID:', id);
+    console.log('💾 Updating RFP comments for ID:', id);
+    
+    if (!id) {
+      console.error('No RFP ID provided for comments update');
+      throw new Error('ID de l\'AO manquant');
+    }
+    
+    const { error } = await supabase
+      .from('rfps')
+      .update({ comments })
+      .eq('id', id);
+
+    if (error) {
+      console.error('Failed to update RFP comments:', error);
+    console.log('✅ RFP comments updated successfully');
   } catch (error) {
     console.error('Error in updateRFPComments:', error);
     throw error;
@@ -316,22 +330,17 @@ export async function deleteRFP(id: string): Promise<void> {
 
 export async function markRFPAsRead(id: string): Promise<void> {
   try {
-    if (!id) {
-      console.error('No RFP ID provided for comments update');
-      return;
-    }
-    
     const { error } = await supabase
       .from('rfps')
       .update({ is_read: true })
       .eq('id', id);
 
     if (error) {
-      console.error('Failed to update comments:', error);
+      console.error('Failed to mark RFP as read:', error);
       throw error;
     }
   } catch (error) {
-    console.error('Error in updateRFPComments:', error);
+    console.error('Error in markRFPAsRead:', error);
     throw error;
   }
 }
