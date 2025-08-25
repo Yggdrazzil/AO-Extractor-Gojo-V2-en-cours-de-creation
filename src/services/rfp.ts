@@ -51,30 +51,18 @@ export async function fetchRFPs(): Promise<RFP[]> {
       userId: session?.user?.id
     });
 
-    // Essayer d'abord avec tous les champs y compris comments
-    let { data, error } = await supabase
+    // Toujours récupérer les commentaires
+    const { data, error } = await supabase
       .from('rfps')
       .select('id, client, mission, location, max_rate, created_at, start_date, status, assigned_to, raw_content, is_read, comments')
       .order('created_at', { ascending: false });
-    
-    // Si erreur de colonne comments inexistante, essayer sans
-    if (error && error.message.includes('comments')) {
-      console.log('Comments column not found, fetching without it...');
-      const fallbackResult = await supabase
-        .from('rfps')
-        .select('id, client, mission, location, max_rate, created_at, start_date, status, assigned_to, raw_content, is_read')
-        .order('created_at', { ascending: false });
-      
-      data = fallbackResult.data;
-      error = fallbackResult.error;
-    }
 
 
     console.log('Supabase query result:', {
       hasData: !!data,
       dataLength: data?.length,
       error: error,
-      firstItemHasComments: data?.[0] ? 'comments' in data[0] : false
+      commentsCheck: data?.[0] ? `Comments: "${data[0].comments}"` : 'No data'
     });
 
     if (error) {
@@ -94,9 +82,13 @@ export async function fetchRFPs(): Promise<RFP[]> {
       return [];
     }
   
-    console.log('Successfully fetched RFPs:', { 
+    console.log('Successfully fetched RFPs with comments:', { 
       count: data.length,
-      commentsFields: data.map(rfp => ({ id: rfp.id, hasComments: !!(rfp as any).comments }))
+      commentsData: data.map(rfp => ({ 
+        id: rfp.id.substring(0, 8), 
+        hasComments: !!rfp.comments,
+        commentsLength: rfp.comments?.length || 0
+      }))
     });
     
     return data.map(rfp => ({
@@ -111,7 +103,7 @@ export async function fetchRFPs(): Promise<RFP[]> {
       assignedTo: rfp.assigned_to,
       content: rfp.raw_content || '',
       isRead: rfp.is_read || false,
-      comments: (rfp as any).comments || ''
+      comments: rfp.comments || ''
     }));
   } catch (error) {
     console.error('Failed to fetch RFPs:', error);
