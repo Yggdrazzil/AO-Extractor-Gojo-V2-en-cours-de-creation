@@ -8,10 +8,46 @@ import { ThemeProvider } from './context/ThemeContext';
 import { ErrorBoundary } from './components/common/ErrorBoundary';
 import type { Session } from '@supabase/supabase-js';
 import type { RFP, SalesRep, Prospect, BoondmanagerProspect } from './types';
+import { analyzeRFP } from './services/openai';
+import { analyzeProspect } from './services/openai';
+import { 
+  createRFP, 
+  updateRFPStatus, 
+  updateRFPComments,
+  markRFPAsRead,
+  deleteRFP 
+} from './services/rfp';
+import { 
+  createProspect,
+  updateProspectStatus,
+  updateProspectComments,
+  markProspectAsRead,
+  deleteProspect
+} from './services/prospects';
+import { 
+  addClientNeed,
+  updateClientNeedStatus,
+  updateClientNeedComments,
+  markClientNeedAsRead,
+  deleteClientNeed
+} from './services/clientNeeds';
+import { uploadFile } from './services/fileUpload';
+import { extractFileContent } from './services/fileUpload';
+
+// Fonction utilitaire pour ajouter un timeout aux promesses
+function withTimeout<T>(promise: Promise<T>, timeoutMs: number = 10000): Promise<T> {
+  return Promise.race([
+    promise,
+    new Promise<T>((_, reject) => 
+      setTimeout(() => reject(new Error(`Timeout after ${timeoutMs}ms`)), timeoutMs)
+    )
+  ]);
+}
 
 function App() {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [loadingMessage, setLoadingMessage] = useState('Initialisation...');
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState('rfp-extractor');
   
@@ -26,18 +62,22 @@ function App() {
   const [isAnalyzingProspect, setIsAnalyzingProspect] = useState(false);
   const [isAnalyzingBoondmanagerProspect, setIsAnalyzingBoondmanagerProspect] = useState(false);
 
-  // Chargement des commerciaux avec gestion d'erreur robuste
+  // Chargement des commerciaux avec timeout
   const loadSalesReps = async () => {
     try {
       console.log('👥 Loading sales reps...');
-      const { data, error } = await supabase
-        .from('sales_reps')
-        .select('*')
-        .order('code');
+      setLoadingMessage('Chargement des commerciaux...');
+      
+      const { data, error } = await withTimeout(
+        supabase
+          .from('sales_reps')
+          .select('*')
+          .order('code'),
+        5000
+      );
 
       if (error) {
-        console.error('❌ Error loading sales reps:', error);
-        // Ne pas bloquer l'app, utiliser des données par défaut
+        console.warn('⚠️ Sales reps error (non-blocking):', error);
         setSalesReps([]);
         return;
       }
@@ -45,22 +85,27 @@ function App() {
       setSalesReps(data || []);
       console.log('✅ Sales reps loaded:', data?.length || 0);
     } catch (error) {
-      console.error('💥 Error in loadSalesReps:', error);
-      setSalesReps([]); // Données par défaut
+      console.warn('⚠️ Sales reps timeout/error (non-blocking):', error);
+      setSalesReps([]);
     }
   };
 
-  // Chargement des RFPs avec gestion d'erreur
+  // Chargement des RFPs avec timeout
   const loadRFPs = async () => {
     try {
       console.log('📋 Loading RFPs...');
-      const { data, error } = await supabase
-        .from('rfps')
-        .select('id, client, mission, location, max_rate, created_at, start_date, status, assigned_to, raw_content, is_read, comments')
-        .order('created_at', { ascending: false });
+      setLoadingMessage('Chargement des AOs...');
+      
+      const { data, error } = await withTimeout(
+        supabase
+          .from('rfps')
+          .select('id, client, mission, location, max_rate, created_at, start_date, status, assigned_to, raw_content, is_read, comments')
+          .order('created_at', { ascending: false }),
+        5000
+      );
 
       if (error) {
-        console.error('❌ Error loading RFPs:', error);
+        console.warn('⚠️ RFPs error (non-blocking):', error);
         setRfps([]);
         return;
       }
@@ -83,22 +128,27 @@ function App() {
       setRfps(mappedRfps);
       console.log('✅ RFPs loaded:', mappedRfps.length);
     } catch (error) {
-      console.error('💥 Error in loadRFPs:', error);
+      console.warn('⚠️ RFPs timeout/error (non-blocking):', error);
       setRfps([]);
     }
   };
 
-  // Chargement des prospects avec gestion d'erreur
+  // Chargement des prospects avec timeout
   const loadProspects = async () => {
     try {
       console.log('👤 Loading prospects...');
-      const { data, error } = await supabase
-        .from('prospects')
-        .select('*')
-        .order('created_at', { ascending: false });
+      setLoadingMessage('Chargement des prospects...');
+      
+      const { data, error } = await withTimeout(
+        supabase
+          .from('prospects')
+          .select('*')
+          .order('created_at', { ascending: false }),
+        5000
+      );
 
       if (error) {
-        console.error('❌ Error loading prospects:', error);
+        console.warn('⚠️ Prospects error (non-blocking):', error);
         setProspects([]);
         return;
       }
@@ -126,22 +176,27 @@ function App() {
       setProspects(mappedProspects);
       console.log('✅ Prospects loaded:', mappedProspects.length);
     } catch (error) {
-      console.error('💥 Error in loadProspects:', error);
+      console.warn('⚠️ Prospects timeout/error (non-blocking):', error);
       setProspects([]);
     }
   };
 
-  // Chargement des besoins clients avec gestion d'erreur
+  // Chargement des besoins clients avec timeout
   const loadClientNeeds = async () => {
     try {
       console.log('🎯 Loading client needs...');
-      const { data, error } = await supabase
-        .from('client_needs')
-        .select('*')
-        .order('created_at', { ascending: false });
+      setLoadingMessage('Chargement des besoins clients...');
+      
+      const { data, error } = await withTimeout(
+        supabase
+          .from('client_needs')
+          .select('*')
+          .order('created_at', { ascending: false }),
+        5000
+      );
 
       if (error) {
-        console.error('❌ Error loading client needs:', error);
+        console.warn('⚠️ Client needs error (non-blocking):', error);
         setBoondmanagerProspects([]);
         return;
       }
@@ -170,59 +225,88 @@ function App() {
       setBoondmanagerProspects(mappedClientNeeds);
       console.log('✅ Client needs loaded:', mappedClientNeeds.length);
     } catch (error) {
-      console.error('💥 Error in loadClientNeeds:', error);
+      console.warn('⚠️ Client needs timeout/error (non-blocking):', error);
       setBoondmanagerProspects([]);
     }
   };
 
-  // Initialisation de l'authentification
+  // Initialisation avec timeout global
   useEffect(() => {
     let mounted = true;
     
-    const initializeAuth = async () => {
+    const initializeApp = async () => {
       try {
-        console.log('🔐 Initializing authentication...');
+        console.log('🚀 App initialization started...');
+        setLoadingMessage('Vérification de l\'authentification...');
         
-        const { data: { session: currentSession }, error } = await supabase.auth.getSession();
+        // Étape 1: Vérifier la session avec timeout
+        const { data: { session: currentSession }, error } = await withTimeout(
+          supabase.auth.getSession(),
+          3000
+        );
         
         if (error) {
           console.error('❌ Session error:', error);
-          if (mounted) {
-            setError(`Erreur de session: ${error.message}`);
-            setLoading(false);
-          }
-          return;
+          throw new Error(`Erreur de session: ${error.message}`);
         }
         
-        console.log('✅ Session retrieved:', !!currentSession);
+        console.log('✅ Session check completed:', !!currentSession);
         
-        if (mounted) {
-          setSession(currentSession);
+        if (!mounted) return;
+        
+        setSession(currentSession);
+        
+        if (currentSession) {
+          console.log('📊 Loading application data...');
+          setLoadingMessage('Chargement des données...');
           
-          if (currentSession) {
-            console.log('📊 Loading initial data...');
-            // Charger les données de manière non-bloquante
-            await Promise.allSettled([
-              loadSalesReps(),
-              loadRFPs(),
-              loadProspects(),
-              loadClientNeeds()
-            ]);
-            console.log('✅ Data loading completed');
+          // Charger les données avec timeout global de 15 secondes
+          const loadDataWithTimeout = async () => {
+            return withTimeout(
+              Promise.allSettled([
+                loadSalesReps(),
+                loadRFPs(),
+                loadProspects(),
+                loadClientNeeds()
+              ]),
+              15000 // 15 secondes maximum pour tout charger
+            );
+          };
+          
+          try {
+            await loadDataWithTimeout();
+            console.log('✅ All data loading completed');
+          } catch (loadError) {
+            console.warn('⚠️ Data loading timeout - continuing with partial data:', loadError);
+            // Continuer même si le chargement des données échoue
           }
-          
+        }
+        
+        // TOUJOURS débloquer l'interface après maximum 20 secondes
+        if (mounted) {
+          console.log('🎉 App initialization completed');
           setLoading(false);
+          setLoadingMessage('');
         }
       } catch (error) {
-        console.error('💥 Critical error during initialization:', error);
+        console.error('💥 App initialization error:', error);
         if (mounted) {
-          setError(`Erreur critique: ${error instanceof Error ? error.message : 'Erreur inconnue'}`);
+          setError(`Erreur d'initialisation: ${error instanceof Error ? error.message : 'Erreur inconnue'}`);
           setLoading(false);
         }
       }
     };
 
-    initializeAuth();
+    // Déblocage automatique après 20 secondes maximum
+    const timeoutId = setTimeout(() => {
+      if (mounted && loading) {
+        console.warn('⏰ Force unlock after 20 seconds timeout');
+        setLoading(false);
+        setLoadingMessage('');
+      }
+    }, 20000);
+
+    initializeApp();
 
     // Écouter les changements d'authentification
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
@@ -230,75 +314,42 @@ function App() {
       
       if (mounted) {
         setSession(session);
-        if (event === 'SIGNED_IN' && session) {
-          // Recharger les données lors de la connexion
-          await Promise.allSettled([
-            loadSalesReps(),
-            loadRFPs(),
-            loadProspects(),
-            loadClientNeeds()
-          ]);
-        }
       }
     });
 
     return () => {
       mounted = false;
+      clearTimeout(timeoutId);
       subscription.unsubscribe();
     };
   }, []);
 
-  // Handler pour analyser un RFP
+  // Handler pour analyser un RFP avec mise à jour optimiste
   const handleAnalyzeRFP = async (content: string, assignedTo: string) => {
     try {
       setIsAnalyzing(true);
       console.log('🔍 Analyzing RFP...');
       
-      // Import dynamique pour éviter les erreurs de dépendance
-      const { analyzeRFP } = await import('./services/openai');
       const analysisResult = await analyzeRFP(content);
+      console.log('📊 Analysis result:', analysisResult);
       
-      // Créer le RFP directement avec Supabase
-      const { data, error } = await supabase
-        .from('rfps')
-        .insert([{
-          client: analysisResult.client || 'Non spécifié',
-          mission: analysisResult.mission || 'Non spécifié', 
-          location: analysisResult.location || 'Non spécifié',
-          max_rate: analysisResult.maxRate,
-          created_at: analysisResult.createdAt || new Date().toISOString(),
-          start_date: analysisResult.startDate,
-          status: 'À traiter',
-          assigned_to: assignedTo,
-          raw_content: content,
-          is_read: false,
-          comments: ''
-        }])
-        .select('*')
-        .single();
-
-      if (error) throw error;
+      const newRFP = await createRFP({
+        client: analysisResult.client || 'Non spécifié',
+        mission: analysisResult.mission || 'Non spécifié',
+        location: analysisResult.location || 'Non spécifié',
+        maxRate: analysisResult.maxRate,
+        createdAt: analysisResult.createdAt || new Date().toISOString(),
+        startDate: analysisResult.startDate,
+        status: 'À traiter',
+        assignedTo,
+        content,
+        isRead: false,
+        comments: ''
+      });
       
-      if (data) {
-        const newRFP: RFP = {
-          id: data.id,
-          client: data.client,
-          mission: data.mission,
-          location: data.location,
-          maxRate: data.max_rate,
-          createdAt: data.created_at,
-          startDate: data.start_date,
-          status: data.status,
-          assignedTo: data.assigned_to,
-          content: data.raw_content,
-          isRead: data.is_read,
-          comments: data.comments || ''
-        };
-        
-        setRfps(prev => [newRFP, ...prev]);
-      }
-      
-      console.log('✅ RFP analyzed and created');
+      // Mise à jour optimiste
+      setRfps(prev => [newRFP, ...prev]);
+      console.log('✅ RFP created and added to list');
     } catch (error) {
       console.error('❌ Error analyzing RFP:', error);
       throw error;
@@ -306,6 +357,232 @@ function App() {
       setIsAnalyzing(false);
     }
   };
+
+  // Handler pour analyser un prospect
+  const handleAnalyzeProspect = async (textContent: string, targetAccount: string, file: File | null, assignedTo: string) => {
+    try {
+      setIsAnalyzingProspect(true);
+      console.log('🔍 Analyzing prospect...');
+      
+      // Gestion du fichier
+      let fileUrl: string | undefined;
+      let fileName: string | undefined;
+      let fileContent: string | undefined;
+      
+      if (file) {
+        try {
+          const uploadResult = await uploadFile(file, 'cvs');
+          fileUrl = uploadResult.url;
+          fileName = file.name;
+          fileContent = uploadResult.content;
+        } catch (uploadError) {
+          console.error('File upload failed:', uploadError);
+        }
+      }
+      
+      // Analyser le contenu
+      let analysisResult;
+      try {
+        analysisResult = await analyzeProspect(textContent, fileContent);
+      } catch (analysisError) {
+        console.warn('Analysis failed, using default values:', analysisError);
+        analysisResult = {
+          availability: '-',
+          dailyRate: null,
+          salaryExpectations: null,
+          residence: '-',
+          mobility: '-',
+          phone: '-',
+          email: '-'
+        };
+      }
+      
+      const newProspect = await createProspect({
+        textContent,
+        targetAccount,
+        fileName,
+        fileUrl,
+        fileContent,
+        availability: analysisResult.availability || '-',
+        dailyRate: analysisResult.dailyRate,
+        salaryExpectations: analysisResult.salaryExpectations,
+        residence: analysisResult.residence || '-',
+        mobility: analysisResult.mobility || '-',
+        phone: analysisResult.phone || '-',
+        email: analysisResult.email || '-',
+        status: 'À traiter',
+        assignedTo,
+        isRead: false,
+        comments: ''
+      }, file);
+      
+      // Mise à jour optimiste
+      setProspects(prev => [newProspect, ...prev]);
+      console.log('✅ Prospect created and added to list');
+    } catch (error) {
+      console.error('❌ Error analyzing prospect:', error);
+      throw error;
+    } finally {
+      setIsAnalyzingProspect(false);
+    }
+  };
+
+  // Handler pour analyser un besoin client
+  const handleAnalyzeBoondmanagerProspect = async (
+    textContent: string, 
+    selectedNeedId: string, 
+    selectedNeedTitle: string, 
+    file: File | null, 
+    assignedTo: string
+  ) => {
+    try {
+      setIsAnalyzingBoondmanagerProspect(true);
+      console.log('🔍 Analyzing client need...');
+      
+      // Gestion du fichier
+      let fileUrl: string | undefined;
+      let fileName: string | undefined;
+      let fileContent: string | undefined;
+      
+      if (file) {
+        try {
+          const uploadResult = await uploadFile(file, 'cvs');
+          fileUrl = uploadResult.url;
+          fileName = file.name;
+          fileContent = uploadResult.content;
+        } catch (uploadError) {
+          console.error('File upload failed:', uploadError);
+        }
+      }
+      
+      // Analyser le contenu
+      let analysisResult;
+      try {
+        analysisResult = await analyzeProspect(textContent, fileContent);
+      } catch (analysisError) {
+        console.warn('Analysis failed, using default values:', analysisError);
+        analysisResult = {
+          availability: '-',
+          dailyRate: null,
+          salaryExpectations: null,
+          residence: '-',
+          mobility: '-',
+          phone: '-',
+          email: '-'
+        };
+      }
+      
+      const newClientNeed = await addClientNeed({
+        id: '', // Sera généré
+        textContent,
+        selectedNeedId,
+        selectedNeedTitle,
+        fileName,
+        fileUrl,
+        fileContent,
+        availability: analysisResult.availability || '-',
+        dailyRate: analysisResult.dailyRate,
+        salaryExpectations: analysisResult.salaryExpectations,
+        residence: analysisResult.residence || '-',
+        mobility: analysisResult.mobility || '-',
+        phone: analysisResult.phone || '-',
+        email: analysisResult.email || '-',
+        status: 'À traiter',
+        assignedTo,
+        isRead: false,
+        comments: ''
+      });
+      
+      // Mise à jour optimiste
+      setBoondmanagerProspects(prev => [newClientNeed, ...prev]);
+      console.log('✅ Client need created and added to list');
+    } catch (error) {
+      console.error('❌ Error analyzing client need:', error);
+      throw error;
+    } finally {
+      setIsAnalyzingBoondmanagerProspect(false);
+    }
+  };
+
+  // Initialisation de l'application
+  useEffect(() => {
+    let mounted = true;
+    
+    const initializeApp = async () => {
+      try {
+        console.log('🚀 App initialization started...');
+        
+        // Étape 1: Session
+        setLoadingMessage('Vérification de la connexion...');
+        const { data: { session: currentSession }, error } = await withTimeout(
+          supabase.auth.getSession(),
+          5000
+        );
+        
+        if (error) {
+          throw new Error(`Erreur de session: ${error.message}`);
+        }
+        
+        console.log('✅ Session verified:', !!currentSession);
+        
+        if (!mounted) return;
+        setSession(currentSession);
+        
+        if (currentSession) {
+          // Étape 2: Charger les données de base en parallèle avec timeouts individuels
+          console.log('📊 Starting data loading...');
+          
+          try {
+            await Promise.allSettled([
+              loadSalesReps(),
+              loadRFPs(),
+              loadProspects(),
+              loadClientNeeds()
+            ]);
+          } catch (dataError) {
+            console.warn('⚠️ Some data failed to load, continuing anyway:', dataError);
+          }
+        }
+        
+      } catch (error) {
+        console.error('💥 Initialization error:', error);
+        if (mounted) {
+          setError(`Erreur: ${error instanceof Error ? error.message : 'Erreur inconnue'}`);
+        }
+      } finally {
+        if (mounted) {
+          console.log('🎉 App ready!');
+          setLoading(false);
+          setLoadingMessage('');
+        }
+      }
+    };
+
+    // Timeout de sécurité - débloquer l'interface après 15 secondes maximum
+    const safetyTimeout = setTimeout(() => {
+      if (mounted && loading) {
+        console.warn('⏰ Safety timeout triggered - forcing app to load');
+        setLoading(false);
+        setLoadingMessage('');
+      }
+    }, 15000);
+
+    initializeApp();
+
+    // Écouter les changements d'authentification
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log('🔄 Auth changed:', event);
+      if (mounted) {
+        setSession(session);
+      }
+    });
+
+    return () => {
+      mounted = false;
+      clearTimeout(safetyTimeout);
+      subscription.unsubscribe();
+    };
+  }, []);
 
   // Affichage des erreurs
   if (error) {
@@ -320,7 +597,7 @@ function App() {
               setLoading(true);
               window.location.reload();
             }}
-            className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+            className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors"
           >
             Recharger la page
           </button>
@@ -329,13 +606,18 @@ function App() {
     );
   }
 
-  // Écran de chargement
+  // Écran de chargement avec message dynamique
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-100 dark:bg-gray-900 flex items-center justify-center">
         <div className="flex flex-col items-center space-y-4">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-          <span className="text-gray-600 dark:text-gray-400">Chargement de l'application...</span>
+          <span className="text-gray-600 dark:text-gray-400">
+            {loadingMessage || 'Chargement...'}
+          </span>
+          <div className="text-xs text-gray-400">
+            L'application se débloquera automatiquement dans quelques secondes
+          </div>
         </div>
       </div>
     );
@@ -346,124 +628,184 @@ function App() {
     return <LoginForm onLoginSuccess={setSession} />;
   }
 
-  // Application principale avec gestion d'erreur simplifiée
-  try {
-    return (
-      <ErrorBoundary>
-        <ThemeProvider>
-          <div className="flex h-screen bg-gray-100 dark:bg-gray-900">
-            <Sidebar 
-              activeTab={activeTab} 
-              onTabChange={setActiveTab}
-              rfps={rfps}
-              prospects={prospects}
-              boondmanagerProspects={boondmanagerProspects}
-            />
-            <div className="flex-1 flex flex-col">
-              <Header />
-              
-              <div className="flex-1 overflow-hidden">
-                <TabContent
-                  activeTab={activeTab}
-                  rfps={rfps}
-                  salesReps={salesReps}
-                  onAnalyzeRFP={handleAnalyzeRFP}
-                  isAnalyzing={isAnalyzing}
-                  
-                  // Handlers simplifiés pour éviter les erreurs
-                  onStatusChange={async (id, status) => {
-                    try {
-                      const { error } = await supabase
-                        .from('rfps')
-                        .update({ status })
-                        .eq('id', id);
-                      
-                      if (!error) {
-                        setRfps(prev => prev.map(rfp => 
-                          rfp.id === id ? { ...rfp, status } : rfp
-                        ));
-                      }
-                    } catch (error) {
-                      console.error('Error updating status:', error);
-                    }
-                  }}
-                  
-                  onCommentsChange={async (id, comments) => {
-                    console.log('💬 Updating comments for:', id);
-                    // Mise à jour optimiste
-                    setRfps(prev => prev.map(rfp => 
-                      rfp.id === id ? { ...rfp, comments } : rfp
-                    ));
-                    
-                    try {
-                      const { error } = await supabase
-                        .from('rfps')
-                        .update({ comments })
-                        .eq('id', id);
-                      
-                      if (error) {
-                        console.error('Error saving comments:', error);
-                      } else {
-                        console.log('✅ Comments saved successfully');
-                      }
-                    } catch (error) {
-                      console.error('Error in comments update:', error);
-                    }
-                  }}
-                  
-                  onView={async (rfp) => {
-                    try {
-                      await supabase
-                        .from('rfps')
-                        .update({ is_read: true })
-                        .eq('id', rfp.id);
-                      
-                      setRfps(prev => prev.map(r => 
-                        r.id === rfp.id ? { ...r, isRead: true } : r
-                      ));
-                    } catch (error) {
-                      console.error('Error marking as read:', error);
-                    }
-                  }}
-                  
-                  onDelete={async (id) => {
-                    try {
-                      const { error } = await supabase
-                        .from('rfps')
-                        .delete()
-                        .eq('id', id);
-                      
-                      if (!error) {
-                        setRfps(prev => prev.filter(rfp => rfp.id !== id));
-                      }
-                    } catch (error) {
-                      console.error('Error deleting RFP:', error);
-                    }
-                  }}
-                />
-              </div>
+  // Application principale
+  return (
+    <ErrorBoundary>
+      <ThemeProvider>
+        <div className="flex h-screen bg-gray-100 dark:bg-gray-900">
+          <Sidebar 
+            activeTab={activeTab} 
+            onTabChange={setActiveTab}
+            rfps={rfps}
+            prospects={prospects}
+            boondmanagerProspects={boondmanagerProspects}
+          />
+          <div className="flex-1 flex flex-col">
+            <Header />
+            
+            <div className="flex-1 overflow-hidden">
+              <TabContent
+                activeTab={activeTab}
+                rfps={rfps}
+                prospects={prospects}
+                boondmanagerProspects={boondmanagerProspects}
+                salesReps={salesReps}
+                onAnalyzeRFP={handleAnalyzeRFP}
+                onAnalyzeProspect={handleAnalyzeProspect}
+                onAnalyzeBoondmanagerProspect={handleAnalyzeBoondmanagerProspect}
+                isAnalyzing={isAnalyzing}
+                isAnalyzingProspect={isAnalyzingProspect}
+                isAnalyzingBoondmanagerProspect={isAnalyzingBoondmanagerProspect}
+                
+                // Handlers RFP avec mise à jour optimiste
+                onStatusChange={async (id, status) => {
+                  setRfps(prev => prev.map(rfp => 
+                    rfp.id === id ? { ...rfp, status } : rfp
+                  ));
+                  try {
+                    await updateRFPStatus(id, status);
+                  } catch (error) {
+                    console.error('Error updating RFP status:', error);
+                    // Recharger les données en cas d'erreur
+                    loadRFPs();
+                  }
+                }}
+                
+                onCommentsChange={async (id, comments) => {
+                  console.log('💬 Updating RFP comments optimistically');
+                  setRfps(prev => prev.map(rfp => 
+                    rfp.id === id ? { ...rfp, comments } : rfp
+                  ));
+                  try {
+                    await updateRFPComments(id, comments);
+                    console.log('✅ RFP comments saved to database');
+                  } catch (error) {
+                    console.error('❌ Error saving RFP comments:', error);
+                  }
+                }}
+                
+                onView={async (rfp) => {
+                  setRfps(prev => prev.map(r => 
+                    r.id === rfp.id ? { ...r, isRead: true } : r
+                  ));
+                  try {
+                    await markRFPAsRead(rfp.id);
+                  } catch (error) {
+                    console.error('Error marking RFP as read:', error);
+                  }
+                }}
+                
+                onDelete={async (id) => {
+                  setRfps(prev => prev.filter(rfp => rfp.id !== id));
+                  try {
+                    await deleteRFP(id);
+                  } catch (error) {
+                    console.error('Error deleting RFP:', error);
+                    // Recharger en cas d'erreur
+                    loadRFPs();
+                  }
+                }}
+                
+                // Handlers Prospects avec mise à jour optimiste
+                onProspectStatusChange={async (id, status) => {
+                  setProspects(prev => prev.map(prospect => 
+                    prospect.id === id ? { ...prospect, status } : prospect
+                  ));
+                  try {
+                    await updateProspectStatus(id, status);
+                  } catch (error) {
+                    console.error('Error updating prospect status:', error);
+                    loadProspects();
+                  }
+                }}
+                
+                onProspectCommentsChange={async (id, comments) => {
+                  console.log('💬 Updating prospect comments optimistically');
+                  setProspects(prev => prev.map(prospect => 
+                    prospect.id === id ? { ...prospect, comments } : prospect
+                  ));
+                  try {
+                    await updateProspectComments(id, comments);
+                    console.log('✅ Prospect comments saved to database');
+                  } catch (error) {
+                    console.error('❌ Error saving prospect comments:', error);
+                  }
+                }}
+                
+                onProspectView={async (prospect) => {
+                  setProspects(prev => prev.map(p => 
+                    p.id === prospect.id ? { ...p, isRead: true } : p
+                  ));
+                  try {
+                    await markProspectAsRead(prospect.id);
+                  } catch (error) {
+                    console.error('Error marking prospect as read:', error);
+                  }
+                }}
+                
+                onProspectDelete={async (id) => {
+                  setProspects(prev => prev.filter(prospect => prospect.id !== id));
+                  try {
+                    await deleteProspect(id);
+                  } catch (error) {
+                    console.error('Error deleting prospect:', error);
+                    loadProspects();
+                  }
+                }}
+                
+                // Handlers Client Needs avec mise à jour optimiste
+                onBoondmanagerProspectStatusChange={async (id, status) => {
+                  setBoondmanagerProspects(prev => prev.map(prospect => 
+                    prospect.id === id ? { ...prospect, status } : prospect
+                  ));
+                  try {
+                    await updateClientNeedStatus(id, status);
+                  } catch (error) {
+                    console.error('Error updating client need status:', error);
+                    loadClientNeeds();
+                  }
+                }}
+                
+                onBoondmanagerProspectCommentsChange={async (id, comments) => {
+                  console.log('💬 Updating client need comments optimistically');
+                  setBoondmanagerProspects(prev => prev.map(prospect => 
+                    prospect.id === id ? { ...prospect, comments } : prospect
+                  ));
+                  try {
+                    await updateClientNeedComments(id, comments);
+                    console.log('✅ Client need comments saved to database');
+                  } catch (error) {
+                    console.error('❌ Error saving client need comments:', error);
+                  }
+                }}
+                
+                onBoondmanagerProspectView={async (prospect) => {
+                  setBoondmanagerProspects(prev => prev.map(p => 
+                    p.id === prospect.id ? { ...p, isRead: true } : p
+                  ));
+                  try {
+                    await markClientNeedAsRead(prospect.id);
+                  } catch (error) {
+                    console.error('Error marking client need as read:', error);
+                  }
+                }}
+                
+                onBoondmanagerProspectDelete={async (id) => {
+                  setBoondmanagerProspects(prev => prev.filter(prospect => prospect.id !== id));
+                  try {
+                    await deleteClientNeed(id);
+                  } catch (error) {
+                    console.error('Error deleting client need:', error);
+                    loadClientNeeds();
+                  }
+                }}
+              />
             </div>
           </div>
-        </ThemeProvider>
-      </ErrorBoundary>
-    );
-  } catch (error) {
-    console.error('💥 Render error:', error);
-    return (
-      <div className="min-h-screen bg-red-100 flex items-center justify-center p-4">
-        <div className="bg-white p-6 rounded-lg">
-          <h2 className="text-red-800 font-semibold mb-2">Erreur de rendu</h2>
-          <p className="text-red-600 text-sm">L'application ne peut pas s'afficher correctement.</p>
-          <button 
-            onClick={() => window.location.reload()}
-            className="mt-4 px-4 py-2 bg-red-600 text-white rounded"
-          >
-            Recharger
-          </button>
         </div>
-      </div>
-    );
-  }
+      </ThemeProvider>
+    </ErrorBoundary>
+  );
 }
 
 export default App;
