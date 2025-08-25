@@ -706,6 +706,99 @@ function App() {
                   }
                 }}
                 
+                // Handlers pour l'édition inline des RFPs
+                onClientChange={async (id, client) => {
+                  setRfps(prev => prev.map(rfp => 
+                    rfp.id === id ? { ...rfp, client } : rfp
+                  ));
+                  try {
+                    const { updateRFPClient } = await import('./services/rfp');
+                    await updateRFPClient(id, client);
+                  } catch (error) {
+                    console.error('Error updating RFP client:', error);
+                    loadRFPs();
+                  }
+                }}
+                
+                onMissionChange={async (id, mission) => {
+                  setRfps(prev => prev.map(rfp => 
+                    rfp.id === id ? { ...rfp, mission } : rfp
+                  ));
+                  try {
+                    const { updateRFPMission } = await import('./services/rfp');
+                    await updateRFPMission(id, mission);
+                  } catch (error) {
+                    console.error('Error updating RFP mission:', error);
+                    loadRFPs();
+                  }
+                }}
+                
+                onLocationChange={async (id, location) => {
+                  setRfps(prev => prev.map(rfp => 
+                    rfp.id === id ? { ...rfp, location } : rfp
+                  ));
+                  try {
+                    const { updateRFPLocation } = await import('./services/rfp');
+                    await updateRFPLocation(id, location);
+                  } catch (error) {
+                    console.error('Error updating RFP location:', error);
+                    loadRFPs();
+                  }
+                }}
+                
+                onMaxRateChange={async (id, maxRateStr) => {
+                  const maxRate = maxRateStr ? parseFloat(maxRateStr) : null;
+                  setRfps(prev => prev.map(rfp => 
+                    rfp.id === id ? { ...rfp, maxRate } : rfp
+                  ));
+                  try {
+                    const { updateRFPMaxRate } = await import('./services/rfp');
+                    await updateRFPMaxRate(id, maxRate);
+                  } catch (error) {
+                    console.error('Error updating RFP max rate:', error);
+                    loadRFPs();
+                  }
+                }}
+                
+                onStartDateChange={async (id, startDate) => {
+                  setRfps(prev => prev.map(rfp => 
+                    rfp.id === id ? { ...rfp, startDate } : rfp
+                  ));
+                  try {
+                    const { updateRFPStartDate } = await import('./services/rfp');
+                    await updateRFPStartDate(id, startDate);
+                  } catch (error) {
+                    console.error('Error updating RFP start date:', error);
+                    loadRFPs();
+                  }
+                }}
+                
+                onCreatedAtChange={async (id, createdAt) => {
+                  setRfps(prev => prev.map(rfp => 
+                    rfp.id === id ? { ...rfp, createdAt } : rfp
+                  ));
+                  try {
+                    const { updateRFPCreatedAt } = await import('./services/rfp');
+                    await updateRFPCreatedAt(id, createdAt);
+                  } catch (error) {
+                    console.error('Error updating RFP created date:', error);
+                    loadRFPs();
+                  }
+                }}
+                
+                onAssigneeChange={async (id, assignedTo) => {
+                  setRfps(prev => prev.map(rfp => 
+                    rfp.id === id ? { ...rfp, assignedTo } : rfp
+                  ));
+                  try {
+                    const { updateRFPAssignee } = await import('./services/rfp');
+                    await updateRFPAssignee(id, assignedTo);
+                  } catch (error) {
+                    console.error('Error updating RFP assignee:', error);
+                    loadRFPs();
+                  }
+                }}
+                
                 // Handlers Prospects avec mise à jour optimiste
                 onProspectStatusChange={async (id, status) => {
                   setProspects(prev => prev.map(prospect => 
@@ -753,6 +846,112 @@ function App() {
                   }
                 }}
                 
+                // Handlers pour l'édition inline des prospects
+                onProspectTargetAccountChange={async (id, targetAccount) => {
+                  setProspects(prev => prev.map(prospect => 
+                    prospect.id === id ? { ...prospect, targetAccount } : prospect
+                  ));
+                  try {
+                    const { updateProspectTargetAccount } = await import('./services/prospects');
+                    await updateProspectTargetAccount(id, targetAccount);
+                  } catch (error) {
+                    console.error('Error updating prospect target account:', error);
+                    loadProspects();
+                  }
+                }}
+                
+                onProspectAvailabilityChange={async (id, availability) => {
+                  setProspects(prev => prev.map(prospect => 
+                    prospect.id === id ? { ...prospect, availability } : prospect
+                  ));
+                  try {
+                    const { updateProspectAvailability } = await import('./services/prospects');
+                    await updateProspectAvailability(id, availability);
+                  } catch (error) {
+                    console.error('Error updating prospect availability:', error);
+                    loadProspects();
+                  }
+                }}
+                
+                onProspectDailyRateChange={async (id, dailyRateStr) => {
+                  const dailyRate = dailyRateStr ? parseFloat(dailyRateStr) : null;
+                  setProspects(prev => prev.map(prospect => 
+                    prospect.id === id ? { ...prospect, dailyRate } : prospect
+                  ));
+                  try {
+                    const { updateProspectDailyRate } = await import('./services/prospects');
+                    await updateProspectDailyRate(id, dailyRate);
+                  } catch (error) {
+                    console.error('Error updating prospect daily rate:', error);
+                    loadProspects();
+                  }
+                }}
+                
+                onProspectResidenceChange={async (id, residence) => {
+                  setProspects(prev => prev.map(prospect => 
+                    prospect.id === id ? { ...prospect, residence } : prospect
+                  ));
+                  try {
+                    const { updateProspectResidence } = await import('./services/prospects');
+                    await updateProspectResidence(id, residence);
+                  } catch (error) {
+                    console.error('Error updating prospect residence:', error);
+                    loadProspects();
+                  }
+                }}
+                
+                onProspectMobilityChange={async (id, mobility) => {
+                  setProspects(prev => prev.map(prospect => 
+                    prospect.id === id ? { ...prospect, mobility } : prospect
+                  ));
+                  try {
+                    const { updateProspectMobility } = await import('./services/prospects');
+                    await updateProspectMobility(id, mobility);
+                  } catch (error) {
+                    console.error('Error updating prospect mobility:', error);
+                    loadProspects();
+                  }
+                }}
+                
+                onProspectPhoneChange={async (id, phone) => {
+                  setProspects(prev => prev.map(prospect => 
+                    prospect.id === id ? { ...prospect, phone } : prospect
+                  ));
+                  try {
+                    const { updateProspectPhone } = await import('./services/prospects');
+                    await updateProspectPhone(id, phone);
+                  } catch (error) {
+                    console.error('Error updating prospect phone:', error);
+                    loadProspects();
+                  }
+                }}
+                
+                onProspectEmailChange={async (id, email) => {
+                  setProspects(prev => prev.map(prospect => 
+                    prospect.id === id ? { ...prospect, email } : prospect
+                  ));
+                  try {
+                    const { updateProspectEmail } = await import('./services/prospects');
+                    await updateProspectEmail(id, email);
+                  } catch (error) {
+                    console.error('Error updating prospect email:', error);
+                    loadProspects();
+                  }
+                }}
+                
+                onProspectAssigneeChange={async (id, assignedTo) => {
+                  setProspects(prev => prev.map(prospect => 
+                    prospect.id === id ? { ...prospect, assignedTo } : prospect
+                  ));
+                  try {
+                    const { updateProspectAssignee } = await import('./services/prospects');
+                    await updateProspectAssignee(id, assignedTo);
+                  } catch (error) {
+                    console.error('Error updating prospect assignee:', error);
+                    loadProspects();
+                  }
+                }}
+                
                 // Handlers Client Needs avec mise à jour optimiste
                 onBoondmanagerProspectStatusChange={async (id, status) => {
                   setBoondmanagerProspects(prev => prev.map(prospect => 
@@ -796,6 +995,112 @@ function App() {
                     await deleteClientNeed(id);
                   } catch (error) {
                     console.error('Error deleting client need:', error);
+                    loadClientNeeds();
+                  }
+                }}
+                
+                // Handlers pour l'édition inline des besoins clients
+                onBoondmanagerProspectSelectedNeedChange={async (id, selectedNeedTitle) => {
+                  setBoondmanagerProspects(prev => prev.map(prospect => 
+                    prospect.id === id ? { ...prospect, selectedNeedTitle } : prospect
+                  ));
+                  try {
+                    const { updateClientNeedSelectedNeed } = await import('./services/clientNeeds');
+                    await updateClientNeedSelectedNeed(id, selectedNeedTitle);
+                  } catch (error) {
+                    console.error('Error updating client need selected need:', error);
+                    loadClientNeeds();
+                  }
+                }}
+                
+                onBoondmanagerProspectAvailabilityChange={async (id, availability) => {
+                  setBoondmanagerProspects(prev => prev.map(prospect => 
+                    prospect.id === id ? { ...prospect, availability } : prospect
+                  ));
+                  try {
+                    const { updateClientNeedAvailability } = await import('./services/clientNeeds');
+                    await updateClientNeedAvailability(id, availability);
+                  } catch (error) {
+                    console.error('Error updating client need availability:', error);
+                    loadClientNeeds();
+                  }
+                }}
+                
+                onBoondmanagerProspectDailyRateChange={async (id, dailyRateStr) => {
+                  const dailyRate = dailyRateStr ? parseFloat(dailyRateStr) : null;
+                  setBoondmanagerProspects(prev => prev.map(prospect => 
+                    prospect.id === id ? { ...prospect, dailyRate } : prospect
+                  ));
+                  try {
+                    const { updateClientNeedDailyRate } = await import('./services/clientNeeds');
+                    await updateClientNeedDailyRate(id, dailyRate);
+                  } catch (error) {
+                    console.error('Error updating client need daily rate:', error);
+                    loadClientNeeds();
+                  }
+                }}
+                
+                onBoondmanagerProspectResidenceChange={async (id, residence) => {
+                  setBoondmanagerProspects(prev => prev.map(prospect => 
+                    prospect.id === id ? { ...prospect, residence } : prospect
+                  ));
+                  try {
+                    const { updateClientNeedResidence } = await import('./services/clientNeeds');
+                    await updateClientNeedResidence(id, residence);
+                  } catch (error) {
+                    console.error('Error updating client need residence:', error);
+                    loadClientNeeds();
+                  }
+                }}
+                
+                onBoondmanagerProspectMobilityChange={async (id, mobility) => {
+                  setBoondmanagerProspects(prev => prev.map(prospect => 
+                    prospect.id === id ? { ...prospect, mobility } : prospect
+                  ));
+                  try {
+                    const { updateClientNeedMobility } = await import('./services/clientNeeds');
+                    await updateClientNeedMobility(id, mobility);
+                  } catch (error) {
+                    console.error('Error updating client need mobility:', error);
+                    loadClientNeeds();
+                  }
+                }}
+                
+                onBoondmanagerProspectPhoneChange={async (id, phone) => {
+                  setBoondmanagerProspects(prev => prev.map(prospect => 
+                    prospect.id === id ? { ...prospect, phone } : prospect
+                  ));
+                  try {
+                    const { updateClientNeedPhone } = await import('./services/clientNeeds');
+                    await updateClientNeedPhone(id, phone);
+                  } catch (error) {
+                    console.error('Error updating client need phone:', error);
+                    loadClientNeeds();
+                  }
+                }}
+                
+                onBoondmanagerProspectEmailChange={async (id, email) => {
+                  setBoondmanagerProspects(prev => prev.map(prospect => 
+                    prospect.id === id ? { ...prospect, email } : prospect
+                  ));
+                  try {
+                    const { updateClientNeedEmail } = await import('./services/clientNeeds');
+                    await updateClientNeedEmail(id, email);
+                  } catch (error) {
+                    console.error('Error updating client need email:', error);
+                    loadClientNeeds();
+                  }
+                }}
+                
+                onBoondmanagerProspectAssigneeChange={async (id, assignedTo) => {
+                  setBoondmanagerProspects(prev => prev.map(prospect => 
+                    prospect.id === id ? { ...prospect, assignedTo } : prospect
+                  ));
+                  try {
+                    const { updateClientNeedAssignee } = await import('./services/clientNeeds');
+                    await updateClientNeedAssignee(id, assignedTo);
+                  } catch (error) {
+                    console.error('Error updating client need assignee:', error);
                     loadClientNeeds();
                   }
                 }}
