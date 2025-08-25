@@ -312,6 +312,8 @@ export async function updateRFPComments(id: string, comments: string): Promise<v
 
     if (error) {
       console.error('Failed to update RFP comments:', error);
+      throw error;
+    }
     console.log('✅ RFP comments updated successfully');
   } catch (error) {
     console.error('Error in updateRFPComments:', error);
