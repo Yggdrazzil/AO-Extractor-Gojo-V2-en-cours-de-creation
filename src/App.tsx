@@ -121,7 +121,9 @@ export async function createRFP(rfp: Omit<RFP, 'id'>): Promise<RFP> {
     const { data: salesRep, error: salesRepError } = await supabase
       .from('sales_reps')
       .select('id, code')
-      .eq('id', rfp.assignedTo)
+      .eq('id', rfp.assignedTo);
+      
+    if (salesRepError) {
       console.error('Sales rep not found:', rfp.assignedTo);
       throw new Error('Commercial non trouvé');
     }
