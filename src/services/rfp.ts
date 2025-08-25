@@ -290,7 +290,7 @@ export async function updateRFPCreatedAt(id: string, createdAt: string | null): 
 
 export async function updateRFPComments(id: string, comments: string): Promise<void> {
   try {
-    console.log('💾 Updating RFP comments for ID:', id);
+    console.log('💾 Updating RFP comments for ID:', id, 'Content length:', comments.length);
     
     if (!id) {
       console.error('No RFP ID provided for comments update');
@@ -306,7 +306,8 @@ export async function updateRFPComments(id: string, comments: string): Promise<v
       console.error('Failed to update RFP comments:', error);
       throw error;
     }
-    console.log('✅ RFP comments updated successfully');
+    
+    console.log('✅ RFP comments updated successfully in database');
   } catch (error) {
     console.error('Error in updateRFPComments:', error);
     throw error;

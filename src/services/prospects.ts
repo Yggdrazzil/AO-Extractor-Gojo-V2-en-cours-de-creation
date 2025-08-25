@@ -239,7 +239,7 @@ export async function updateProspectComments(id: string, comments: string): Prom
       throw error;
     }
     
-    console.log('✅ Prospect comments updated successfully');
+    console.log('✅ Prospect comments updated successfully in database');
   } catch (error) {
     console.error('Error in updateProspectComments:', error);
     throw error;

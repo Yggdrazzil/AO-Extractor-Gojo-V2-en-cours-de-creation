@@ -204,7 +204,7 @@ export async function updateClientNeedComments(id: string, comments: string): Pr
       throw error;
     }
     
-    console.log('✅ Client need comments updated successfully');
+    console.log('✅ Client need comments updated successfully in database');
   } catch (error) {
     console.error('Error in updateClientNeedComments:', error);
     throw error;
