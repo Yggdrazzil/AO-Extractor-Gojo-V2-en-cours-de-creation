@@ -442,9 +442,11 @@ function App() {
                   ));
                 }}
                 onCommentsChange={async (id, comments) => {
+                  // Mise à jour optimiste de l'état local AVANT la sauvegarde
                   setRfps(prev => prev.map(rfp => 
                     rfp.id === id ? { ...rfp, comments } : rfp
                   ));
+                  // Sauvegarde en base de données
                   await updateRFPComments(id, comments);
                 }}
                 onView={async (rfp) => {
@@ -534,9 +536,11 @@ function App() {
                   setProspects(prev => prev.filter(prospect => prospect.id !== id));
                 }}
                 onProspectCommentsChange={async (id, comments) => {
+                  // Mise à jour optimiste de l'état local AVANT la sauvegarde
                   setProspects(prev => prev.map(prospect => 
                     prospect.id === id ? { ...prospect, comments } : prospect
                   ));
+                  // Sauvegarde en base de données
                   await updateProspectComments(id, comments);
                 }}
                 
@@ -616,9 +620,11 @@ function App() {
                   setBoondmanagerProspects(prev => prev.filter(prospect => prospect.id !== id));
                 }}
                 onBoondmanagerProspectCommentsChange={async (id, comments) => {
+                  // Mise à jour optimiste de l'état local AVANT la sauvegarde
                   setBoondmanagerProspects(prev => prev.map(prospect => 
                     prospect.id === id ? { ...prospect, comments } : prospect
                   ));
+                  // Sauvegarde en base de données
                   await updateClientNeedComments(id, comments);
                 }}
               />
