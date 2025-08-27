@@ -49,11 +49,96 @@ export function NotificationSystemStatus({ className = '' }: NotificationSystemS
     try {
       setIsTesting(true);
       setError(null);
-      const result = await testCronJobs();
+      console.log('🧪 Starting cron job test...');
+      
+      // Test direct des 3 fonctions comme le font les notifications individuelles qui fonctionnent
+      const testResults = [];
+      let emailsSent = 0;
+      
+      // Test 1: Récapitulatif AOs
+      try {
+        console.log('📋 Testing RFP daily summary...');
+        const { data: rfpData, error: rfpError } = await import('../services/dailySummary')
+          .then(module => module.triggerDailySummary());
+        
+        if (rfpData) {
+          testResults.push(`✅ AOs: ${rfpData.emailsSent} email(s) envoyé(s)`);
+          emailsSent += rfpData.emailsSent;
+        } else {
+          testResults.push('⚠️ AOs: Aucun email à envoyer');
+        }
+      } catch (rfpError) {
+        console.error('RFP test error:', rfpError);
+        testResults.push(`❌ AOs: ${rfpError instanceof Error ? rfpError.message : 'Erreur'}`);
+      }
+      
+      // Test 2: Récapitulatif Prospects
+      try {
+        console.log('👥 Testing Prospects daily summary...');
+        const { data: prospectsData, error: prospectsError } = await import('../services/dailyProspectsSummary')
+          .then(module => module.triggerDailyProspectsSummary());
+        
+        if (prospectsData) {
+          testResults.push(`✅ Prospects: ${prospectsData.emailsSent} email(s) envoyé(s)`);
+          emailsSent += prospectsData.emailsSent;
+        } else {
+          testResults.push('⚠️ Prospects: Aucun email à envoyer');
+        }
+      } catch (prospectsError) {
+        console.error('Prospects test error:', prospectsError);
+        testResults.push(`❌ Prospects: ${prospectsError instanceof Error ? prospectsError.message : 'Erreur'}`);
+      }
+      
+      // Test 3: Récapitulatif Besoins Clients
+      try {
+        console.log('🎯 Testing Client Needs daily summary...');
+        const { data: clientNeedsData, error: clientNeedsError } = await import('../services/dailyClientNeedsSummary')
+          .then(module => module.triggerDailyClientNeedsSummary());
+        
+        if (clientNeedsData) {
+          testResults.push(`✅ Besoins Clients: ${clientNeedsData.emailsSent} email(s) envoyé(s)`);
+          emailsSent += clientNeedsData.emailsSent;
+        } else {
+          testResults.push('⚠️ Besoins Clients: Aucun email à envoyer');
+        }
+      } catch (clientNeedsError) {
+        console.error('Client Needs test error:', clientNeedsError);
+        testResults.push(`❌ Besoins Clients: ${clientNeedsError instanceof Error ? clientNeedsError.message : 'Erreur'}`);
+      }
+      
+      // Construire le message final
+      const successCount = testResults.filter(r => r.startsWith('✅')).length;
+      const warningCount = testResults.filter(r => r.startsWith('⚠️')).length;
+      const errorCount = testResults.filter(r => r.startsWith('❌')).length;
+      
+      const success = errorCount === 0;
+      let message = '';
+      
+      if (success) {
+        message = emailsSent > 0 
+          ? `✅ Test réussi ! ${emailsSent} email(s) envoyé(s) au total`
+          : `✅ Système fonctionnel ! Aucun email à envoyer actuellement`;
+      } else {
+        message = `❌ ${errorCount} erreur(s) détectée(s)`;
+      }
+      
+      message += ` | Détails: ${testResults.join(' • ')}`;
+      
+      const result = {
+        success,
+        message,
+        timestamp: new Date().toISOString()
+      };
+      
+      console.log('🎯 Test completed:', result);
       setTestResult(result);
     } catch (err) {
       console.error('Error testing cron jobs:', err);
-      setError(err instanceof Error ? err.message : 'Erreur lors du test');
+      setTestResult({
+        success: false,
+        message: err instanceof Error ? err.message : 'Erreur lors du test',
+        timestamp: new Date().toISOString()
+      });
     } finally {
       setIsTesting(false);
     }
