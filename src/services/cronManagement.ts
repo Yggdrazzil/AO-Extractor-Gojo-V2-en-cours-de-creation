@@ -102,63 +102,107 @@ export async function testCronJobs(): Promise<{ success: boolean; message: strin
   try {
     console.log('Testing cron jobs manually...');
     
-    // Au lieu d'appeler la fonction RPC manquante, on va tester directement les fonctions Edge
-    const results = [];
+    // Tester directement les fonctions Edge comme pour les notifications individuelles
+    const testResults = [];
+    let totalTests = 0;
+    let successfulTests = 0;
     
-    // Test 1: Fonction AO
+    // Test 1: Récapitulatif AOs (send-daily-rfp-summary)
+    totalTests++;
     try {
-      const { data: rfpResult, error: rfpError } = await supabase.functions.invoke('send-daily-rfp-summary', {
-        body: { test: true }
+      console.log('Testing send-daily-rfp-summary...');
+      const { data: rfpData, error: rfpError } = await supabase.functions.invoke('send-daily-rfp-summary', {
+        body: {}
       });
       
       if (rfpError) {
-        results.push({ function: 'send-daily-rfp-summary', success: false, error: rfpError.message });
+        console.error('RFP summary test error:', rfpError);
+        testResults.push(`❌ AOs: ${rfpError.message}`);
+      } else if (rfpData?.success) {
+        successfulTests++;
+        testResults.push(`✅ AOs: ${rfpData.emailsSent}/${rfpData.totalSalesReps} emails envoyés`);
       } else {
-        results.push({ function: 'send-daily-rfp-summary', success: true, result: rfpResult });
+        testResults.push(`❌ AOs: ${rfpData?.message || 'Erreur inconnue'}`);
       }
-    } catch (rfpError) {
-      results.push({ function: 'send-daily-rfp-summary', success: false, error: rfpError.message });
+    } catch (error) {
+      console.error('RFP summary test exception:', error);
+      testResults.push(`❌ AOs: Exception - ${error.message}`);
     }
     
-    // Test 2: Fonction Prospects
+    // Test 2: Récapitulatif Prospects (send-daily-prospects-summary)  
+    totalTests++;
     try {
-      const { data: prospectsResult, error: prospectsError } = await supabase.functions.invoke('send-daily-prospects-summary', {
-        body: { test: true }
+      console.log('Testing send-daily-prospects-summary...');
+      const { data: prospectsData, error: prospectsError } = await supabase.functions.invoke('send-daily-prospects-summary', {
+        body: {}
       });
       
       if (prospectsError) {
-        results.push({ function: 'send-daily-prospects-summary', success: false, error: prospectsError.message });
+        console.error('Prospects summary test error:', prospectsError);
+        testResults.push(`❌ Prospects: ${prospectsError.message}`);
+      } else if (prospectsData?.success) {
+        successfulTests++;
+        testResults.push(`✅ Prospects: ${prospectsData.emailsSent}/${prospectsData.totalSalesReps} emails envoyés`);
       } else {
-        results.push({ function: 'send-daily-prospects-summary', success: true, result: prospectsResult });
+        testResults.push(`❌ Prospects: ${prospectsData?.message || 'Erreur inconnue'}`);
       }
-    } catch (prospectsError) {
-      results.push({ function: 'send-daily-prospects-summary', success: false, error: prospectsError.message });
+    } catch (error) {
+      console.error('Prospects summary test exception:', error);
+      testResults.push(`❌ Prospects: Exception - ${error.message}`);
     }
     
-    // Test 3: Fonction Besoins Clients
+    // Test 3: Récapitulatif Besoins Clients (send-daily-client-needs-summary)
+    totalTests++;
     try {
-      const { data: clientNeedsResult, error: clientNeedsError } = await supabase.functions.invoke('send-daily-client-needs-summary', {
-        body: { test: true }
+      console.log('Testing send-daily-client-needs-summary...');
+      const { data: clientNeedsData, error: clientNeedsError } = await supabase.functions.invoke('send-daily-client-needs-summary', {
+        body: {}
       });
       
       if (clientNeedsError) {
-        results.push({ function: 'send-daily-client-needs-summary', success: false, error: clientNeedsError.message });
+        console.error('Client needs summary test error:', clientNeedsError);
+        testResults.push(`❌ Besoins Clients: ${clientNeedsError.message}`);
+      } else if (clientNeedsData?.success) {
+        successfulTests++;
+        testResults.push(`✅ Besoins Clients: ${clientNeedsData.emailsSent}/${clientNeedsData.totalSalesReps} emails envoyés`);
       } else {
-        results.push({ function: 'send-daily-client-needs-summary', success: true, result: clientNeedsResult });
+        testResults.push(`❌ Besoins Clients: ${clientNeedsData?.message || 'Erreur inconnue'}`);
       }
-    } catch (clientNeedsError) {
-      results.push({ function: 'send-daily-client-needs-summary', success: false, error: clientNeedsError.message });
+    } catch (error) {
+      console.error('Client needs summary test exception:', error);
+      testResults.push(`❌ Besoins Clients: Exception - ${error.message}`);
     }
     
-    const allSuccessful = results.every(r => r.success);
-    const data = {
+    // Résumé final
+    const allSuccessful = successfulTests === totalTests;
+    const message = allSuccessful 
+      ? `✅ Tous les tests ont réussi ! ${successfulTests}/${totalTests} fonctions opérationnelles`
+      : `⚠️ ${successfulTests}/${totalTests} fonctions ont réussi. Détails: ${testResults.join(' | ')}`;
+    
+    const result = {
       success: allSuccessful,
-      message: allSuccessful 
-        ? `Tous les tests ont réussi (${results.length}/3 fonctions testées)`
-        : `${results.filter(r => r.success).length}/${results.length} fonctions ont réussi le test`,
-      timestamp: new Date().toISOString(),
-      details: results
-    }
+      message,
+      timestamp: new Date().toISOString()
+    };
+    
+    console.log('Test cron jobs result:', result);
+    return result;
+  } catch (error) {
+    console.error('Failed to test cron jobs:', error);
+    return {
+      success: false,
+      message: `Erreur lors du test: ${error.message}`,
+      timestamp: new Date().toISOString()
+    };
+  }
+}
+
+/**
+ * Récupère les statistiques quotidiennes pour les emails
+ * @returns Statistiques par commercial
+ */
+export async function getDailyEmailStats(): Promise<DailyEmailStats[]> {
+  try {
     console.log('Fetching daily email stats...');
     
     // Récupérer tous les commerciaux
