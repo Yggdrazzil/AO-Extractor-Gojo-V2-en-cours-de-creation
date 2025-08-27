@@ -586,6 +586,23 @@ Deno.serve(async (req) => {
           continue
         }
         
+        // Vérifier si c'est un appel de test
+        const isTestCall = req.url.includes('test=true') || 
+                          (await req.clone().json().catch(() => ({})))?.test === true
+        
+        // En mode test, limiter à 1 email pour éviter le spam
+        if (isTestCall && emailsSent >= 1) {
+          console.log(`Test mode: skipping additional emails after first one`)
+          results.push({
+            salesRep: salesRep.code,
+            email: salesRep.email,
+            pendingRFPs: pendingRFPs.length,
+            emailSent: false,
+            reason: 'Test mode - limited to first email'
+          })
+          continue
+        }
+        
         // Extraire le prénom
         const firstName = salesRep.name.split(' ')[0]
         
