@@ -641,7 +641,7 @@ function App() {
             boondmanagerProspects={boondmanagerProspects}
           />
           <div className="flex-1 flex flex-col">
-            <Header />
+            <Header activeTab={activeTab} />
             
             <div className="flex-1 overflow-hidden">
               <TabContent
