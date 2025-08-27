@@ -125,15 +125,65 @@ export async function getDailyEmailStats(): Promise<DailyEmailStats[]> {
   try {
     console.log('Fetching daily email stats...');
     
-    const { data, error } = await supabase.rpc('get_daily_email_stats');
+    // Récupérer tous les commerciaux
+    const { data: salesReps, error: salesError } = await supabase
+      .from('sales_reps')
+      .select('id, name, code, email');
 
-    if (error) {
-      console.error('Error fetching daily email stats:', error);
-      throw new Error(error.message);
+    if (salesError) {
+      console.error('Error fetching sales reps:', salesError);
+      throw new Error(salesError.message);
     }
 
-    console.log('Daily email stats:', data);
-    return data || [];
+    const stats: DailyEmailStats[] = [];
+
+    // Pour chaque commercial, compter les éléments en attente
+    for (const rep of salesReps || []) {
+      // Compter les RFPs à traiter
+      const { count: pendingRfps, error: rfpError } = await supabase
+        .from('rfps')
+        .select('*', { count: 'exact', head: true })
+        .eq('assigned_to', rep.id)
+        .eq('status', 'À traiter');
+
+      if (rfpError) {
+        console.error(`Error counting RFPs for ${rep.name}:`, rfpError);
+      }
+
+      // Compter les prospects à traiter
+      const { count: pendingProspects, error: prospectError } = await supabase
+        .from('prospects')
+        .select('*', { count: 'exact', head: true })
+        .eq('assigned_to', rep.id)
+        .eq('status', 'À traiter');
+
+      if (prospectError) {
+        console.error(`Error counting prospects for ${rep.name}:`, prospectError);
+      }
+
+      // Compter les besoins clients à traiter
+      const { count: pendingClientNeeds, error: clientNeedsError } = await supabase
+        .from('client_needs')
+        .select('*', { count: 'exact', head: true })
+        .eq('assigned_to', rep.id)
+        .eq('status', 'À traiter');
+
+      if (clientNeedsError) {
+        console.error(`Error counting client needs for ${rep.name}:`, clientNeedsError);
+      }
+
+      stats.push({
+        sales_rep_code: rep.code,
+        sales_rep_name: rep.name,
+        sales_rep_email: rep.email,
+        pending_rfps: pendingRfps || 0,
+        pending_prospects: pendingProspects || 0,
+        pending_client_needs: pendingClientNeeds || 0
+      });
+    }
+
+    console.log('Daily email stats:', stats);
+    return stats;
   } catch (error) {
     console.error('Failed to fetch daily email stats:', error);
     throw error;
