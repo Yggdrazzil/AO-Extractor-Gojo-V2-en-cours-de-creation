@@ -132,7 +132,7 @@ export async function checkClientNeedsCronStatus(): Promise<{
         return {
           isConfigured: false,
           jobName: 'daily-client-needs-summary',
-          schedule: '2 7 * * *', // 9h02 heure française (7h02 UTC)
+          schedule: '0 8 * * *', // 9h00 heure française
           active: false
         };
       }
@@ -140,7 +140,7 @@ export async function checkClientNeedsCronStatus(): Promise<{
       return {
         isConfigured: !!data,
         jobName: 'daily-client-needs-summary',
-        schedule: '2 7 * * *', // 9h02 heure française (7h02 UTC)
+        schedule: '0 8 * * *', // 9h00 heure française
         active: data?.active || false,
         nextRun: data?.next_run
       };
@@ -149,7 +149,7 @@ export async function checkClientNeedsCronStatus(): Promise<{
       return {
         isConfigured: false,
         jobName: 'daily-client-needs-summary',
-        schedule: '2 7 * * *', // 9h02 heure française (7h02 UTC)
+        schedule: '0 8 * * *', // 9h00 heure française
         active: false
       };
     }
@@ -158,7 +158,7 @@ export async function checkClientNeedsCronStatus(): Promise<{
     return {
       isConfigured: false,
       jobName: 'daily-client-needs-summary',
-      schedule: '2 7 * * *', // 9h02 heure française (7h02 UTC)
+      schedule: '0 8 * * *', // 9h00 heure française
       active: false
     };
   }

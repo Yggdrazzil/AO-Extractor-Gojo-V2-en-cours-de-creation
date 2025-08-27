@@ -387,8 +387,8 @@ export function NotificationSystemStatus({ className = '' }: NotificationSystemS
         </h4>
         <div className="space-y-2 text-sm text-blue-800 dark:text-blue-300">
           <div>🕘 <strong>9h00</strong> : Récapitulatif des AOs en attente</div>
-          <div>🕘 <strong>9h01</strong> : Récapitulatif des prises de références en attente</div>
-          <div>🕘 <strong>9h02</strong> : Récapitulatif des profils pour besoins clients en attente</div>
+          <div>🕘 <strong>9h00</strong> : Récapitulatif des prises de références en attente</div>
+          <div>🕘 <strong>9h00</strong> : Récapitulatif des profils pour besoins clients en attente</div>
           <div className="pt-2 border-t border-blue-200 dark:border-blue-700">
             <strong>📧</strong> Les commerciaux ne reçoivent un email que s'ils ont des éléments à traiter.
           </div>

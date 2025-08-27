@@ -123,32 +123,42 @@ export async function checkCronStatus(): Promise<{
   try {
     console.log('Checking cron job status...');
     
-    const { data, error } = await supabase
-      .rpc('get_cron_job_status', { job_name: 'daily-rfp-summary' });
+    try {
+      const { data, error } = await supabase
+        .rpc('get_cron_job_status', { job_name: 'daily-rfp-summary' });
 
-    if (error) {
-      console.error('Error checking cron status:', error);
+      if (error) {
+        console.error('Error checking cron status:', error);
+        return {
+          isConfigured: false,
+          jobName: 'daily-rfp-summary',
+          schedule: '0 8 * * *', // 9h00 heure française
+          active: false
+        };
+      }
+
+      return {
+        isConfigured: !!data,
+        jobName: 'daily-rfp-summary',
+        schedule: '0 8 * * *', // 9h00 heure française
+        active: data?.active || false,
+        nextRun: data?.next_run
+      };
+    } catch (rpcError) {
+      console.error('RPC error checking cron status:', rpcError);
       return {
         isConfigured: false,
         jobName: 'daily-rfp-summary',
-        schedule: '0 7 * * *',
+        schedule: '0 8 * * *', // 9h00 heure française
         active: false
       };
     }
-
-    return {
-      isConfigured: !!data,
-      jobName: 'daily-rfp-summary',
-      schedule: '0 7 * * *',
-      active: data?.active || false,
-      nextRun: data?.next_run
-    };
   } catch (error) {
     console.error('Failed to check cron status:', error);
     return {
       isConfigured: false,
       jobName: 'daily-rfp-summary',
-      schedule: '0 7 * * *',
+      schedule: '0 8 * * *', // 9h00 heure française
       active: false
     };
   }

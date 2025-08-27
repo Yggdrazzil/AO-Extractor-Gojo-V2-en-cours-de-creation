@@ -203,7 +203,7 @@ export function DailyProspectsSummaryTest() {
             <div className="flex items-center justify-between">
               <span className="text-gray-600 dark:text-gray-400">Horaire :</span>
               <span className="font-mono text-sm text-gray-900 dark:text-gray-100">
-                Tous les jours à 9h01 (heure française)
+                Tous les jours à 9h00 précise (heure française)
               </span>
             </div>
             
