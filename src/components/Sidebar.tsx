@@ -46,7 +46,7 @@ export function Sidebar({ activeTab, onTabChange, rfps = [], prospects = [], boo
   return (
     <div className="w-16 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col">
       {/* Header */}
-      <div className="p-3 border-b border-gray-200 dark:border-gray-700">
+      <div className="p-3 border-b border-gray-200 dark:border-gray-700 h-16 flex items-center">
         <div className="w-10 h-10 bg-[#1651EE] rounded-lg flex items-center justify-center mx-auto">
           <span className="text-white font-bold text-lg">G</span>
         </div>

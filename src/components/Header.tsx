@@ -8,7 +8,7 @@ export function Header() {
 
   return (
     <>
-      <header className="flex items-center px-6 py-4 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+      <header className="flex items-center px-6 py-3 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 h-16">
         <div className="flex items-center w-12">
           <Logo />
         </div>
