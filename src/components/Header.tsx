@@ -23,7 +23,7 @@ export function Header({ activeTab }: HeaderProps) {
     <>
       <header className="flex items-center px-6 py-3 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 h-16">
         <div className="flex-1 text-center" style={{ marginLeft: '-64px', paddingLeft: '64px' }}>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">{currentTitle}</h1>
+          <h1 className="text-2xl font-bold text-[#1651EE]">{currentTitle}</h1>
         </div>
         <button
           onClick={() => setIsSettingsOpen(true)}
