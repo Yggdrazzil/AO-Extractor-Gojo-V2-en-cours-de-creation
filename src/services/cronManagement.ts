@@ -158,9 +158,65 @@ export async function testCronJobs(): Promise<{ success: boolean; message: strin
         : `${results.filter(r => r.success).length}/${results.length} fonctions ont réussi le test`,
       timestamp: new Date().toISOString(),
       details: results
+    // Au lieu d'appeler la fonction RPC manquante, on va tester directement les fonctions Edge
+    const results = [];
+    
+    // Test 1: Fonction AO
+    try {
+      const { data: rfpResult, error: rfpError } = await supabase.functions.invoke('send-daily-rfp-summary', {
+        body: { test: true }
+      });
+      
+      if (rfpError) {
+        results.push({ function: 'send-daily-rfp-summary', success: false, error: rfpError.message });
+      } else {
+        results.push({ function: 'send-daily-rfp-summary', success: true, result: rfpResult });
+      }
+    } catch (rfpError) {
+      results.push({ function: 'send-daily-rfp-summary', success: false, error: rfpError.message });
+    }
+    
+    // Test 2: Fonction Prospects
+    try {
+      const { data: prospectsResult, error: prospectsError } = await supabase.functions.invoke('send-daily-prospects-summary', {
+        body: { test: true }
+      });
+      
+      if (prospectsError) {
+        results.push({ function: 'send-daily-prospects-summary', success: false, error: prospectsError.message });
+      } else {
+        results.push({ function: 'send-daily-prospects-summary', success: true, result: prospectsResult });
+      }
+    } catch (prospectsError) {
+      results.push({ function: 'send-daily-prospects-summary', success: false, error: prospectsError.message });
+    }
+    
+    // Test 3: Fonction Besoins Clients
+    try {
+      const { data: clientNeedsResult, error: clientNeedsError } = await supabase.functions.invoke('send-daily-client-needs-summary', {
+        body: { test: true }
+      });
+      
+      if (clientNeedsError) {
+        results.push({ function: 'send-daily-client-needs-summary', success: false, error: clientNeedsError.message });
+      } else {
+        results.push({ function: 'send-daily-client-needs-summary', success: true, result: clientNeedsResult });
+      }
+    } catch (clientNeedsError) {
+      results.push({ function: 'send-daily-client-needs-summary', success: false, error: clientNeedsError.message });
+    }
+    
+    const allSuccessful = results.every(r => r.success);
+    const data = {
+      success: allSuccessful,
+      message: allSuccessful 
+        ? `Tous les tests ont réussi (${results.length}/3 fonctions testées)`
+        : `${results.filter(r => r.success).length}/${results.length} fonctions ont réussi le test`,
+      timestamp: new Date().toISOString(),
+      details: results
     };
 
-    if (error) {
+    if (!allSuccessful) {
       const errorMsg = `Certaines fonctions ont échoué: ${results.filter(r => !r.success).map(r => r.function).join(', ')}`;
       console.error('Some functions failed:', errorMsg);
       throw new Error(errorMsg);
