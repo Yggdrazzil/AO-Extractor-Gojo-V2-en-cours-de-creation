@@ -158,6 +158,7 @@ export async function testCronJobs(): Promise<{ success: boolean; message: strin
         : `${results.filter(r => r.success).length}/${results.length} fonctions ont réussi le test`,
       timestamp: new Date().toISOString(),
       details: results
+    }
     // Au lieu d'appeler la fonction RPC manquante, on va tester directement les fonctions Edge
     const results = [];
     
