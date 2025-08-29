@@ -19,21 +19,69 @@ export function CronJobsManager() {
   const loadCronJobs = async () => {
     try {
       setError(null);
-      console.log('Loading cron jobs...');
+      console.log('Loading cron jobs via RPC...');
       
-      const { data, error: rpcError } = await supabase.rpc('list_all_cron_jobs');
+      // Essayer d'abord d'appeler la fonction RPC
+      let cronJobs: CronJob[] = [];
+      let hasRpcError = false;
       
-      if (rpcError) {
-        console.error('RPC error loading cron jobs:', rpcError);
-        setError(`Erreur lors du chargement des tâches: ${rpcError.message}`);
-        return;
+      try {
+        const { data: rpcData, error: rpcError } = await supabase.rpc('list_all_cron_jobs');
+        
+        if (rpcError) {
+          console.error('RPC error loading cron jobs:', rpcError);
+          hasRpcError = true;
+          
+          // Si la fonction RPC n'existe pas, on indique qu'il faut appliquer la migration
+          if (rpcError.message.includes('list_all_cron_jobs') || rpcError.code === '42883') {
+            setError('⚠️ Migration non appliquée ! Vous devez appliquer la migration "setup_cron_jobs_system.sql" pour configurer les tâches automatiques.');
+            setCronJobs([]);
+            return;
+          }
+        } else {
+          cronJobs = rpcData || [];
+          console.log('Cron jobs loaded via RPC:', cronJobs);
+        }
+      } catch (err) {
+        console.error('Exception calling RPC:', err);
+        hasRpcError = true;
       }
       
-      console.log('Cron jobs loaded:', data);
-      setCronJobs(data || []);
+      // Si l'appel RPC a échoué, simuler des données pour diagnostic
+      if (hasRpcError) {
+        console.log('RPC failed, showing diagnostic information...');
+        setError('🚫 Les fonctions RPC pour les cron jobs ne sont pas disponibles. La migration "setup_cron_jobs_system.sql" doit être appliquée.');
+        
+        // Simuler des tâches pour expliquer ce qui devrait être configuré
+        cronJobs = [
+          {
+            jobid: 0,
+            schedule: '0 8 * * 1-5',
+            command: 'Appel vers send-daily-rfp-summary',
+            active: false,
+            jobname: 'daily-rfp-summary'
+          },
+          {
+            jobid: 0,
+            schedule: '1 8 * * 1-5',
+            command: 'Appel vers send-daily-prospects-summary',
+            active: false,
+            jobname: 'daily-prospects-summary'
+          },
+          {
+            jobid: 0,
+            schedule: '2 8 * * 1-5',
+            command: 'Appel vers send-daily-client-needs-summary',
+            active: false,
+            jobname: 'daily-client-needs-summary'
+          }
+        ];
+      }
+      
+      setCronJobs(cronJobs);
     } catch (err) {
       console.error('Failed to load cron jobs:', err);
-      setError(err instanceof Error ? err.message : 'Erreur inconnue');
+      setError(`Erreur critique: ${err instanceof Error ? err.message : 'Erreur inconnue'}`);
     } finally {
       setIsLoading(false);
     }
@@ -144,18 +192,35 @@ export function CronJobsManager() {
       ) : (
         <div className="space-y-4">
           {cronJobs.length === 0 ? (
-            <div className="text-center py-8">
+            <div className="text-center py-8 space-y-4">
               <Clock className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-              <h4 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
+              <h4 className="text-lg font-medium text-gray-900 dark:text-gray-100">
                 Aucune tâche programmée
               </h4>
-              <p className="text-gray-600 dark:text-gray-400 mb-4">
+              <p className="text-gray-600 dark:text-gray-400">
                 Les tâches automatiques de récapitulatifs quotidiens ne sont pas encore configurées.
               </p>
-              <div className="bg-yellow-100 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
+              
+              <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-6">
+                <div className="flex items-start gap-3">
+                  <div className="text-2xl">⚠️</div>
+                  <div className="text-left">
+                    <h5 className="font-semibold text-yellow-800 dark:text-yellow-300 mb-2">
+                      Migration requise
+                    </h5>
+                    <p className="text-yellow-700 dark:text-yellow-300 text-sm mb-3">
+                      Pour activer les envois automatiques du lundi au vendredi à 9h00, vous devez appliquer la migration suivante :
+                    </p>
+                    <code className="bg-yellow-200 dark:bg-yellow-800 px-2 py-1 rounded text-xs font-mono text-yellow-800 dark:text-yellow-200">
+                      setup_cron_jobs_system.sql
+                    </code>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
                 <p className="text-yellow-800 dark:text-yellow-300 text-sm">
-                  <strong>Action requise :</strong> Exécutez la migration "configure_daily_email_cron_jobs.sql" 
-                  pour configurer les envois automatiques du lundi au vendredi à 9h00.
+                  <strong>📧 En attendant :</strong> Vous pouvez utiliser les tests manuels ci-dessus pour déclencher les récapitulatifs à la demande.
                 </p>
               </div>
             </div>
@@ -231,14 +296,14 @@ export function CronJobsManager() {
               
               <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
                 <h4 className="font-medium text-blue-900 dark:text-blue-200 mb-2">
-                  📅 Planning des envois automatiques
+                  📅 Planning prévu après configuration
                 </h4>
                 <div className="text-sm text-blue-800 dark:text-blue-300 space-y-1">
-                  <div>• <strong>Du lundi au vendredi uniquement</strong> (pas de week-end)</div>
-                  <div>• <strong>9h00</strong> : Récapitulatif des AOs en attente</div>
-                  <div>• <strong>9h01</strong> : Récapitulatif des prises de références en attente</div>
-                  <div>• <strong>9h02</strong> : Récapitulatif des profils pour besoins clients en attente</div>
-                  <div>• Seuls les commerciaux ayant des éléments "À traiter" reçoivent un email</div>
+                  <div>🗓️ <strong>Lundi à Vendredi uniquement</strong> (pas de week-end)</div>
+                  <div>🕘 <strong>9h00</strong> → Récapitulatif AOs</div>
+                  <div>🕘 <strong>9h01</strong> → Récapitulatif Prospects</div>
+                  <div>🕘 <strong>9h02</strong> → Récapitulatif Besoins Clients</div>
+                  <div>📧 Seuls les commerciaux avec des éléments "À traiter" reçoivent un email</div>
                 </div>
               </div>
             </div>
