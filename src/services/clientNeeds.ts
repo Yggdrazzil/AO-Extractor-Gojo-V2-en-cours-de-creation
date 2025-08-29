@@ -133,11 +133,11 @@ export async function addClientNeed(newProspect: BoondmanagerProspect): Promise<
     
     console.log('Successfully created client need:', data);
 
-    // Envoi de la notification email (non bloquant)
+    // ✅ Envoi de la notification email (non bloquant)
     try {
       const salesRepCode = await getSalesRepCode(newProspect.assignedTo);
       if (salesRepCode) {
-        // Programmer l'envoi avec un délai de 30 secondes
+        console.log('📧 Scheduling client need email notification for:', salesRepCode);
         const emailScheduled = await sendClientNeedNotification({
           prospectId: data.id,
           besoin: data.selected_need_title,

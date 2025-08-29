@@ -169,11 +169,11 @@ export async function createProspect(prospect: Omit<Prospect, 'id'>, file?: File
     
     console.log('Successfully created prospect:', data);
 
-    // Envoi de la notification email (non bloquant)
+    // ✅ Envoi de la notification email (non bloquant)
     try {
       const salesRepCode = await getSalesRepCode(prospect.assignedTo);
       if (salesRepCode) {
-        // Programmer l'envoi avec un délai de 30 secondes
+        console.log('📧 Scheduling prospect email notification for:', salesRepCode);
         const emailScheduled = await sendProspectNotification({
           prospectId: data.id,
           targetAccount: data.target_account || '',

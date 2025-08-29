@@ -1,5 +1,6 @@
 import { supabase } from '../lib/supabase';
 import type { RFP } from '../types';
+import { sendRFPNotification, getSalesRepCode } from './rfpNotification';
 
 function convertFrenchDateToISO(dateStr: string | null): string | null {
   if (!dateStr) return null;
@@ -177,6 +178,32 @@ export async function createRFP(rfp: Omit<RFP, 'id'>): Promise<RFP> {
     }
     
     console.log('Successfully created RFP:', data);
+    
+    // Envoi de la notification email (non bloquant)
+    try {
+      const salesRepCode = await getSalesRepCode(rfp.assignedTo);
+      if (salesRepCode) {
+        // Programmer l'envoi avec un délai de 30 secondes
+        const emailScheduled = await sendRFPNotification({
+          rfpId: data.id,
+          client: data.client,
+          mission: data.mission,
+          location: data.location,
+          salesRepCode,
+          assignedTo: data.assigned_to
+        }, 0.5); // 30 secondes de délai (0.5 minute)
+        
+        if (emailScheduled) {
+          console.log('RFP email notification scheduled successfully (will be sent in 30 seconds)');
+        } else {
+          console.log('RFP email notification could not be scheduled');
+        }
+      } else {
+        console.warn('Could not send RFP email: sales rep code not found');
+      }
+    } catch (emailError) {
+      console.warn('RFP email notification scheduling failed (non-blocking):', emailError);
+    }
     
     return {
       id: data.id,
