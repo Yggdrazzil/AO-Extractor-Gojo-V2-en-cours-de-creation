@@ -307,6 +307,7 @@ export function RFPTable({
     await onView(rfp);
     setSelectedRFP(rfp);
   };
+  
   const handleDeleteClick = (rfp: RFP) => {
     setDeleteConfirm({
       isOpen: true,
@@ -385,25 +386,25 @@ export function RFPTable({
           {/* Première ligne : Filtres */}
           <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-4">
             <div className="flex items-center space-x-2">
-          <label htmlFor="sales-rep-filter" className="text-sm font-medium text-gray-700 dark:text-gray-300">
-            Filtrer par commercial :
-          </label>
-          <select
-            id="sales-rep-filter"
-            value={selectedSalesRep}
-            onChange={(e) => handleSalesRepChange(e.target.value)}
-            className="w-full sm:w-56 px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          >
-            <option value="">Tous les commerciaux</option>
-            {[...salesReps].sort((a, b) => {
-              const order = ['EPO', 'IKH', 'BVI', 'GMA', 'TSA', 'BCI', 'VIE', 'JVO'];
-              return order.indexOf(a.code) - order.indexOf(b.code);
-            }).map((rep) => (
-              <option key={rep.id} value={rep.id}>
-                {rep.code} - {rep.name}
-              </option>
-            ))}
-          </select>
+              <label htmlFor="sales-rep-filter" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                Filtrer par commercial :
+              </label>
+              <select
+                id="sales-rep-filter"
+                value={selectedSalesRep}
+                onChange={(e) => handleSalesRepChange(e.target.value)}
+                className="w-full sm:w-56 px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                <option value="">Tous les commerciaux</option>
+                {[...salesReps].sort((a, b) => {
+                  const order = ['EPO', 'IKH', 'BVI', 'GMA', 'TSA', 'BCI', 'VIE', 'JVO'];
+                  return order.indexOf(a.code) - order.indexOf(b.code);
+                }).map((rep) => (
+                  <option key={rep.id} value={rep.id}>
+                    {rep.code} - {rep.name}
+                  </option>
+                ))}
+              </select>
             </div>
             
             <div className="flex items-center space-x-2 flex-1">
@@ -441,7 +442,6 @@ export function RFPTable({
       >
         <table className="w-full border-collapse min-w-[1200px]">
           <thead className="bg-white dark:bg-gray-800 sticky top-0 z-10">
-          <thead className="sticky-header">
             <tr className="text-left">
               <th className="p-2 sm:p-4 w-12 sm:w-16" />
               <th 
