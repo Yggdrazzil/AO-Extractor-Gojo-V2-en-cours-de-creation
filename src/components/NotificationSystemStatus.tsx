@@ -248,7 +248,7 @@ export function NotificationSystemStatus({ className = '' }: NotificationSystemS
                 <h4 className="font-medium text-gray-900 dark:text-gray-100">Tests et Maintenance</h4>
                 <button
                   onClick={handleTestCronJobs}
-                <div>📅 Tous les jours à 9h00</div>
+                  disabled={isTesting}
                   className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 transition-colors text-sm"
                 >
                   {isTesting ? (
@@ -256,7 +256,7 @@ export function NotificationSystemStatus({ className = '' }: NotificationSystemS
                   ) : (
                     <Settings className="w-4 h-4" />
                   )}
-                <div>📅 Tous les jours à 9h00</div>
+                  {isTesting ? 'Test en cours...' : 'Tester les fonctions'}
                 </button>
               </div>
 
