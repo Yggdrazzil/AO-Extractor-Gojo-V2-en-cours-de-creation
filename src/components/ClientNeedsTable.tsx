@@ -401,14 +401,14 @@ export function ClientNeedsTable({
       <div className="w-full overflow-hidden bg-white dark:bg-gray-800 rounded-lg shadow-sm">
         <div 
           ref={tableRef}
-          className="w-full overflow-x-auto max-h-[70vh]"
+          className="table-scroll-container w-full max-h-[70vh]"
           style={{ 
-            willChange: isScrolling ? 'transform' : 'auto',
             contain: 'content'
           }}
         >
           <table className="w-full border-collapse">
             <thead className="bg-white dark:bg-gray-800 sticky top-0 z-10 border-b border-gray-200 dark:border-gray-700">
+            <thead className="sticky-header border-b border-gray-200 dark:border-gray-700">
               <tr className="text-left">
                 <th className="p-2 sm:p-4 w-16 bg-white dark:bg-gray-800" />
                 <th 

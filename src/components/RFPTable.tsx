@@ -434,14 +434,14 @@ export function RFPTable({
       </div>
       <div 
         ref={tableRef}
-        className="overflow-x-auto bg-white dark:bg-gray-800 rounded-lg shadow-sm max-h-[70vh] overscroll-contain"
+        className="table-scroll-container bg-white dark:bg-gray-800 rounded-lg shadow-sm max-h-[70vh]"
         style={{ 
-          willChange: isScrolling ? 'transform' : 'auto',
           contain: 'content'
         }}
       >
         <table className="w-full border-collapse min-w-[1200px]">
           <thead className="bg-white dark:bg-gray-800 sticky top-0 z-10">
+          <thead className="sticky-header">
             <tr className="text-left">
               <th className="p-2 sm:p-4 w-12 sm:w-16" />
               <th 
