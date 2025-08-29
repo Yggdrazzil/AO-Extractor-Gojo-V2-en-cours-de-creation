@@ -11,7 +11,7 @@ import { DailyClientNeedsSummaryTest } from './DailyClientNeedsSummaryTest';
 import { EmailSystemTroubleshooter } from './EmailSystemTroubleshooter';
 import { NotificationSystemStatus } from './NotificationSystemStatus';
 import { EmailDiagnosticPanel } from './EmailDiagnosticPanel';
-import { CronJobsManager } from './CronJobsManager';
+import { ClientSideCronManager } from './ClientSideCronManager';
 import type { RFP, SalesRep } from '../types';
 import type { Prospect } from '../types';
 import type { BoondmanagerProspect } from '../types';
@@ -238,7 +238,7 @@ export function TabContent({
         <div className="p-6 space-y-6 h-full overflow-auto">
           <EmailSystemTroubleshooter />
           <EmailDiagnosticPanel />
-          <CronJobsManager />
+          <ClientSideCronManager />
           <NotificationSystemStatus />
           <DailySummaryTest />
           <DailyProspectsSummaryTest />
