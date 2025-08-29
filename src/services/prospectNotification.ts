@@ -10,12 +10,11 @@ interface ProspectNotificationData {
 }
 
 /**
- * Envoie une notification email pour un nouveau prospect avec délai
+ * Envoie une notification email pour un nouveau prospect
  */
-export async function sendProspectNotification(data: ProspectNotificationData, delayMinutes: number = 0.5): Promise<boolean> {
+export async function sendProspectNotification(data: ProspectNotificationData, delaySeconds: number = 5): Promise<boolean> {
   try {
-    const delaySeconds = Math.round(delayMinutes * 60);
-    console.log(`Scheduling prospect notification in ${delaySeconds} seconds:`, {
+    console.log(`🚀 Sending prospect notification (${delaySeconds}s delay):`, {
       prospectId: data.prospectId,
       targetAccount: data.targetAccount,
       salesRepCode: data.salesRepCode,
@@ -23,10 +22,10 @@ export async function sendProspectNotification(data: ProspectNotificationData, d
       hasCV: data.hasCV
     });
 
-    // Programmer l'envoi avec un délai
+    // Programmer l'envoi avec un délai court
     setTimeout(async () => {
       try {
-        console.log(`Sending delayed prospect notification after ${delaySeconds} seconds...`);
+        console.log(`📧 Sending prospect notification now...`);
         
         // Récupérer les données actualisées du prospect pour avoir le compte ciblé correct
         const { data: prospectData, error: prospectError } = await supabase
@@ -62,11 +61,11 @@ export async function sendProspectNotification(data: ProspectNotificationData, d
           return;
         }
 
-        console.log('Delayed prospect email notification sent successfully to:', result.recipient);
+        console.log('✅ Prospect email notification sent successfully to:', result.recipient);
       } catch (error) {
-        console.error('Error in delayed prospect email sending:', error);
+        console.error('❌ Error in prospect email sending:', error);
       }
-    }, delayMinutes * 60 * 1000); // Convertir minutes en millisecondes
+    }, delaySeconds * 1000); // Délai en secondes
     
     return true;
   } catch (error) {

@@ -10,12 +10,11 @@ interface RFPNotificationData {
 }
 
 /**
- * Envoie une notification email pour un nouvel AO avec délai
+ * Envoie une notification email pour un nouvel AO
  */
-export async function sendRFPNotification(data: RFPNotificationData, delayMinutes: number = 0.5): Promise<boolean> {
+export async function sendRFPNotification(data: RFPNotificationData, delaySeconds: number = 5): Promise<boolean> {
   try {
-    const delaySeconds = Math.round(delayMinutes * 60);
-    console.log(`Scheduling RFP notification in ${delaySeconds} seconds:`, {
+    console.log(`🚀 Sending RFP notification (${delaySeconds}s delay):`, {
       rfpId: data.rfpId,
       client: data.client,
       mission: data.mission,
@@ -24,10 +23,10 @@ export async function sendRFPNotification(data: RFPNotificationData, delayMinute
       assignedTo: data.assignedTo
     });
 
-    // Programmer l'envoi avec un délai
+    // Programmer l'envoi avec un délai court pour éviter les problèmes de timing
     setTimeout(async () => {
       try {
-        console.log(`Sending delayed RFP notification after ${delaySeconds} seconds...`);
+        console.log(`📧 Sending RFP notification now...`);
         
         // Récupérer les données actualisées de l'AO pour avoir le client correct
         const { data: rfpData, error: rfpError } = await supabase
@@ -63,11 +62,11 @@ export async function sendRFPNotification(data: RFPNotificationData, delayMinute
           return;
         }
 
-        console.log('Delayed email notification sent successfully to:', result.recipient);
+        console.log('✅ RFP email notification sent successfully to:', result.recipient);
       } catch (error) {
-        console.error('Error in delayed email sending:', error);
+        console.error('❌ Error in RFP email sending:', error);
       }
-    }, delayMinutes * 60 * 1000); // Convertir minutes en millisecondes
+    }, delaySeconds * 1000); // Délai en secondes
     
     return true;
   } catch (error) {

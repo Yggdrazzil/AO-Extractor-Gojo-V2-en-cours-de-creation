@@ -173,7 +173,8 @@ export async function createProspect(prospect: Omit<Prospect, 'id'>, file?: File
     try {
       const salesRepCode = await getSalesRepCode(prospect.assignedTo);
       if (salesRepCode) {
-        console.log('📧 Scheduling prospect email notification for:', salesRepCode);
+        console.log('🔔 Scheduling prospect email notification for:', salesRepCode);
+        // Programmer l'envoi avec un délai de 5 secondes
         const emailScheduled = await sendProspectNotification({
           prospectId: data.id,
           targetAccount: data.target_account || '',
@@ -181,18 +182,18 @@ export async function createProspect(prospect: Omit<Prospect, 'id'>, file?: File
           assignedTo: data.assigned_to,
           hasCV: !!data.file_name,
           fileName: data.file_name || undefined
-        }, 0.5); // 30 secondes de délai (0.5 minute)
+        }, 5); // 5 secondes de délai
         
         if (emailScheduled) {
-          console.log('Prospect email notification scheduled successfully (will be sent in 30 seconds)');
+          console.log('✅ Prospect email notification scheduled successfully (will be sent in 5 seconds)');
         } else {
-          console.log('Prospect email notification could not be scheduled');
+          console.log('⚠️ Prospect email notification could not be scheduled');
         }
       } else {
-        console.warn('Could not send prospect email: sales rep code not found');
+        console.warn('⚠️ Could not send prospect email: sales rep code not found');
       }
     } catch (emailError) {
-      console.warn('Prospect email notification scheduling failed (non-blocking):', emailError);
+      console.error('❌ Prospect email notification scheduling failed (non-blocking):', emailError);
     }
     
     return {

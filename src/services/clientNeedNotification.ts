@@ -10,12 +10,11 @@ interface ClientNeedNotificationData {
 }
 
 /**
- * Envoie une notification email pour un nouveau profil de besoin client avec délai
+ * Envoie une notification email pour un nouveau profil de besoin client
  */
-export async function sendClientNeedNotification(data: ClientNeedNotificationData, delayMinutes: number = 0): Promise<boolean> {
+export async function sendClientNeedNotification(data: ClientNeedNotificationData, delaySeconds: number = 5): Promise<boolean> {
   try {
-    const delaySeconds = Math.round(delayMinutes * 60);
-    console.log(`Scheduling client need notification in ${delaySeconds} seconds:`, {
+    console.log(`🚀 Sending client need notification (${delaySeconds}s delay):`, {
       prospectId: data.prospectId,
       besoin: data.besoin,
       salesRepCode: data.salesRepCode,
@@ -23,10 +22,10 @@ export async function sendClientNeedNotification(data: ClientNeedNotificationDat
       hasCV: data.hasCV
     });
 
-    // Programmer l'envoi avec un délai
+    // Programmer l'envoi avec un délai court
     setTimeout(async () => {
       try {
-        console.log(`Sending delayed client need notification after ${delaySeconds} seconds...`);
+        console.log(`📧 Sending client need notification now...`);
         
         const { data: result, error } = await supabase.functions.invoke('send-client-need-notification', {
           body: data
@@ -42,11 +41,11 @@ export async function sendClientNeedNotification(data: ClientNeedNotificationDat
           return;
         }
 
-        console.log('Delayed client need email notification sent successfully to:', result.recipient);
+        console.log('✅ Client need email notification sent successfully to:', result.recipient);
       } catch (error) {
-        console.error('Error in delayed client need email sending:', error);
+        console.error('❌ Error in client need email sending:', error);
       }
-    }, delayMinutes * 60 * 1000); // Convertir minutes en millisecondes
+    }, delaySeconds * 1000); // Délai en secondes
     
     return true;
   } catch (error) {

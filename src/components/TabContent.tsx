@@ -12,6 +12,7 @@ import { EmailSystemTroubleshooter } from './EmailSystemTroubleshooter';
 import { NotificationSystemStatus } from './NotificationSystemStatus';
 import { EmailDiagnosticPanel } from './EmailDiagnosticPanel';
 import { ClientSideCronManager } from './ClientSideCronManager';
+import { NotificationTestPanel } from './NotificationTestPanel';
 import type { RFP, SalesRep } from '../types';
 import type { Prospect } from '../types';
 import type { BoondmanagerProspect } from '../types';
@@ -236,6 +237,7 @@ export function TabContent({
     case 'tools':
       return (
         <div className="p-6 space-y-6 h-full overflow-auto">
+          <NotificationTestPanel />
           <EmailSystemTroubleshooter />
           <EmailDiagnosticPanel />
           <ClientSideCronManager />
