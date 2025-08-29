@@ -320,7 +320,7 @@ export function ClientSideCronManager() {
             </h4>
             <div className="text-sm text-yellow-700 dark:text-yellow-300 space-y-1">
               <div>🤖 **Service Worker** : Fonctionne en arrière-plan dans votre navigateur</div>
-              <div>⏰ **Vérification** : Toutes les minutes pour détecter 9h00</div>
+              <div>⏰ **Vérification** : Toutes les heures pour détecter 9h00</div>
               <div>📅 **Planning** : Lundi à vendredi uniquement (pas de week-end)</div>
               <div>📧 **Appel direct** : Utilise les mêmes fonctions Edge que les tests manuels</div>
               <div>💾 **Persistant** : Continue à fonctionner même si vous fermez l'onglet</div>

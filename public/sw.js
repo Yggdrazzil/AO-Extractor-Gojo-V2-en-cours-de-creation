@@ -84,10 +84,7 @@ async function executeDailyEmailTasks() {
       });
     }
     
-    // Petite pause entre les appels
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    // 2. Récapitulatif Prospects (9h01)
+    // 2. Récapitulatif Prospects (9h00) - simultané
     try {
       console.log('👥 Calling Prospects summary...');
       const prospectsResponse = await fetch(`${supabaseUrl}/functions/v1/send-daily-prospects-summary`, {
@@ -114,10 +111,7 @@ async function executeDailyEmailTasks() {
       });
     }
     
-    // Petite pause entre les appels
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    // 3. Récapitulatif Besoins Clients (9h02)
+    // 3. Récapitulatif Besoins Clients (9h00) - simultané
     try {
       console.log('🎯 Calling Client Needs summary...');
       const clientNeedsResponse = await fetch(`${supabaseUrl}/functions/v1/send-daily-client-needs-summary`, {
@@ -171,22 +165,20 @@ async function executeDailyEmailTasks() {
  * Timer principal - vérifie toutes les minutes
  */
 function startCronTimer() {
-  console.log('⏰ Starting cron timer (checks every minute)');
+  console.log('⏰ Starting cron timer (checks every hour)');
   
   setInterval(async () => {
     const now = new Date();
     const task = TASKS.dailyEmailSummary;
     
-    // Log périodique (toutes les 30 minutes) pour debug
-    if (now.getMinutes() === 0 || now.getMinutes() === 30) {
-      console.log(`⏰ Cron check at ${now.toLocaleTimeString('fr-FR')} - Next execution: ${task.time} on weekdays`);
-    }
+    // Log à chaque vérification horaire
+    console.log(`⏰ Cron check at ${now.toLocaleTimeString('fr-FR')} - Next execution: ${task.time} on weekdays`);
     
     if (task.enabled && shouldExecuteToday(task)) {
       console.log(`🎯 Time to execute daily email tasks! (${now.toLocaleTimeString('fr-FR')})`);
       await executeDailyEmailTasks();
     }
-  }, 60000); // Vérifier toutes les minutes
+  }, 3600000); // Vérifier toutes les heures
 }
 
 // Événements du Service Worker
