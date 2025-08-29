@@ -320,7 +320,7 @@ export function ProspectsTable({
   }, [isScrolling]);
 
   return (
-    <div className="space-y-4 w-full">
+    <div className="space-y-6 w-full">
       <ProspectContentModal
         isOpen={!!selectedProspect}
         onClose={() => setSelectedProspect(null)}
@@ -337,7 +337,7 @@ export function ProspectsTable({
         onSave={onCommentsChange}
       />
       
-      <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm">
+      <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm">
         <div className="flex flex-col space-y-4">
           {/* Première ligne : Filtres */}
           <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-4">
@@ -390,10 +390,10 @@ export function ProspectsTable({
         </div>
       </div>
       
-      <div className="w-full overflow-hidden bg-white dark:bg-gray-800 rounded-lg shadow-sm">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm">
         <div 
           ref={tableRef}
-          className="table-scroll-container w-full max-h-[70vh]"
+          className="table-scroll-container w-full max-h-[70vh] rounded-lg"
           style={{ 
             contain: 'content'
           }}
