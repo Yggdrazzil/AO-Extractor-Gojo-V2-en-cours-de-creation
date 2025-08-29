@@ -93,5 +93,19 @@
   overflow: auto;
   overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
-  will-change: scroll-position;
+  position: relative;
+}
+
+/* Stabilisation des espacements */
+.stable-spacing {
+  margin-top: 1.5rem !important;
+  margin-bottom: 1.5rem !important;
+}
+
+/* Éviter les fluctuations d'espacement */
+.table-container {
+  margin-top: 1.5rem;
+  margin-bottom: 0;
+  position: relative;
+  transform: translateZ(0);
 }
