@@ -351,7 +351,7 @@ export function RFPTable({
   }, [isScrolling]);
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <RFPContentModal
         isOpen={!!selectedRFP}
         onClose={() => setSelectedRFP(null)}
@@ -381,7 +381,7 @@ export function RFPTable({
         rfp={selectedRFPForComments || { id: '', client: '', mission: '', comments: '' }}
         onSave={onCommentsChange}
       />
-      <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm">
+      <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm">
         <div className="flex flex-col space-y-4">
           {/* Première ligne : Filtres */}
           <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-4">
@@ -433,13 +433,14 @@ export function RFPTable({
           
         </div>
       </div>
-      <div 
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm">
+        <div 
         ref={tableRef}
-        className="table-scroll-container bg-white dark:bg-gray-800 rounded-lg shadow-sm max-h-[70vh]"
+        className="table-scroll-container w-full max-h-[70vh] rounded-lg"
         style={{ 
           contain: 'content'
         }}
-      >
+        >
         <table className="w-full border-collapse min-w-[1200px]">
           <thead className="bg-white dark:bg-gray-800 sticky top-0 z-10">
             <tr className="text-left">
@@ -803,6 +804,7 @@ export function RFPTable({
             ))}
           </tbody>
         </table>
+        </div>
       </div>
       
       <ConfirmDialog
