@@ -1,5 +1,4 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-import { corsHeaders } from '../_shared/cors.ts'
 
 interface RFPNotificationData {
   rfpId: string
@@ -10,8 +9,14 @@ interface RFPNotificationData {
   assignedTo: string
 }
 
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+}
+
 /**
- * Génère le contenu HTML de l'email - Style Flat Design Apple
+ * Génère le contenu HTML de l'email
  */
 function generateEmailHTML(data: RFPNotificationData, salesRepName: string, platformUrl: string): string {
   return `
@@ -486,7 +491,7 @@ Deno.serve(async (req) => {
     const firstName = salesRepInfo.name.split(' ')[0]
     
     // URL de la plateforme
-    const platformUrl = Deno.env.get('PLATFORM_URL') || 'https://ao-extractor-v2-en-c-l194.bolt.host'
+    const platformUrl = Deno.env.get('PLATFORM_URL') || 'https://hito-gojo-platform.netlify.app'
     
     // Génération du contenu email
     const subject = `Nouvel AO assigné : ${data.mission} - ${data.client}`
