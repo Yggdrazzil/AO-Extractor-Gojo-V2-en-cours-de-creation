@@ -66,3 +66,32 @@
 .dark .pagination-button:hover:not(:disabled) {
   background: #4b5563;
 }
+
+/* Fix pour les en-têtes sticky qui tremblent */
+.sticky-header {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  backdrop-filter: blur(8px);
+  will-change: transform;
+  contain: layout style paint;
+}
+
+.sticky-header th {
+  position: relative;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(8px);
+}
+
+.dark .sticky-header th {
+  background: rgba(31, 41, 55, 0.95);
+  backdrop-filter: blur(8px);
+}
+
+/* Amélioration du scrolling des tableaux */
+.table-scroll-container {
+  overflow: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  will-change: scroll-position;
+}
