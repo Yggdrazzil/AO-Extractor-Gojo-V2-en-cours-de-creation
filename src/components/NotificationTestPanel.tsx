@@ -300,12 +300,13 @@ export function NotificationTestPanel() {
 
       <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
         <h4 className="font-medium text-blue-900 dark:text-blue-200 mb-2">
-          💡 Comment utiliser ce panel
+          🔍 Diagnostic du problème
         </h4>
         <div className="text-sm text-blue-800 dark:text-blue-300 space-y-1">
-          <div>🔧 Ces tests appellent directement les fonctions Edge (même logique que vos ajouts d'AO/prospects)</div>
+          <div>🔧 Ces tests appellent les MÊMES fonctions Edge que lors de l'ajout d'AO/prospects</div>
           <div>📧 Ils envoient des emails de test à votre adresse personnelle</div>
-          <div>🕐 Utilisez ceci pour diagnostiquer si les notifications individuelles fonctionnent</div>
+          <div>🕐 Si ces tests échouent → le problème est dans les fonctions Edge</div>
+          <div>🕐 Si ces tests réussissent → le problème est dans l'appel depuis la création d'AO/prospects</div>
         </div>
       </div>
     </div>

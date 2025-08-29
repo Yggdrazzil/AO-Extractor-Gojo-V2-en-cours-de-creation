@@ -137,8 +137,8 @@ export async function addClientNeed(newProspect: BoondmanagerProspect): Promise<
     try {
       const salesRepCode = await getSalesRepCode(newProspect.assignedTo);
       if (salesRepCode) {
-        console.log('🔔 Scheduling client need email notification for:', salesRepCode);
-        // Programmer l'envoi avec un délai de 5 secondes
+        console.log('🔔 Sending immediate client need email notification for:', salesRepCode);
+        // Envoi immédiat après création du besoin client
         const emailScheduled = await sendClientNeedNotification({
           prospectId: data.id,
           besoin: data.selected_need_title,
@@ -146,18 +146,18 @@ export async function addClientNeed(newProspect: BoondmanagerProspect): Promise<
           assignedTo: data.assigned_to,
           hasCV: !!data.file_name,
           fileName: data.file_name || undefined
-        }, 5); // 5 secondes de délai
+        }, 0); // Aucun délai
         
         if (emailScheduled) {
-          console.log('✅ Client need email notification scheduled successfully (will be sent in 5 seconds)');
+          console.log('✅ Client need email notification sent successfully');
         } else {
-          console.log('⚠️ Client need email notification could not be scheduled');
+          console.log('⚠️ Client need email notification failed');
         }
       } else {
         console.warn('⚠️ Could not send client need email: sales rep code not found');
       }
     } catch (emailError) {
-      console.error('❌ Client need email notification scheduling failed (non-blocking):', emailError);
+      console.error('❌ Client need email notification failed (non-blocking):', emailError);
     }
     
     return {
