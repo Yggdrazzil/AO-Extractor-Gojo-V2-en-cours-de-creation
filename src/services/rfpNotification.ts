@@ -14,7 +14,7 @@ interface RFPNotificationData {
  */
 export async function sendRFPNotification(data: RFPNotificationData, delaySeconds: number = 5): Promise<boolean> {
   try {
-    console.log(`🚀 Sending RFP notification (${delaySeconds}s delay):`, {
+    console.log('🚀 Sending RFP notification IMMEDIATELY (no delay):', {
       rfpId: data.rfpId,
       client: data.client,
       mission: data.mission,
@@ -23,54 +23,54 @@ export async function sendRFPNotification(data: RFPNotificationData, delaySecond
       assignedTo: data.assignedTo
     });
 
-    // Programmer l'envoi avec un délai court pour éviter les problèmes de timing
-    setTimeout(async () => {
-      try {
-        console.log(`📧 Sending RFP notification now...`);
-        
-        // Récupérer les données actualisées de l'AO pour avoir le client correct
-        const { data: rfpData, error: rfpError } = await supabase
-          .from('rfps')
-          .select('client, mission, location')
-          .eq('id', data.rfpId)
-          .single();
+    // Envoi immédiat sans setTimeout pour éviter les problèmes
+    try {
+      console.log('📧 Calling Edge Function immediately...');
+      
+      // Récupérer les données actualisées de l'AO pour avoir le client correct
+      const { data: rfpData, error: rfpError } = await supabase
+        .from('rfps')
+        .select('client, mission, location')
+        .eq('id', data.rfpId)
+        .single();
 
-        if (rfpError || !rfpData) {
-          console.error('Error fetching updated RFP data:', rfpError);
-          return;
-        }
-
-        // Utiliser les données actualisées
-        const updatedData = {
-          ...data,
-          client: rfpData.client,
-          mission: rfpData.mission,
-          location: rfpData.location
-        };
-
-        const { data: result, error } = await supabase.functions.invoke('send-rfp-notification', {
-          body: updatedData
-        });
-
-        if (error) {
-          console.error('Error invoking email function:', error);
-          return;
-        }
-
-        if (!result?.success) {
-          console.error('Email function returned error:', result);
-          return;
-        }
-
-        console.log('✅ RFP email notification sent successfully to:', result.recipient);
-      } catch (error) {
-        console.error('❌ Error in RFP email sending:', error);
+      if (rfpError || !rfpData) {
+        console.error('❌ Error fetching updated RFP data:', rfpError);
+        return false;
       }
-    }, delaySeconds * 1000); // Délai en secondes
-    
-    return true;
+
+      // Utiliser les données actualisées
+      const updatedData = {
+        ...data,
+        client: rfpData.client,
+        mission: rfpData.mission,
+        location: rfpData.location
+      };
+
+      console.log('📤 Calling send-rfp-notification with data:', updatedData);
+      
+      const { data: result, error } = await supabase.functions.invoke('send-rfp-notification', {
+        body: updatedData
+      });
+
+      if (error) {
+        console.error('❌ Error invoking email function:', error);
+        return false;
+      }
+
+      if (!result?.success) {
+        console.error('❌ Email function returned error:', result);
+        return false;
+      }
+
+      console.log('✅ RFP email notification sent successfully to:', result.recipient);
+      return true;
+    } catch (error) {
+      console.error('❌ Error in RFP email sending:', error);
+      return false;
+    }
   } catch (error) {
-    console.error('Failed to send RFP notification:', error);
+    console.error('💥 Failed to send RFP notification:', error);
     return false;
   }
 }

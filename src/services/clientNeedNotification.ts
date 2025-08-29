@@ -14,7 +14,7 @@ interface ClientNeedNotificationData {
  */
 export async function sendClientNeedNotification(data: ClientNeedNotificationData, delaySeconds: number = 5): Promise<boolean> {
   try {
-    console.log(`🚀 Sending client need notification (${delaySeconds}s delay):`, {
+    console.log('🚀 Sending client need notification IMMEDIATELY (no delay):', {
       prospectId: data.prospectId,
       besoin: data.besoin,
       salesRepCode: data.salesRepCode,
@@ -22,34 +22,34 @@ export async function sendClientNeedNotification(data: ClientNeedNotificationDat
       hasCV: data.hasCV
     });
 
-    // Programmer l'envoi avec un délai court
-    setTimeout(async () => {
-      try {
-        console.log(`📧 Sending client need notification now...`);
-        
-        const { data: result, error } = await supabase.functions.invoke('send-client-need-notification', {
-          body: data
-        });
+    // Envoi immédiat sans setTimeout
+    try {
+      console.log('📧 Calling Edge Function immediately...');
+      
+      console.log('📤 Calling send-client-need-notification with data:', data);
+      
+      const { data: result, error } = await supabase.functions.invoke('send-client-need-notification', {
+        body: data
+      });
 
-        if (error) {
-          console.error('Error invoking client need email function:', error);
-          return;
-        }
-
-        if (!result?.success) {
-          console.error('Client need email function returned error:', result);
-          return;
-        }
-
-        console.log('✅ Client need email notification sent successfully to:', result.recipient);
-      } catch (error) {
-        console.error('❌ Error in client need email sending:', error);
+      if (error) {
+        console.error('❌ Error invoking client need email function:', error);
+        return false;
       }
-    }, delaySeconds * 1000); // Délai en secondes
-    
-    return true;
+
+      if (!result?.success) {
+        console.error('❌ Client need email function returned error:', result);
+        return false;
+      }
+
+      console.log('✅ Client need email notification sent successfully to:', result.recipient);
+      return true;
+    } catch (error) {
+      console.error('❌ Error in client need email sending:', error);
+      return false;
+    }
   } catch (error) {
-    console.error('Failed to send client need notification:', error);
+    console.error('💥 Failed to send client need notification:', error);
     return false;
   }
 }

@@ -183,8 +183,8 @@ export async function createRFP(rfp: Omit<RFP, 'id'>): Promise<RFP> {
     try {
       const salesRepCode = await getSalesRepCode(rfp.assignedTo);
       if (salesRepCode) {
-        console.log('🔔 Scheduling RFP email notification for:', salesRepCode);
-        // Programmer l'envoi avec un délai de 5 secondes pour laisser le temps à la transaction de se finaliser
+        console.log('🔔 Sending immediate RFP email notification for:', salesRepCode);
+        // Envoi immédiat après création de l'AO
         const emailScheduled = await sendRFPNotification({
           rfpId: data.id,
           client: data.client,
@@ -192,18 +192,18 @@ export async function createRFP(rfp: Omit<RFP, 'id'>): Promise<RFP> {
           location: data.location,
           salesRepCode,
           assignedTo: data.assigned_to
-        }, 5); // 5 secondes de délai
+        }, 0); // Aucun délai
         
         if (emailScheduled) {
-          console.log('✅ RFP email notification scheduled successfully (will be sent in 5 seconds)');
+          console.log('✅ RFP email notification sent successfully');
         } else {
-          console.log('⚠️ RFP email notification could not be scheduled');
+          console.log('⚠️ RFP email notification failed');
         }
       } else {
         console.warn('⚠️ Could not send RFP email: sales rep code not found');
       }
     } catch (emailError) {
-      console.error('❌ RFP email notification scheduling failed (non-blocking):', emailError);
+      console.error('❌ RFP email notification failed (non-blocking):', emailError);
     }
     
     return {
