@@ -17,6 +17,7 @@ const corsHeaders = {
 
 /**
  * Génère le contenu HTML de l'email
+ * Structure IDENTIQUE à send-daily-rfp-summary qui fonctionne
  */
 function generateEmailHTML(data: RFPNotificationData, salesRepName: string, platformUrl: string): string {
   return `
@@ -331,39 +332,47 @@ async function getSalesRepInfo(assignedTo: string): Promise<{email: string, name
     
     const supabase = createClient(supabaseUrl, supabaseServiceKey)
     
+    console.log('🔍 Fetching sales rep info for ID:', assignedTo)
+    
     const { data, error } = await supabase
       .from('sales_reps')
       .select('email, name')
       .eq('id', assignedTo)
       .single()
 
-    if (error || !data) {
-      console.error('Error fetching sales rep info:', error)
+    if (error) {
+      console.error('❌ Error fetching sales rep info:', error)
       return null
     }
 
-    console.log(`Found sales rep: ${data.name} (${data.email})`)
+    if (!data) {
+      console.error('❌ No sales rep data found for ID:', assignedTo)
+      return null
+    }
+
+    console.log('✅ Found sales rep:', data.name, '(', data.email, ')')
     return { email: data.email, name: data.name }
   } catch (error) {
-    console.error('Failed to get sales rep info:', error)
+    console.error('💥 Exception fetching sales rep info:', error)
     return null
   }
 }
 
 /**
  * Envoie l'email via SendGrid
+ * Code IDENTIQUE à send-daily-rfp-summary qui fonctionne
  */
 async function sendEmailWithSendGrid(to: string, subject: string, html: string, text: string): Promise<{ success: boolean; error?: string; messageId?: string }> {
   const sendGridApiKey = Deno.env.get('SENDGRID_API_KEY')
   
   if (!sendGridApiKey) {
-    const errorMsg = 'SENDGRID_API_KEY not configured'
+    const errorMsg = '❌ SENDGRID_API_KEY not configured'
     console.error(errorMsg)
     return { success: false, error: errorMsg }
   }
 
   try {
-    console.log(`Sending RFP notification email via SendGrid to: ${to}`)
+    console.log('📧 Sending RFP notification email via SendGrid to:', to)
     
     const fromEmail = 'notifications@hito.digital'
     
@@ -402,26 +411,26 @@ async function sendEmailWithSendGrid(to: string, subject: string, html: string, 
     })
 
     const responseText = await response.text()
-    console.log(`SendGrid API response (${response.status}):`, responseText)
+    console.log('📨 SendGrid API response:', response.status, '|', responseText.substring(0, 200))
 
     if (!response.ok) {
-      const errorMsg = `SendGrid API error: ${response.status} - ${responseText}`
+      const errorMsg = `❌ SendGrid API error: ${response.status} - ${responseText}`
       console.error(errorMsg)
       return { success: false, error: errorMsg }
     }
 
     const messageId = response.headers.get('X-Message-Id') || 'unknown'
-    console.log('RFP notification email sent successfully via SendGrid, Message ID:', messageId)
+    console.log('✅ RFP notification email sent successfully via SendGrid | Message ID:', messageId)
     return { success: true, messageId }
   } catch (error) {
-    const errorMsg = `SendGrid email sending failed: ${error.message || 'Unknown error'}`
+    const errorMsg = `💥 SendGrid email sending failed: ${error.message || 'Unknown error'}`
     console.error(errorMsg, error)
     return { success: false, error: errorMsg }
   }
 }
 
 /**
- * Handler principal
+ * Handler principal - Structure IDENTIQUE à send-daily-rfp-summary
  */
 Deno.serve(async (req) => {
   // Gestion CORS
@@ -440,10 +449,10 @@ Deno.serve(async (req) => {
   }
 
   try {
-    console.log('Processing RFP notification request...')
+    console.log('🚀 Processing RFP notification request...')
     
     const data = await req.json() as RFPNotificationData
-    console.log('Received data:', {
+    console.log('📨 Received data:', {
       rfpId: data.rfpId,
       client: data.client,
       mission: data.mission,
@@ -454,12 +463,13 @@ Deno.serve(async (req) => {
     
     // Validation des données
     if (!data.rfpId || !data.salesRepCode || !data.client || !data.mission || !data.assignedTo) {
-      const errorMsg = 'Missing required fields: rfpId, salesRepCode, client, mission, and assignedTo are required'
+      const errorMsg = '❌ Missing required fields: rfpId, salesRepCode, client, mission, and assignedTo are required'
       console.error(errorMsg)
       return new Response(
         JSON.stringify({ 
           error: 'Missing required fields',
-          details: errorMsg
+          details: errorMsg,
+          receivedData: data
         }),
         { 
           status: 400, 
@@ -469,16 +479,17 @@ Deno.serve(async (req) => {
     }
 
     // Récupération des informations du commercial
-    console.log(`Fetching info for sales rep ID: ${data.assignedTo}`)
+    console.log('🔍 Fetching info for sales rep ID:', data.assignedTo)
     const salesRepInfo = await getSalesRepInfo(data.assignedTo)
     
     if (!salesRepInfo) {
-      const errorMsg = `No info found for sales rep with ID: ${data.assignedTo}`
+      const errorMsg = `❌ No info found for sales rep with ID: ${data.assignedTo}`
       console.error(errorMsg)
       return new Response(
         JSON.stringify({ 
           error: 'Sales rep info not found',
-          details: errorMsg
+          details: errorMsg,
+          salesRepId: data.assignedTo
         }),
         { 
           status: 400, 
@@ -489,6 +500,7 @@ Deno.serve(async (req) => {
 
     // Extraire le prénom uniquement
     const firstName = salesRepInfo.name.split(' ')[0]
+    console.log('👤 Will send email to:', firstName, '(', salesRepInfo.email, ')')
     
     // URL de la plateforme
     const platformUrl = Deno.env.get('PLATFORM_URL') || 'https://hito-gojo-platform.netlify.app'
@@ -498,17 +510,18 @@ Deno.serve(async (req) => {
     const html = generateEmailHTML(data, firstName, platformUrl)
     const text = generateEmailText(data, firstName, platformUrl)
 
-    console.log(`Preparing to send email with subject: "${subject}"`)
+    console.log('📧 Preparing to send email with subject:', subject)
 
     // Envoi de l'email via SendGrid
     const emailResult = await sendEmailWithSendGrid(salesRepInfo.email, subject, html, text)
     
     if (!emailResult.success) {
-      console.error('Failed to send email via SendGrid:', emailResult.error)
+      console.error('❌ Failed to send email via SendGrid:', emailResult.error)
       return new Response(
         JSON.stringify({ 
           error: 'Failed to send email',
-          details: emailResult.error
+          details: emailResult.error,
+          recipient: salesRepInfo.email
         }),
         { 
           status: 500, 
@@ -517,7 +530,7 @@ Deno.serve(async (req) => {
       )
     }
 
-    console.log(`RFP notification email sent successfully to ${salesRepInfo.email} via SendGrid`)
+    console.log('🎉 RFP notification email sent successfully to', salesRepInfo.email, 'via SendGrid')
     
     return new Response(
       JSON.stringify({ 
@@ -525,7 +538,12 @@ Deno.serve(async (req) => {
         message: 'Email sent successfully via SendGrid',
         recipient: salesRepInfo.email,
         messageId: emailResult.messageId,
-        provider: 'SendGrid'
+        provider: 'SendGrid',
+        rfpDetails: {
+          client: data.client,
+          mission: data.mission,
+          location: data.location
+        }
       }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
@@ -533,11 +551,12 @@ Deno.serve(async (req) => {
     )
 
   } catch (error) {
-    console.error('Function error:', error)
+    console.error('💥 Function error:', error)
     return new Response(
       JSON.stringify({ 
         error: 'Internal server error',
-        details: error.message || 'Unknown error occurred'
+        details: error.message || 'Unknown error occurred',
+        stack: error.stack || 'No stack trace'
       }),
       { 
         status: 500, 

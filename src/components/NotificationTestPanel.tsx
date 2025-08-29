@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
-import { Mail, Send, AlertCircle, CheckCircle, RefreshCw, User, FileText, Target } from 'lucide-react';
+import { Mail, Send, AlertCircle, CheckCircle, RefreshCw, User, FileText, Target, Search, Bug } from 'lucide-react';
 
 export function NotificationTestPanel() {
+  const [isDebugging, setIsDebugging] = useState(false);
+  const [debugResults, setDebugResults] = useState<any>(null);
   const [isTestingRFP, setIsTestingRFP] = useState(false);
   const [isTestingProspect, setIsTestingProspect] = useState(false);
   const [isTestingClientNeed, setIsTestingClientNeed] = useState(false);
@@ -11,6 +13,97 @@ export function NotificationTestPanel() {
     message: string;
     details?: any;
   }>>([]);
+
+  const debugNotificationSystem = async () => {
+    try {
+      setIsDebugging(true);
+      console.log('🔍 Starting deep debug of notification system...');
+      
+      const { supabase } = await import('../lib/supabase');
+      
+      // 1. Vérifier la session et les variables d'env
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session?.user?.email) {
+        throw new Error('Utilisateur non connecté');
+      }
+
+      // 2. Récupérer les infos du commercial connecté
+      const { data: salesRep } = await supabase
+        .from('sales_reps')
+        .select('id, code, email, name')
+        .eq('email', session.user.email)
+        .single();
+
+      if (!salesRep) {
+        throw new Error('Commercial non trouvé pour cet email');
+      }
+
+      console.log('👤 Current user:', salesRep);
+
+      // 3. Tester directement la fonction send-daily-rfp-summary qui FONCTIONNE
+      console.log('🧪 Testing working function (send-daily-rfp-summary)...');
+      
+      const { data: workingResult, error: workingError } = await supabase.functions.invoke('send-daily-rfp-summary', {
+        body: { test: true }
+      });
+
+      console.log('📧 Working function result:', workingResult, 'Error:', workingError);
+
+      // 4. Tester la fonction problématique send-rfp-notification
+      console.log('🧪 Testing problematic function (send-rfp-notification)...');
+      
+      const { data: brokenResult, error: brokenError } = await supabase.functions.invoke('send-rfp-notification', {
+        body: {
+          rfpId: 'debug-test',
+          client: 'Debug Client',
+          mission: 'Debug Mission',
+          location: 'Debug Location',
+          salesRepCode: salesRep.code,
+          assignedTo: salesRep.id
+        }
+      });
+
+      console.log('❌ Broken function result:', brokenResult, 'Error:', brokenError);
+
+      // 5. Comparer les résultats
+      const debugData = {
+        userInfo: {
+          email: session.user.email,
+          salesRep: salesRep
+        },
+        workingFunction: {
+          name: 'send-daily-rfp-summary',
+          result: workingResult,
+          error: workingError,
+          success: !workingError
+        },
+        brokenFunction: {
+          name: 'send-rfp-notification',
+          result: brokenResult,
+          error: brokenError,
+          success: !brokenError
+        },
+        comparison: {
+          workingSuccess: !workingError,
+          brokenSuccess: !brokenError,
+          diagnosis: !brokenError ? 'Both functions work' : 'send-rfp-notification is broken'
+        }
+      };
+
+      setDebugResults(debugData);
+      
+    } catch (error) {
+      console.error('Debug failed:', error);
+      setDebugResults({
+        error: true,
+        message: error instanceof Error ? error.message : 'Erreur inconnue',
+        details: error
+      });
+    } finally {
+      setIsDebugging(false);
+    }
+  };
 
   const testRFPNotification = async () => {
     try {
@@ -35,7 +128,16 @@ export function NotificationTestPanel() {
         throw new Error('Commercial non trouvé pour cet email');
       }
 
-      // Appeler directement la fonction Edge
+      // Appeler directement la fonction Edge avec logs détaillés
+      console.log('📤 Calling send-rfp-notification Edge Function with data:', {
+        rfpId: 'test-rfp-notification',
+        client: 'Client Test',
+        mission: 'Test de notification AO',
+        location: 'Test Location',
+        salesRepCode: salesRep.code,
+        assignedTo: salesRep.id
+      });
+
       const { data: result, error } = await supabase.functions.invoke('send-rfp-notification', {
         body: {
           rfpId: 'test-rfp-notification',
@@ -47,12 +149,14 @@ export function NotificationTestPanel() {
         }
       });
 
+      console.log('📥 Edge Function response:', { result, error });
+
       if (error) {
         throw new Error(`Erreur fonction Edge: ${error.message}`);
       }
 
       if (!result?.success) {
-        throw new Error(`Fonction Edge échouée: ${result?.message || 'Erreur inconnue'}`);
+        throw new Error(`Fonction Edge échouée: ${result?.error || result?.message || 'Erreur inconnue'}`);
       }
 
       setResults(prev => [...prev, {
@@ -201,6 +305,7 @@ export function NotificationTestPanel() {
 
   const clearResults = () => {
     setResults([]);
+    setDebugResults(null);
   };
 
   return (
@@ -208,17 +313,80 @@ export function NotificationTestPanel() {
       <div className="flex items-center justify-between mb-6">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
           <Mail className="w-5 h-5" />
-          Test des notifications individuelles
+          Test et Debug des notifications individuelles
         </h3>
-        {results.length > 0 && (
+        <div className="flex items-center gap-3">
           <button
-            onClick={clearResults}
-            className="px-3 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors"
+            onClick={debugNotificationSystem}
+            disabled={isDebugging}
+            className="flex items-center gap-2 px-3 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 disabled:opacity-50 transition-colors text-sm"
           >
-            Effacer les résultats
+            {isDebugging ? (
+              <RefreshCw className="w-4 h-4 animate-spin" />
+            ) : (
+              <Bug className="w-4 h-4" />
+            )}
+            {isDebugging ? 'Debug...' : 'Debug approfondi'}
           </button>
-        )}
+          {(results.length > 0 || debugResults) && (
+            <button
+              onClick={clearResults}
+              className="px-3 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors"
+            >
+              Effacer
+            </button>
+          )}
+        </div>
       </div>
+
+      {/* Debug Results */}
+      {debugResults && (
+        <div className="mb-6 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+          <h4 className="font-medium text-gray-900 dark:text-gray-100 mb-3 flex items-center gap-2">
+            <Search className="w-5 h-5" />
+            Diagnostic approfondi du système
+          </h4>
+          
+          {debugResults.error ? (
+            <div className="p-3 bg-red-100 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded text-sm text-red-700 dark:text-red-300">
+              Erreur de debug : {debugResults.message}
+            </div>
+          ) : (
+            <div className="space-y-4 text-sm">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="p-3 bg-white dark:bg-gray-600 rounded">
+                  <h5 className="font-medium text-green-700 dark:text-green-300 mb-2">
+                    ✅ Fonction qui marche (send-daily-rfp-summary)
+                  </h5>
+                  <div className="text-gray-700 dark:text-gray-300">
+                    Success: {debugResults.workingFunction?.success ? 'Oui' : 'Non'}<br/>
+                    Error: {debugResults.workingFunction?.error?.message || 'Aucune'}
+                  </div>
+                </div>
+                
+                <div className="p-3 bg-white dark:bg-gray-600 rounded">
+                  <h5 className="font-medium text-red-700 dark:text-red-300 mb-2">
+                    ❌ Fonction cassée (send-rfp-notification)
+                  </h5>
+                  <div className="text-gray-700 dark:text-gray-300">
+                    Success: {debugResults.brokenFunction?.success ? 'Oui' : 'Non'}<br/>
+                    Error: {debugResults.brokenFunction?.error?.message || 'Aucune'}
+                  </div>
+                </div>
+              </div>
+              
+              <div className="p-3 bg-blue-100 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded">
+                <h5 className="font-medium text-blue-800 dark:text-blue-200 mb-2">
+                  🔍 Diagnostic : {debugResults.comparison?.diagnosis}
+                </h5>
+                <pre className="text-xs overflow-auto">
+                  {JSON.stringify(debugResults, null, 2)}
+                </pre>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         <button
@@ -298,15 +466,15 @@ export function NotificationTestPanel() {
         </div>
       )}
 
-      <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
-        <h4 className="font-medium text-blue-900 dark:text-blue-200 mb-2">
-          🔍 Diagnostic du problème
+      <div className="mt-6 p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
+        <h4 className="font-medium text-yellow-900 dark:text-yellow-200 mb-2">
+          🔍 Stratégie de diagnostic
         </h4>
-        <div className="text-sm text-blue-800 dark:text-blue-300 space-y-1">
-          <div>🔧 Ces tests appellent les MÊMES fonctions Edge que lors de l'ajout d'AO/prospects</div>
-          <div>📧 Ils envoient des emails de test à votre adresse personnelle</div>
-          <div>🕐 Si ces tests échouent → le problème est dans les fonctions Edge</div>
-          <div>🕐 Si ces tests réussissent → le problème est dans l'appel depuis la création d'AO/prospects</div>
+        <div className="text-sm text-yellow-800 dark:text-yellow-300 space-y-2">
+          <div>1️⃣ <strong>Debug approfondi</strong> : Compare les fonctions qui marchent vs celles cassées</div>
+          <div>2️⃣ <strong>Test individuel</strong> : Teste chaque fonction Edge séparément</div>
+          <div>3️⃣ <strong>Logs console</strong> : Vérifiez la console pour plus d'infos (F12 → Console)</div>
+          <div>4️⃣ <strong>Point de comparaison</strong> : send-daily-rfp-summary FONCTIONNE, on va s'en inspirer</div>
         </div>
       </div>
     </div>
