@@ -337,7 +337,7 @@ export function ProspectsTable({
         onSave={onCommentsChange}
       />
       
-      <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm mb-6">
+      <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm" style={{ marginBottom: '24px' }}>
         <div className="flex flex-col space-y-4">
           {/* Première ligne : Filtres */}
           <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-4">
@@ -390,7 +390,7 @@ export function ProspectsTable({
         </div>
       </div>
       
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm mt-0">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm" style={{ marginTop: 0 }}>
         <div
           ref={tableRef}
           className="table-scroll-container w-full max-h-[70vh]"

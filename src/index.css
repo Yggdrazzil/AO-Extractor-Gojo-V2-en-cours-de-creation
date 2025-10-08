@@ -105,24 +105,33 @@ thead[class*="sticky"] th {
   overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
   position: relative;
-  will-change: scroll-position;
-  margin: 0;
-  padding: 0;
+  margin: 0 !important;
+  padding: 0 !important;
   border: 0;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  contain: layout style paint;
 }
 
 .table-scroll-container thead {
   position: sticky;
   top: 0;
   z-index: 10;
-  will-change: auto;
-  margin: 0;
-  padding: 0;
+  margin: 0 !important;
+  padding: 0 !important;
+  transform: translateZ(0);
 }
 
 .table-scroll-container thead th {
   background-clip: padding-box;
-  margin: 0;
+  margin: 0 !important;
+  transform: translateZ(0);
+}
+
+.table-scroll-container table {
+  margin: 0 !important;
+  padding: 0 !important;
+  border-spacing: 0;
 }
 
 /* Stabilisation des espacements */
