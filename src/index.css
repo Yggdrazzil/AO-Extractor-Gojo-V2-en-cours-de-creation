@@ -106,14 +106,10 @@ thead[class*="sticky"] th {
   -webkit-overflow-scrolling: touch;
 }
 
-.table-scroll-container thead {
+.table-scroll-container thead th {
   position: sticky;
   top: 0;
   z-index: 10;
-}
-
-.table-scroll-container thead th {
-  background-clip: padding-box;
 }
 
 /* Stabilisation des espacements */
