@@ -43,19 +43,25 @@ export function LinkedInModal({ isOpen, onClose, rfpId, onUrlCountChange }: Link
   useEffect(() => {
     if (isOpen && rfpId) {
       loadLinks();
-      // Focus sur le premier champ après un court délai pour s'assurer que la modal est rendue
-      setTimeout(() => {
-        if (firstInputRef.current) {
-          firstInputRef.current.focus();
-          firstInputRef.current.select();
-        }
-      }, 100);
     } else {
       setLinks([]);
       setUrls(['']);
       setError(null);
     }
   }, [isOpen, rfpId]);
+
+  useEffect(() => {
+    if (isOpen) {
+      // Utiliser requestAnimationFrame pour s'assurer que le DOM est complètement rendu
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          if (firstInputRef.current) {
+            firstInputRef.current.focus();
+          }
+        });
+      });
+    }
+  }, [isOpen]);
 
   const loadLinks = async () => {
     try {
@@ -132,13 +138,13 @@ export function LinkedInModal({ isOpen, onClose, rfpId, onUrlCountChange }: Link
       setLinks(newLinks);
       setUrls(['']); // Reset avec un champ vide
       updateUrlCount(newLinks);
-      
+
       // Refocus sur le premier champ après ajout
-      setTimeout(() => {
+      requestAnimationFrame(() => {
         if (firstInputRef.current) {
           firstInputRef.current.focus();
         }
-      }, 100);
+      });
     } catch (error) {
       console.error('Error adding LinkedIn links:', error);
       const errorMessage = error instanceof Error ? error.message : 'Erreur inconnue';
