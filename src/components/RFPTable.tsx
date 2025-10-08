@@ -442,11 +442,11 @@ export function RFPTable({
         }}
         >
         <table className="w-full border-collapse min-w-[1200px]">
-          <thead className="bg-white dark:bg-gray-800 sticky top-0 z-10 border-b border-gray-200 dark:border-gray-700" style={{ transform: 'translate3d(0, 0, 0)' }}>
+          <thead className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
             <tr className="text-left">
-              <th className="p-2 sm:p-4 w-12 sm:w-16" />
+              <th className="p-2 sm:p-4 w-12 sm:w-16 bg-white dark:bg-gray-800" />
               <th 
-                className="p-2 sm:p-4 font-medium text-gray-600 dark:text-gray-200 cursor-pointer select-none min-w-[100px]"
+                className="p-2 sm:p-4 font-medium text-gray-600 dark:text-gray-200 cursor-pointer select-none min-w-[100px] bg-white dark:bg-gray-800"
                 onClick={() => handleSort('client')}
               >
                 <div className="flex items-center gap-1 sm:gap-2">
@@ -455,7 +455,7 @@ export function RFPTable({
                 </div>
               </th>
               <th 
-                className="p-2 sm:p-4 font-medium text-gray-600 dark:text-gray-200 cursor-pointer select-none min-w-[120px]"
+                className="p-2 sm:p-4 font-medium text-gray-600 dark:text-gray-200 cursor-pointer select-none min-w-[120px] bg-white dark:bg-gray-800"
                 onClick={() => handleSort('mission')}
               >
                 <div className="flex items-center gap-1 sm:gap-2">
@@ -464,7 +464,7 @@ export function RFPTable({
                 </div>
               </th>
               <th 
-                className="p-2 sm:p-4 font-medium text-gray-600 dark:text-gray-200 cursor-pointer select-none min-w-[80px]"
+                className="p-2 sm:p-4 font-medium text-gray-600 dark:text-gray-200 cursor-pointer select-none min-w-[80px] bg-white dark:bg-gray-800"
                 onClick={() => handleSort('location')}
               >
                 <div className="flex items-center gap-1 sm:gap-2">
@@ -473,7 +473,7 @@ export function RFPTable({
                 </div>
               </th>
               <th 
-                className="p-2 sm:p-4 font-medium text-gray-600 dark:text-gray-200 cursor-pointer select-none min-w-[70px]"
+                className="p-2 sm:p-4 font-medium text-gray-600 dark:text-gray-200 cursor-pointer select-none min-w-[70px] bg-white dark:bg-gray-800"
                 onClick={() => handleSort('maxRate')}
               >
                 <div className="flex items-center gap-1 sm:gap-2">
@@ -481,8 +481,8 @@ export function RFPTable({
                   {getSortIcon('maxRate')}
                 </div>
               </th>
-              <th 
-                className="p-2 sm:p-4 font-medium text-gray-600 dark:text-gray-200 cursor-pointer select-none min-w-[90px]"
+              <th
+                className="p-2 sm:p-4 font-medium text-gray-600 dark:text-gray-200 cursor-pointer select-none min-w-[90px] bg-white dark:bg-gray-800"
                 onClick={() => handleSort('createdAt')}
               >
                 <div className="flex items-center gap-1 sm:gap-2">
@@ -490,8 +490,8 @@ export function RFPTable({
                   {getSortIcon('createdAt')}
                 </div>
               </th>
-              <th 
-                className="p-2 sm:p-4 font-medium text-gray-600 dark:text-gray-200 cursor-pointer select-none min-w-[90px]"
+              <th
+                className="p-2 sm:p-4 font-medium text-gray-600 dark:text-gray-200 cursor-pointer select-none min-w-[90px] bg-white dark:bg-gray-800"
                 onClick={() => handleSort('startDate')}
               >
                 <div className="flex items-center gap-1 sm:gap-2">
@@ -499,9 +499,9 @@ export function RFPTable({
                   {getSortIcon('startDate')}
                 </div>
               </th>
-              <th className="p-2 sm:p-4 font-medium text-gray-600 dark:text-gray-200 min-w-[90px]">Statut</th>
-              <th className="p-2 sm:p-4 font-medium text-gray-600 dark:text-gray-200 min-w-[80px]">Commercial</th>
-              <th className="p-2 sm:p-4 font-medium text-gray-600 dark:text-gray-200 min-w-[100px]">Actions</th>
+              <th className="p-2 sm:p-4 font-medium text-gray-600 dark:text-gray-200 min-w-[90px] bg-white dark:bg-gray-800">Statut</th>
+              <th className="p-2 sm:p-4 font-medium text-gray-600 dark:text-gray-200 min-w-[80px] bg-white dark:bg-gray-800">Commercial</th>
+              <th className="p-2 sm:p-4 font-medium text-gray-600 dark:text-gray-200 min-w-[100px] bg-white dark:bg-gray-800">Actions</th>
             </tr>
           </thead>
           <tbody>

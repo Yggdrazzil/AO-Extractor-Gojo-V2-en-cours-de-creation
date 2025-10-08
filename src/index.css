@@ -105,6 +105,18 @@ thead[class*="sticky"] th {
   overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
   position: relative;
+  will-change: scroll-position;
+}
+
+.table-scroll-container thead {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  will-change: auto;
+}
+
+.table-scroll-container thead th {
+  background-clip: padding-box;
 }
 
 /* Stabilisation des espacements */
