@@ -794,7 +794,7 @@ export function RFPTable({
                       </button>
                       {rfp.comments && rfp.comments.trim() && (
                         <div className="absolute bottom-full right-0 mb-2 hidden group-hover:block z-50 pointer-events-none">
-                          <div className="bg-gray-900 dark:bg-gray-700 text-white text-sm rounded-lg shadow-lg p-3 max-w-xs whitespace-pre-wrap break-words">
+                          <div className="bg-gray-900 dark:bg-gray-700 text-white text-sm rounded-lg shadow-lg p-3 w-96 max-h-60 overflow-y-auto whitespace-pre-wrap break-words">
                             {rfp.comments}
                             <div className="absolute top-full right-4 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900 dark:border-t-gray-700"></div>
                           </div>
