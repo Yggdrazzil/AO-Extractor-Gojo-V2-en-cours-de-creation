@@ -442,7 +442,7 @@ export function RFPTable({
         }}
         >
         <table className="w-full border-collapse min-w-[1200px]">
-          <thead className="bg-white dark:bg-gray-800 sticky top-0 z-10" style={{ transform: 'translateZ(0)', backfaceVisibility: 'hidden', willChange: 'transform' }}>
+          <thead className="bg-white dark:bg-gray-800 sticky top-0 z-10 border-b border-gray-200 dark:border-gray-700" style={{ transform: 'translate3d(0, 0, 0)' }}>
             <tr className="text-left">
               <th className="p-2 sm:p-4 w-12 sm:w-16" />
               <th 

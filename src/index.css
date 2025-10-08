@@ -25,6 +25,17 @@
   scroll-behavior: smooth;
 }
 
+/* Fix pour les headers sticky qui "vibrent" */
+thead[class*="sticky"] {
+  -webkit-transform: translate3d(0, 0, 0);
+  transform: translate3d(0, 0, 0);
+}
+
+thead[class*="sticky"] th {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
 /* Optimisation des transitions pour les gros volumes */
 .performance-mode * {
   transition: none !important;
