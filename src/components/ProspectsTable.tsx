@@ -391,12 +391,9 @@ export function ProspectsTable({
       </div>
       
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm mt-0">
-        <div 
+        <div
           ref={tableRef}
-          className="table-scroll-container w-full max-h-[70vh] rounded-lg"
-          style={{ 
-            contain: 'content'
-          }}
+          className="table-scroll-container w-full max-h-[70vh]"
         >
           <table className="w-full border-collapse">
             <thead className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
