@@ -723,18 +723,28 @@ export function ProspectsTable({
                       >
                         <Eye className="w-4 h-4 sm:w-5 sm:h-5" />
                       </button>
-                      <button
-                        onClick={() => setSelectedProspectForComments(prospect)}
-                        title="Commentaires"
-                        className="relative p-1 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
-                      >
-                        <MessageSquare className="w-4 h-4 sm:w-5 sm:h-5" />
+                      <div className="relative group">
+                        <button
+                          onClick={() => setSelectedProspectForComments(prospect)}
+                          title="Commentaires"
+                          className="relative p-1 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+                        >
+                          <MessageSquare className="w-4 h-4 sm:w-5 sm:h-5" />
+                          {prospect.comments && prospect.comments.trim() && (
+                            <span className="absolute -top-1 -right-1 bg-orange-500 text-white text-xs font-bold rounded-full min-w-[16px] h-[16px] flex items-center justify-center px-1">
+                              !
+                            </span>
+                          )}
+                        </button>
                         {prospect.comments && prospect.comments.trim() && (
-                          <span className="absolute -top-1 -right-1 bg-orange-500 text-white text-xs font-bold rounded-full min-w-[16px] h-[16px] flex items-center justify-center px-1">
-                            !
-                          </span>
+                          <div className="absolute bottom-full right-0 mb-2 hidden group-hover:block z-50 pointer-events-none">
+                            <div className="bg-gray-900 dark:bg-gray-700 text-white text-sm rounded-lg shadow-lg p-3 max-w-xs whitespace-pre-wrap break-words">
+                              {prospect.comments}
+                              <div className="absolute top-full right-4 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900 dark:border-t-gray-700"></div>
+                            </div>
+                          </div>
                         )}
-                      </button>
+                      </div>
                       <button
                         onClick={() => handleDeleteClick(prospect)}
                         title="Supprimer"
