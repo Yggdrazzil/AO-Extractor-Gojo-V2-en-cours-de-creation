@@ -42,26 +42,20 @@ export function LinkedInModal({ isOpen, onClose, rfpId, onUrlCountChange }: Link
 
   useEffect(() => {
     if (isOpen && rfpId) {
-      loadLinks();
+      loadLinks().then(() => {
+        // Focus après le chargement des données
+        setTimeout(() => {
+          if (firstInputRef.current) {
+            firstInputRef.current.focus();
+          }
+        }, 50);
+      });
     } else {
       setLinks([]);
       setUrls(['']);
       setError(null);
     }
   }, [isOpen, rfpId]);
-
-  useEffect(() => {
-    if (isOpen) {
-      // Utiliser requestAnimationFrame pour s'assurer que le DOM est complètement rendu
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          if (firstInputRef.current) {
-            firstInputRef.current.focus();
-          }
-        });
-      });
-    }
-  }, [isOpen]);
 
   const loadLinks = async () => {
     try {
