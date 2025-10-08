@@ -769,7 +769,7 @@ export function RFPTable({
                     </button>
                     <button
                       onClick={() => setSelectedRFPForLinkedIn(rfp.id)}
-                      title="Gérer les prospects LinkedIn" 
+                      title="Prospects LinkedIn"
                       className="relative p-1 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
                     >
                       <Users className="w-5 h-5" />
