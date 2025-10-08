@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { X, MessageSquare, Save } from 'lucide-react';
 
 interface RFPCommentsModalProps {
@@ -16,10 +16,14 @@ interface RFPCommentsModalProps {
 export function RFPCommentsModal({ isOpen, onClose, rfp, onSave }: RFPCommentsModalProps) {
   const [comments, setComments] = useState(rfp.comments || '');
   const [isSaving, setIsSaving] = useState(false);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (isOpen) {
       setComments(rfp.comments || '');
+      setTimeout(() => {
+        textareaRef.current?.focus();
+      }, 0);
     }
   }, [isOpen, rfp.comments]);
 
@@ -81,6 +85,7 @@ export function RFPCommentsModal({ isOpen, onClose, rfp, onSave }: RFPCommentsMo
               Commentaires
             </label>
             <textarea
+              ref={textareaRef}
               id="comments"
               value={comments}
               onChange={(e) => setComments(e.target.value)}

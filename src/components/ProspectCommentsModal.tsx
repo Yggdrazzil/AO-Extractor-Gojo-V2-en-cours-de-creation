@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { X, MessageSquare, Save } from 'lucide-react';
 
 interface ProspectCommentsModalProps {
@@ -15,10 +15,14 @@ interface ProspectCommentsModalProps {
 export function ProspectCommentsModal({ isOpen, onClose, prospect, onSave }: ProspectCommentsModalProps) {
   const [comments, setComments] = useState(prospect.comments || '');
   const [isSaving, setIsSaving] = useState(false);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (isOpen) {
       setComments(prospect.comments || '');
+      setTimeout(() => {
+        textareaRef.current?.focus();
+      }, 0);
     }
   }, [isOpen, prospect.comments]);
 
@@ -80,6 +84,7 @@ export function ProspectCommentsModal({ isOpen, onClose, prospect, onSave }: Pro
               Commentaires
             </label>
             <textarea
+              ref={textareaRef}
               id="prospect-comments"
               value={comments}
               onChange={(e) => setComments(e.target.value)}

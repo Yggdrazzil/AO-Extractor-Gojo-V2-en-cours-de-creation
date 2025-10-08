@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { X, MessageSquare, Save } from 'lucide-react';
 
 interface ClientNeedCommentsModalProps {
@@ -15,10 +15,14 @@ interface ClientNeedCommentsModalProps {
 export function ClientNeedCommentsModal({ isOpen, onClose, clientNeed, onSave }: ClientNeedCommentsModalProps) {
   const [comments, setComments] = useState(clientNeed.comments || '');
   const [isSaving, setIsSaving] = useState(false);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (isOpen) {
       setComments(clientNeed.comments || '');
+      setTimeout(() => {
+        textareaRef.current?.focus();
+      }, 0);
     }
   }, [isOpen, clientNeed.comments]);
 
@@ -80,6 +84,7 @@ export function ClientNeedCommentsModal({ isOpen, onClose, clientNeed, onSave }:
               Commentaires
             </label>
             <textarea
+              ref={textareaRef}
               id="client-need-comments"
               value={comments}
               onChange={(e) => setComments(e.target.value)}

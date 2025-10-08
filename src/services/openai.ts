@@ -240,7 +240,6 @@ ${cvContent}` : content;
       availability: result.availability || '-',
       dailyRate: result.dailyRate || null,
       salaryExpectations: result.salaryExpectations || null,
-      salaryExpectations: result.salaryExpectations || null,
       residence: result.residence || '-',
       mobility: result.mobility || '-',
       phone: result.phone || '-',
