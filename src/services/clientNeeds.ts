@@ -22,7 +22,7 @@ export async function fetchClientNeeds(): Promise<BoondmanagerProspect[]> {
 
     const { data, error } = await supabase
       .from('client_needs')
-      .select('id, text_content, file_name, file_url, file_content, selected_need_id, selected_need_title, availability, daily_rate, residence, mobility, phone, email, status, assigned_to, is_read, created_at, comments')
+      .select('id, text_content, file_name, file_url, file_content, selected_need_id, selected_need_title, name, availability, daily_rate, residence, mobility, phone, email, status, assigned_to, is_read, created_at, comments')
       .order('created_at', { ascending: false });
 
     if (error) {
@@ -52,6 +52,7 @@ export async function fetchClientNeeds(): Promise<BoondmanagerProspect[]> {
       fileContent: need.file_content,
       selectedNeedId: need.selected_need_id,
       selectedNeedTitle: need.selected_need_title,
+      name: (need as any).name || '-',
       availability: need.availability || '-',
       dailyRate: need.daily_rate,
       salaryExpectations: need.salary_expectations,
@@ -102,6 +103,7 @@ export async function addClientNeed(newProspect: BoondmanagerProspect): Promise<
       file_content: fileContent,
       selected_need_id: newProspect.selectedNeedId,
       selected_need_title: newProspect.selectedNeedTitle,
+      name: newProspect.name || '-',
       availability: newProspect.availability,
       daily_rate: newProspect.dailyRate,
       salary_expectations: newProspect.salaryExpectations,
@@ -116,10 +118,10 @@ export async function addClientNeed(newProspect: BoondmanagerProspect): Promise<
 
     console.log('Creating client need with data:', insertData);
 
-    const { data, error } = await supabase
+    const { data, error} = await supabase
       .from('client_needs')
       .insert([{ ...insertData, comments: '' }])
-      .select('id, text_content, file_name, file_url, file_content, selected_need_id, selected_need_title, availability, daily_rate, salary_expectations, residence, mobility, phone, email, status, assigned_to, is_read, created_at, comments')
+      .select('id, text_content, file_name, file_url, file_content, selected_need_id, selected_need_title, name, availability, daily_rate, salary_expectations, residence, mobility, phone, email, status, assigned_to, is_read, created_at, comments')
       .single();
 
     if (error) {
@@ -168,6 +170,7 @@ export async function addClientNeed(newProspect: BoondmanagerProspect): Promise<
       fileContent: data.file_content,
       selectedNeedId: data.selected_need_id,
       selectedNeedTitle: data.selected_need_title,
+      name: (data as any).name || '-',
       availability: data.availability || '-',
       dailyRate: data.daily_rate,
       salaryExpectations: data.salary_expectations,
@@ -242,6 +245,18 @@ export async function updateClientNeedSelectedNeed(id: string, selectedNeedTitle
   const { error } = await supabase
     .from('client_needs')
     .update({ selected_need_title: selectedNeedTitle })
+    .eq('id', id);
+
+  if (error) throw error;
+}
+
+/**
+ * Met à jour le nom (prénom et nom)
+ */
+export async function updateClientNeedName(id: string, name: string): Promise<void> {
+  const { error } = await supabase
+    .from('client_needs')
+    .update({ name })
     .eq('id', id);
 
   if (error) throw error;

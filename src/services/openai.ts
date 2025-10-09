@@ -51,6 +51,7 @@ Exemple de réponse JSON attendue:
 
 const PROSPECT_SYSTEM_PROMPT = `Tu es un assistant spécialisé dans l'analyse de profils de candidats pour des missions de consulting IT.
 Ta tâche est d'extraire les informations clés suivantes à partir des informations textuelles fournies :
+- Prénom et Nom : le prénom et le nom complet du candidat
 - Disponibilité : quand le candidat est disponible (ex: "Immédiatement", "Janvier 2025", "2 semaines", etc.)
   - TJM (Taux Journalier Moyen) : le tarif journalier du candidat en euros (nombre uniquement, sans le symbole €)
   - Prétentions salariales : le salaire annuel souhaité en K€ (nombre uniquement, sans le symbole K€)
@@ -63,15 +64,20 @@ INSTRUCTIONS CRITIQUES:
 
 1. Extraction des données:
    - Analyser BOTH le texte principal ET le contenu du CV fourni
+   - PRIORITÉ ABSOLUE : Extraire le prénom et le nom du candidat depuis le texte ou le CV
+   - Le nom DOIT être au format "Prénom Nom" (ex: "Jean Dupont", "Marie Martin")
+   - Si seul le prénom OU le nom est trouvé, renvoyer quand même ce qui est disponible
+   - Si ni le prénom ni le nom ne sont trouvés, renvoyer null
    - Chercher à la fois le TJM (tarif journalier) ET les prétentions salariales annuelles
    - Si les deux sont présents, extraire les deux valeurs
-   - Prioriser les informations du CV pour les coordonnées (téléphone et email)
+   - Prioriser les informations du CV pour les coordonnées (téléphone et email) ET le nom
    - Si les coordonnées ne sont trouvées ni dans le texte ni dans le CV, renvoyer null
    - Pour les autres informations, si elles ne sont pas présentes ou ne sont pas claires, renvoyer null
    - Ne JAMAIS inventer ou déduire d'informations
    - Être précis dans l'extraction des données de contact depuis le CV
 
 2. Format des données:
+   - Nom : format "Prénom Nom" (ex: "Jean Dupont")
    - TJM : nombre entier uniquement (ex: 650, pas "650€" ou "650 euros")
    - Prétentions salariales : nombre entier en K€ (ex: 70 pour 70K€, pas "70K€" ou "70 000€")
    - Téléphone : format exact tel qu'écrit dans le texte
@@ -81,15 +87,17 @@ INSTRUCTIONS CRITIQUES:
    - Mobilité : description de la capacité de déplacement
 
 3. Règles strictes:
+   - Si le nom n'est pas trouvé, renvoyer null (ne pas inventer)
    - Si le TJM n'est pas mentionné explicitement, renvoyer null
    - Si les prétentions salariales ne sont pas mentionnées explicitement, renvoyer null
    - Chercher les prétentions salariales dans des formulations comme "70K€", "70K", "70.000€", "70 000€" ou "70k€ annuels"
-   - Chercher les coordonnées dans le CV en priorité
+   - Chercher les coordonnées et le nom dans le CV en priorité
    - Respecter exactement le format des coordonnées tel qu'écrit
    - Ne pas reformater les numéros de téléphone
 
 Exemple de réponse JSON:
 {
+  "name": "Jean Dupont",
   "availability": "Immédiatement",
   "dailyRate": 650,
   "salaryExpectations": 70,
@@ -237,6 +245,7 @@ ${cvContent}` : content;
 
     // Traiter les valeurs spéciales pour les coordonnées
     return {
+      name: result.name || '-',
       availability: result.availability || '-',
       dailyRate: result.dailyRate || null,
       salaryExpectations: result.salaryExpectations || null,

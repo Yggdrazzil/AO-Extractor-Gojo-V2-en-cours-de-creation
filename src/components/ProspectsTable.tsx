@@ -48,6 +48,7 @@ interface ProspectsTableProps {
   onStatusChange: (id: string, status: Prospect['status']) => Promise<void>;
   onAssigneeChange: (id: string, assignedTo: string) => Promise<void>;
   onTargetAccountChange: (id: string, targetAccount: string) => Promise<void>;
+  onNameChange: (id: string, name: string) => Promise<void>;
   onAvailabilityChange: (id: string, availability: string) => Promise<void>;
   onDailyRateChange: (id: string, dailyRate: string) => Promise<void>;
   onResidenceChange: (id: string, residence: string) => Promise<void>;
@@ -65,6 +66,7 @@ export function ProspectsTable({
   onStatusChange,
   onAssigneeChange,
   onTargetAccountChange,
+  onNameChange,
   onAvailabilityChange,
   onDailyRateChange,
   onResidenceChange,
@@ -234,6 +236,9 @@ export function ProspectsTable({
           case 'targetAccount':
             await onTargetAccountChange(id, value);
             break;
+          case 'name':
+            await onNameChange(id, value);
+            break;
           case 'availability':
             await onAvailabilityChange(id, value);
             break;
@@ -399,7 +404,7 @@ export function ProspectsTable({
             <thead className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
               <tr className="text-left">
                 <th className="p-2 sm:p-4 w-16 bg-white dark:bg-gray-800" />
-                <th 
+                <th
                   className="p-2 sm:p-4 font-medium text-gray-600 dark:text-gray-200 cursor-pointer select-none min-w-[120px] bg-white dark:bg-gray-800"
                   onClick={() => handleSort('targetAccount')}
                 >
@@ -408,7 +413,16 @@ export function ProspectsTable({
                     {getSortIcon('targetAccount')}
                   </div>
                 </th>
-                <th 
+                <th
+                  className="p-2 sm:p-4 font-medium text-gray-600 dark:text-gray-200 cursor-pointer select-none min-w-[140px] bg-white dark:bg-gray-800"
+                  onClick={() => handleSort('name')}
+                >
+                  <div className="flex items-center gap-1 sm:gap-2">
+                    <span className="text-xs sm:text-sm">Prénom & Nom</span>
+                    {getSortIcon('name')}
+                  </div>
+                </th>
+                <th
                   className="p-2 sm:p-4 font-medium text-gray-600 dark:text-gray-200 cursor-pointer select-none min-w-[100px] bg-white dark:bg-gray-800"
                   onClick={() => handleSort('availability')}
                 >
@@ -503,6 +517,33 @@ export function ProspectsTable({
                     ) : (
                       <div onClick={() => handleEdit(prospect, 'targetAccount')} className="cursor-pointer hover:text-blue-600 dark:hover:text-blue-400 text-xs sm:text-sm break-words" title="Cliquer pour modifier">
                         {prospect.targetAccount || 'Non spécifié'}
+                      </div>
+                    )}
+                  </td>
+
+                  {/* Prénom & Nom */}
+                  <td className="p-2 sm:p-4 text-gray-900 dark:text-gray-100">
+                    {editingField?.id === prospect.id && editingField.field === 'name' ? (
+                      <div className="flex items-center space-x-2">
+                        <input
+                          type="text"
+                          value={editingField.value}
+                          onChange={(e) => setEditingField({ ...editingField, value: e.target.value })}
+                          onKeyDown={handleKeyPress}
+                          className="w-full px-2 py-1 border border-blue-500 dark:border-blue-400 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-xs sm:text-sm"
+                          placeholder="Prénom Nom"
+                          autoFocus
+                        />
+                        <button onClick={handleSave} className="p-1 text-green-600 hover:text-green-700 dark:text-green-400 flex-shrink-0" title="Sauvegarder">
+                          <Check className="w-4 h-4" />
+                        </button>
+                        <button onClick={handleCancel} className="p-1 text-red-600 hover:text-red-700 dark:text-red-400 flex-shrink-0" title="Annuler">
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+                    ) : (
+                      <div onClick={() => handleEdit(prospect, 'name')} className="cursor-pointer hover:text-blue-600 dark:hover:text-blue-400 text-xs sm:text-sm break-words" title="Cliquer pour modifier">
+                        {prospect.name || '-'}
                       </div>
                     )}
                   </td>

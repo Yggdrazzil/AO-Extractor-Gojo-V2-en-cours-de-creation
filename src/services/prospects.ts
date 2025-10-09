@@ -49,7 +49,7 @@ export async function fetchProspects(): Promise<Prospect[]> {
 
     const { data, error } = await supabase
       .from('prospects')
-      .select('id, text_content, file_name, file_url, file_content, target_account, availability, daily_rate, residence, mobility, phone, email, status, assigned_to, is_read, created_at, comments')
+      .select('id, text_content, file_name, file_url, file_content, target_account, name, availability, daily_rate, residence, mobility, phone, email, status, assigned_to, is_read, created_at, comments')
       .order('created_at', { ascending: false });
 
     if (error) {
@@ -78,6 +78,7 @@ export async function fetchProspects(): Promise<Prospect[]> {
       fileUrl: prospect.file_url,
       fileContent: prospect.file_content,
       targetAccount: prospect.target_account || '',
+      name: (prospect as any).name || '-',
       availability: prospect.availability || '-',
       dailyRate: prospect.daily_rate,
       residence: prospect.residence || '-',
@@ -138,6 +139,7 @@ export async function createProspect(prospect: Omit<Prospect, 'id'>, file?: File
       file_url: fileUrl,
       file_content: fileContent,
       target_account: prospect.targetAccount,
+      name: prospect.name || '-',
       availability: prospect.availability,
       daily_rate: prospect.dailyRate,
       salary_expectations: prospect.salaryExpectations,
@@ -155,7 +157,7 @@ export async function createProspect(prospect: Omit<Prospect, 'id'>, file?: File
     const { data, error } = await supabase
       .from('prospects')
       .insert([{ ...insertData, comments: '' }])
-      .select('id, text_content, file_name, file_url, file_content, target_account, availability, daily_rate, salary_expectations, residence, mobility, phone, email, status, assigned_to, is_read, comments')
+      .select('id, text_content, file_name, file_url, file_content, target_account, name, availability, daily_rate, salary_expectations, residence, mobility, phone, email, status, assigned_to, is_read, comments')
       .single();
 
     if (error) {
@@ -203,6 +205,7 @@ export async function createProspect(prospect: Omit<Prospect, 'id'>, file?: File
       fileUrl: data.file_url,
       fileContent: data.file_content,
       targetAccount: data.target_account,
+      name: (data as any).name || '-',
       availability: data.availability || '-',
       dailyRate: data.daily_rate,
       salaryExpectations: data.salary_expectations,
@@ -269,7 +272,7 @@ export async function updateProspectTargetAccount(id: string, targetAccount: str
     console.error('No prospect ID provided for target account update');
     return;
   }
-  
+
   const { error } = await supabase
     .from('prospects')
     .update({ target_account: targetAccount })
@@ -277,6 +280,23 @@ export async function updateProspectTargetAccount(id: string, targetAccount: str
 
   if (error) {
     console.error('Failed to update target account:', error);
+    throw error;
+  }
+}
+
+export async function updateProspectName(id: string, name: string): Promise<void> {
+  if (!id) {
+    console.error('No prospect ID provided for name update');
+    return;
+  }
+
+  const { error } = await supabase
+    .from('prospects')
+    .update({ name })
+    .eq('id', id);
+
+  if (error) {
+    console.error('Failed to update name:', error);
     throw error;
   }
 }

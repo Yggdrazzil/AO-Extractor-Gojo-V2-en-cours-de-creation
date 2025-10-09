@@ -29,6 +29,7 @@ export interface Prospect {
   fileUrl?: string;
   fileContent?: string;
   targetAccount: string;
+  name: string;
   availability: string;
   dailyRate: number | null;
   salaryExpectations: number | null;
@@ -55,6 +56,7 @@ export interface BoondmanagerProspect {
   fileContent?: string;
   selectedNeedId: string;
   selectedNeedTitle: string;
+  name: string;
   availability: string;
   dailyRate: number | null;
   salaryExpectations: number | null;
