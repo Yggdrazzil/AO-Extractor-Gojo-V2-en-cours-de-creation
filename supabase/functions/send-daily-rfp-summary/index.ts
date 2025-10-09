@@ -541,8 +541,9 @@ Deno.serve(async (req) => {
   try {
     console.log('Processing daily RFP summary request...')
     
-    // URL de la plateforme
-    const platformUrl = Deno.env.get('PLATFORM_URL') || 'https://ao-extractor-v2-en-c-l194.bolt.host'
+    // URL de la plateforme avec navigation vers l'onglet AO
+    const baseUrl = Deno.env.get('PLATFORM_URL') || 'https://ao-extractor-v2-en-c-l194.bolt.host'
+    const platformUrl = `${baseUrl}?tab=rfp-extractor`
     
     // Récupérer tous les commerciaux
     const salesReps = await getAllSalesReps()

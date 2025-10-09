@@ -482,8 +482,9 @@ Deno.serve(async (req) => {
     // Extraire le prénom uniquement
     const firstName = salesRepInfo.name.split(' ')[0]
     
-    // URL de la plateforme
-    const platformUrl = Deno.env.get('PLATFORM_URL') || 'https://ao-extractor-v2-en-c-l194.bolt.host'
+    // URL de la plateforme avec navigation vers l'onglet Besoins Clients
+    const baseUrl = Deno.env.get('PLATFORM_URL') || 'https://ao-extractor-v2-en-c-l194.bolt.host'
+    const platformUrl = `${baseUrl}?tab=boondmanager-prospects`
     
     // Génération du contenu email
     const subject = `Nouveau profil pour besoin client : ${data.besoin}`

@@ -487,8 +487,9 @@ Deno.serve(async (req) => {
     // Extraire le prénom uniquement
     const firstName = salesRepInfo.name.split(' ')[0]
     
-    // URL de la plateforme
-    const platformUrl = Deno.env.get('PLATFORM_URL') || 'https://ao-extractor-v2-en-c-l194.bolt.host'
+    // URL de la plateforme avec navigation vers l'onglet Prises de Référence
+    const baseUrl = Deno.env.get('PLATFORM_URL') || 'https://ao-extractor-v2-en-c-l194.bolt.host'
+    const platformUrl = `${baseUrl}?tab=prospects`
     
     // Génération du contenu email
     const subject = `Nouvelle opportunité de références : ${data.targetAccount}`

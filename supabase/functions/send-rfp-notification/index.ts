@@ -502,8 +502,9 @@ Deno.serve(async (req) => {
     const firstName = salesRepInfo.name.split(' ')[0]
     console.log('👤 Will send email to:', firstName, '(', salesRepInfo.email, ')')
     
-    // URL de la plateforme
-    const platformUrl = Deno.env.get('PLATFORM_URL') || 'https://ao-extractor-v2-en-c-l194.bolt.host'
+    // URL de la plateforme avec navigation vers l'onglet AO
+    const baseUrl = Deno.env.get('PLATFORM_URL') || 'https://ao-extractor-v2-en-c-l194.bolt.host'
+    const platformUrl = `${baseUrl}?tab=rfp-extractor`
     
     // Génération du contenu email
     const subject = `Nouvel AO assigné : ${data.mission} - ${data.client}`
