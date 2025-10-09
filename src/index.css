@@ -50,6 +50,11 @@ thead[class*="sticky"] {
   transform: translate3d(0, 0, 0);
 }
 
+/* Assurer que les cellules de tableau héritent du fond de la ligne */
+tbody tr > td {
+  background-color: inherit;
+}
+
 thead[class*="sticky"] th {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
