@@ -134,18 +134,28 @@ thead[class*="sticky"] th {
 
 .table-scroll-container table th,
 .table-scroll-container table td {
-  padding: 0.5rem 0.5rem;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  padding: 0.5rem 0.4rem;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  vertical-align: top;
 }
 
 .table-scroll-container table th {
-  white-space: nowrap;
+  line-height: 1.2;
 }
 
 .table-scroll-container select,
 .table-scroll-container input {
   font-size: 0.813rem;
+  width: 100%;
+}
+
+.table-scroll-container tbody tr {
+  position: relative;
+}
+
+.table-scroll-container tbody td {
+  position: relative;
 }
 
 @media (max-width: 1400px) {
