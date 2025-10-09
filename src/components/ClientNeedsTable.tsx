@@ -431,9 +431,9 @@ export function ClientNeedsTable({
           <table className="w-full border-collapse">
             <thead className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
               <tr className="text-left">
-                <th className="w-[4%] bg-white dark:bg-gray-800" />
+                <th className="p-2 sm:p-4 bg-white dark:bg-gray-800" style={{width: '60px'}} />
                 <th
-                  className="w-[10%] font-medium text-gray-600 dark:text-gray-200 cursor-pointer select-none bg-white dark:bg-gray-800"
+                  className="p-2 sm:p-4 font-medium text-gray-600 dark:text-gray-200 cursor-pointer select-none bg-white dark:bg-gray-800"
                   onClick={() => handleSort('besoin')}
                 >
                   <div className="flex items-center gap-1">
@@ -442,7 +442,7 @@ export function ClientNeedsTable({
                   </div>
                 </th>
                 <th
-                  className="w-[11%] font-medium text-gray-600 dark:text-gray-200 cursor-pointer select-none bg-white dark:bg-gray-800"
+                  className="p-2 sm:p-4 font-medium text-gray-600 dark:text-gray-200 cursor-pointer select-none bg-white dark:bg-gray-800"
                   onClick={() => handleSort('name')}
                 >
                   <div className="flex items-center gap-1">
@@ -451,7 +451,7 @@ export function ClientNeedsTable({
                   </div>
                 </th>
                 <th
-                  className="w-[10%] font-medium text-gray-600 dark:text-gray-200 cursor-pointer select-none bg-white dark:bg-gray-800"
+                  className="p-2 sm:p-4 font-medium text-gray-600 dark:text-gray-200 cursor-pointer select-none bg-white dark:bg-gray-800"
                   onClick={() => handleSort('availability')}
                 >
                   <div className="flex items-center gap-1">
@@ -460,7 +460,7 @@ export function ClientNeedsTable({
                   </div>
                 </th>
                 <th
-                  className="w-[9%] font-medium text-gray-600 dark:text-gray-200 cursor-pointer select-none bg-white dark:bg-gray-800"
+                  className="p-2 sm:p-4 font-medium text-gray-600 dark:text-gray-200 cursor-pointer select-none bg-white dark:bg-gray-800"
                   onClick={() => handleSort('dailyRate')}
                 >
                   <div className="flex items-center gap-1">
@@ -469,7 +469,7 @@ export function ClientNeedsTable({
                   </div>
                 </th>
                 <th
-                  className="w-[8%] font-medium text-gray-600 dark:text-gray-200 cursor-pointer select-none bg-white dark:bg-gray-800"
+                  className="p-2 sm:p-4 font-medium text-gray-600 dark:text-gray-200 cursor-pointer select-none bg-white dark:bg-gray-800"
                   onClick={() => handleSort('residence')}
                 >
                   <div className="flex items-center gap-1">
@@ -478,7 +478,7 @@ export function ClientNeedsTable({
                   </div>
                 </th>
                 <th
-                  className="w-[8%] font-medium text-gray-600 dark:text-gray-200 cursor-pointer select-none bg-white dark:bg-gray-800"
+                  className="p-2 sm:p-4 font-medium text-gray-600 dark:text-gray-200 cursor-pointer select-none bg-white dark:bg-gray-800"
                   onClick={() => handleSort('mobility')}
                 >
                   <div className="flex items-center gap-1">
@@ -486,16 +486,16 @@ export function ClientNeedsTable({
                     {getSortIcon('mobility')}
                   </div>
                 </th>
-                <th className="w-[16%] font-medium text-gray-600 dark:text-gray-200 bg-white dark:bg-gray-800">
+                <th className="p-2 sm:p-4 font-medium text-gray-600 dark:text-gray-200 bg-white dark:bg-gray-800">
                   <span>Contact</span>
                 </th>
-                <th className="w-[9%] font-medium text-gray-600 dark:text-gray-200 bg-white dark:bg-gray-800">
+                <th className="p-2 sm:p-4 font-medium text-gray-600 dark:text-gray-200 bg-white dark:bg-gray-800" style={{width: '120px'}}>
                   <span>Statut</span>
                 </th>
-                <th className="w-[8%] font-medium text-gray-600 dark:text-gray-200 bg-white dark:bg-gray-800">
+                <th className="p-2 sm:p-4 font-medium text-gray-600 dark:text-gray-200 bg-white dark:bg-gray-800" style={{width: '120px'}}>
                   <span>Commercial</span>
                 </th>
-                <th className="w-[7%] font-medium text-gray-600 dark:text-gray-200 bg-white dark:bg-gray-800">
+                <th className="p-2 sm:p-4 font-medium text-gray-600 dark:text-gray-200 bg-white dark:bg-gray-800" style={{width: '180px'}}>
                   <span>Actions</span>
                 </th>
               </tr>
@@ -503,7 +503,7 @@ export function ClientNeedsTable({
             <tbody>
               {sortedProspects.length === 0 ? (
                 <tr>
-                  <td colSpan={9} className="p-8 text-center text-gray-500 dark:text-gray-400">
+                  <td colSpan={11} className="p-8 text-center text-gray-500 dark:text-gray-400">
                     Aucun profil trouvé pour les besoins clients
                   </td>
                 </tr>

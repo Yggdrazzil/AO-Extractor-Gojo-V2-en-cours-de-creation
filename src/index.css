@@ -134,14 +134,17 @@ thead[class*="sticky"] th {
   overflow: auto;
   overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
+  display: block;
+  width: 100%;
 }
 
 /* Ajustement de la taille de police des tableaux pour plus d'espace */
 .table-scroll-container table {
   font-size: 0.813rem;
-  table-layout: fixed;
+  table-layout: auto;
   width: 100%;
-  min-width: 100%;
+  display: table;
+  border-collapse: collapse;
 }
 
 .table-scroll-container table th,
@@ -150,6 +153,7 @@ thead[class*="sticky"] th {
   word-wrap: break-word;
   overflow-wrap: break-word;
   vertical-align: middle;
+  box-sizing: border-box;
 }
 
 .table-scroll-container table th {
