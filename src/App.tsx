@@ -674,7 +674,7 @@ function App() {
   return (
     <ErrorBoundary>
       <ThemeProvider>
-        <div className="flex h-screen bg-gray-100 dark:bg-gray-900">
+        <div className="flex h-screen overflow-hidden bg-gray-100 dark:bg-gray-900">
           <Sidebar
             activeTab={activeTab}
             onTabChange={setActiveTab}
@@ -683,10 +683,10 @@ function App() {
             boondmanagerProspects={boondmanagerProspects}
             isAdmin={isAdmin}
           />
-          <div className="flex-1 flex flex-col">
+          <div className="flex-1 flex flex-col overflow-hidden min-w-0">
             <Header activeTab={activeTab} />
-            
-            <div className="flex-1 overflow-hidden">
+
+            <div className="flex-1 overflow-auto">
               <TabContent
                 activeTab={activeTab}
                 rfps={rfps}
