@@ -2,6 +2,21 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+  html, body {
+    overflow-x: hidden;
+    max-width: 100vw;
+  }
+
+  body {
+    position: relative;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+}
+
 @layer utilities {
   .line-clamp-3 {
     display: -webkit-box;
@@ -130,4 +145,30 @@ thead[class*="sticky"] th {
   margin-bottom: 0;
   position: relative;
   transform: translateZ(0);
+}
+
+/* S'assurer que les dropdowns s'affichent correctement */
+select {
+  min-width: 0;
+  max-width: 100%;
+}
+
+/* Amélioration de la responsivité des formulaires */
+@media (max-width: 640px) {
+  select, input[type="text"], input[type="email"], input[type="tel"] {
+    font-size: 16px;
+  }
+}
+
+/* Empêcher le zoom sur iOS lors du focus des inputs */
+@media (max-width: 768px) {
+  input[type="text"],
+  input[type="email"],
+  input[type="tel"],
+  input[type="number"],
+  input[type="password"],
+  textarea,
+  select {
+    font-size: 16px !important;
+  }
 }

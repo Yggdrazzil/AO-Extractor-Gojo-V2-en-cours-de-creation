@@ -395,12 +395,12 @@ export function ProspectsTable({
         </div>
       </div>
       
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden">
         <div
           ref={tableRef}
-          className="table-scroll-container w-full max-h-[70vh]"
+          className="table-scroll-container w-full max-h-[70vh] overflow-x-auto"
         >
-          <table className="w-full border-collapse">
+          <table className="w-full border-collapse min-w-max">
             <thead className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
               <tr className="text-left">
                 <th className="p-2 sm:p-4 w-16 bg-white dark:bg-gray-800" />

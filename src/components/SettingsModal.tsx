@@ -4,6 +4,7 @@ import { Sun, Moon, X, KeyRound, LogOut } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { supabase } from '../lib/supabase';
 import { checkAdminRights } from '../services/auth';
+import { isAdmin, saveAdminApiKey, loadAdminApiKey } from '../services/adminApiKeys';
 
 type SettingsModalProps = {
   isOpen: boolean;
@@ -17,7 +18,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
   const [showSuccess, setShowSuccess] = useState(false);
   const { theme, setTheme } = useTheme();
   const [userEmail, setUserEmail] = useState<string | null>(null);
-  const [isAdmin, setIsAdmin] = useState(false);
+  const [isUserAdmin, setIsUserAdmin] = useState(false);
   const [boondmanagerConfig, setBoondmanagerConfig] = useState({
     username: '',
     password: '',
@@ -28,16 +29,14 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
     const getUserInfo = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       setUserEmail(session?.user?.email || null);
-      
-      // Charger la clé API spécifique à l'utilisateur
-      if (session?.user?.email) {
-        const userApiKey = localStorage.getItem(`openai-api-key_${session.user.email}`);
-        setApiKey(userApiKey || '');
-      }
-      
+
       // Vérifier les droits admin
-      const adminRights = await checkAdminRights();
-      setIsAdmin(adminRights);
+      const adminStatus = await isAdmin();
+      setIsUserAdmin(adminStatus);
+
+      // Charger la clé API (admin ou utilisateur)
+      const loadedApiKey = await loadAdminApiKey();
+      setApiKey(loadedApiKey || '');
       
       // Charger la configuration Boondmanager spécifique à l'utilisateur
       if (session?.user?.email) {
@@ -58,18 +57,25 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
     }
   };
 
-  const handleUpdateApiKey = () => {
-    if (userEmail) {
-      // Sauvegarder la clé API pour cet utilisateur spécifique
-      localStorage.setItem(`openai-api-key_${userEmail}`, apiKey);
-      // Maintenir aussi la clé globale pour la compatibilité
-      localStorage.setItem('openai-api-key', apiKey);
+  const handleUpdateApiKey = async () => {
+    try {
+      if (isUserAdmin) {
+        await saveAdminApiKey(apiKey);
+      } else {
+        if (userEmail) {
+          localStorage.setItem(`openai-api-key_${userEmail}`, apiKey);
+        }
+        localStorage.setItem('openai-api-key', apiKey);
+      }
+      setShowSuccess(true);
+      setTimeout(() => {
+        setShowSuccess(false);
+        onClose();
+      }, 1500);
+    } catch (error) {
+      console.error('Error saving API key:', error);
+      alert('Erreur lors de la sauvegarde de la clé API');
     }
-    setShowSuccess(true);
-    setTimeout(() => {
-      setShowSuccess(false);
-      onClose();
-    }, 1500);
   };
 
   const handleUpdateBoondmanagerConfig = () => {
@@ -155,7 +161,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
             </div>
           </div>
 
-          {isAdmin && (
+          {isUserAdmin && (
             <div>
             <h3 className="text-gray-600 dark:text-gray-400 mb-3 flex items-center gap-2">
               <KeyRound className="w-4 h-4" />
@@ -173,7 +179,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                 className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-[#1651EE] focus:border-transparent"
               />
               <p className="text-sm text-gray-500 dark:text-gray-400">
-                Votre clé API est stockée uniquement dans votre navigateur et n'est jamais partagée.
+                En tant qu'admin, votre clé API est partagée avec les autres admins (Benoit CIVEL et Vincent IENTILE).
               </p>
               <button
                 onClick={handleUpdateApiKey}
