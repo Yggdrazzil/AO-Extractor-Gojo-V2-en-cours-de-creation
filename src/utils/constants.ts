@@ -52,5 +52,5 @@ export const DEFAULT_VALUES = {
 
 // URLs de l'application
 export const URLS = {
-  PLATFORM: 'https://hito-gojo-platform.netlify.app/'
+  PLATFORM: 'https://ao-extractor-v2-en-c-l194.bolt.host/'
 };
