@@ -398,77 +398,77 @@ export function ProspectsTable({
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden">
         <div
           ref={tableRef}
-          className="table-scroll-container w-full max-h-[70vh] overflow-x-auto"
+          className="table-scroll-container w-full max-h-[70vh]"
         >
-          <table className="w-full border-collapse min-w-max">
+          <table className="w-full border-collapse">
             <thead className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
               <tr className="text-left">
-                <th className="p-2 sm:p-4 w-16 bg-white dark:bg-gray-800" />
+                <th className="w-[4%] bg-white dark:bg-gray-800" />
                 <th
-                  className="p-2 sm:p-4 font-medium text-gray-600 dark:text-gray-200 cursor-pointer select-none min-w-[120px] bg-white dark:bg-gray-800"
+                  className="w-[10%] font-medium text-gray-600 dark:text-gray-200 cursor-pointer select-none bg-white dark:bg-gray-800"
                   onClick={() => handleSort('targetAccount')}
                 >
-                  <div className="flex items-center gap-1 sm:gap-2">
-                    <span className="text-xs sm:text-sm">Compte Ciblé</span>
+                  <div className="flex items-center gap-1">
+                    <span>Compte Ciblé</span>
                     {getSortIcon('targetAccount')}
                   </div>
                 </th>
                 <th
-                  className="p-2 sm:p-4 font-medium text-gray-600 dark:text-gray-200 cursor-pointer select-none min-w-[140px] bg-white dark:bg-gray-800"
+                  className="w-[11%] font-medium text-gray-600 dark:text-gray-200 cursor-pointer select-none bg-white dark:bg-gray-800"
                   onClick={() => handleSort('name')}
                 >
-                  <div className="flex items-center gap-1 sm:gap-2">
-                    <span className="text-xs sm:text-sm">Prénom & Nom</span>
+                  <div className="flex items-center gap-1">
+                    <span>Prénom & Nom</span>
                     {getSortIcon('name')}
                   </div>
                 </th>
                 <th
-                  className="p-2 sm:p-4 font-medium text-gray-600 dark:text-gray-200 cursor-pointer select-none min-w-[100px] bg-white dark:bg-gray-800"
+                  className="w-[10%] font-medium text-gray-600 dark:text-gray-200 cursor-pointer select-none bg-white dark:bg-gray-800"
                   onClick={() => handleSort('availability')}
                 >
-                  <div className="flex items-center gap-1 sm:gap-2">
-                    <span className="text-xs sm:text-sm">Disponibilité</span>
+                  <div className="flex items-center gap-1">
+                    <span>Disponibilité</span>
                     {getSortIcon('availability')}
                   </div>
                 </th>
-                <th 
-                  className="p-2 sm:p-4 font-medium text-gray-600 dark:text-gray-200 cursor-pointer select-none min-w-[90px] bg-white dark:bg-gray-800"
+                <th
+                  className="w-[9%] font-medium text-gray-600 dark:text-gray-200 cursor-pointer select-none bg-white dark:bg-gray-800"
                   onClick={() => handleSort('dailyRate')}
                 >
-                  <div className="flex items-center gap-1 sm:gap-2">
-                    <span className="text-xs sm:text-sm">TJM/Salaire</span>
+                  <div className="flex items-center gap-1">
+                    <span>TJM/Salaire</span>
                     {getSortIcon('dailyRate')}
                   </div>
                 </th>
-                <th 
-                  className="p-2 sm:p-4 font-medium text-gray-600 dark:text-gray-200 cursor-pointer select-none min-w-[80px] bg-white dark:bg-gray-800"
+                <th
+                  className="w-[8%] font-medium text-gray-600 dark:text-gray-200 cursor-pointer select-none bg-white dark:bg-gray-800"
                   onClick={() => handleSort('residence')}
                 >
-                  <div className="flex items-center gap-1 sm:gap-2">
-                    <span className="text-xs sm:text-sm">Résidence</span>
+                  <div className="flex items-center gap-1">
+                    <span>Résidence</span>
                     {getSortIcon('residence')}
                   </div>
                 </th>
-                <th 
-                  className="p-2 sm:p-4 font-medium text-gray-600 dark:text-gray-200 cursor-pointer select-none min-w-[80px] bg-white dark:bg-gray-800"
+                <th
+                  className="w-[8%] font-medium text-gray-600 dark:text-gray-200 cursor-pointer select-none bg-white dark:bg-gray-800"
                   onClick={() => handleSort('mobility')}
                 >
-                  <div className="flex items-center gap-1 sm:gap-2">
-                    <span className="text-xs sm:text-sm">Mobilité</span>
+                  <div className="flex items-center gap-1">
+                    <span>Mobilité</span>
                     {getSortIcon('mobility')}
                   </div>
                 </th>
-                <th className="p-2 sm:p-4 font-medium text-gray-600 dark:text-gray-200 min-w-[180px] bg-white dark:bg-gray-800">
-                  <span className="text-xs sm:text-sm">Contact</span>
+                <th className="w-[16%] font-medium text-gray-600 dark:text-gray-200 bg-white dark:bg-gray-800">
+                  <span>Contact</span>
                 </th>
-                <th className="p-2 sm:p-4 font-medium text-gray-600 dark:text-gray-200 min-w-[90px] bg-white dark:bg-gray-800">
-                  <span className="text-xs sm:text-sm">Statut</span>
+                <th className="w-[9%] font-medium text-gray-600 dark:text-gray-200 bg-white dark:bg-gray-800">
+                  <span>Statut</span>
                 </th>
-                <th className="p-2 sm:p-4 font-medium text-gray-600 dark:text-gray-200 min-w-[80px] bg-white dark:bg-gray-800">
-                  <span className="text-xs sm:text-sm">Commercial</span>
+                <th className="w-[8%] font-medium text-gray-600 dark:text-gray-200 bg-white dark:bg-gray-800">
+                  <span>Commercial</span>
                 </th>
-                <th className="p-2 sm:p-4 font-medium text-gray-600 dark:text-gray-200 min-w-[80px] bg-white dark:bg-gray-800">
-                  <span className="text-xs sm:text-sm">Actions</span>
+                <th className="w-[7%] font-medium text-gray-600 dark:text-gray-200 bg-white dark:bg-gray-800">
+                  <span>Actions</span>
                 </th>
               </tr>
             </thead>

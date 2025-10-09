@@ -127,22 +127,51 @@ thead[class*="sticky"] th {
 
 /* Ajustement de la taille de police des tableaux pour plus d'espace */
 .table-scroll-container table {
-  font-size: 0.9rem;
+  font-size: 0.813rem;
+  table-layout: fixed;
+  width: 100%;
 }
 
 .table-scroll-container table th,
 .table-scroll-container table td {
-  padding: 0.75rem 1rem;
+  padding: 0.5rem 0.5rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-@media (max-width: 640px) {
+.table-scroll-container table th {
+  white-space: nowrap;
+}
+
+.table-scroll-container select,
+.table-scroll-container input {
+  font-size: 0.813rem;
+}
+
+@media (max-width: 1400px) {
   .table-scroll-container table {
-    font-size: 0.85rem;
+    font-size: 0.75rem;
   }
 
   .table-scroll-container table th,
   .table-scroll-container table td {
-    padding: 0.5rem 0.75rem;
+    padding: 0.4rem 0.4rem;
+  }
+
+  .table-scroll-container select,
+  .table-scroll-container input {
+    font-size: 0.75rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .table-scroll-container table {
+    font-size: 0.7rem;
+  }
+
+  .table-scroll-container table th,
+  .table-scroll-container table td {
+    padding: 0.3rem 0.3rem;
   }
 }
 

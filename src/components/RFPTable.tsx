@@ -436,69 +436,69 @@ export function RFPTable({
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden">
         <div
         ref={tableRef}
-        className="table-scroll-container w-full max-h-[70vh] overflow-x-auto"
+        className="table-scroll-container w-full max-h-[70vh]"
         >
-        <table className="w-full border-collapse min-w-max">
+        <table className="w-full border-collapse">
           <thead className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
             <tr className="text-left">
-              <th className="p-2 sm:p-4 w-12 sm:w-16 bg-white dark:bg-gray-800" />
-              <th 
-                className="p-2 sm:p-4 font-medium text-gray-600 dark:text-gray-200 cursor-pointer select-none min-w-[100px] bg-white dark:bg-gray-800"
+              <th className="w-[4%] bg-white dark:bg-gray-800" />
+              <th
+                className="w-[11%] font-medium text-gray-600 dark:text-gray-200 cursor-pointer select-none bg-white dark:bg-gray-800"
                 onClick={() => handleSort('client')}
               >
-                <div className="flex items-center gap-1 sm:gap-2">
+                <div className="flex items-center gap-1">
                   Client
                   {getSortIcon('client')}
                 </div>
               </th>
-              <th 
-                className="p-2 sm:p-4 font-medium text-gray-600 dark:text-gray-200 cursor-pointer select-none min-w-[120px] bg-white dark:bg-gray-800"
+              <th
+                className="w-[14%] font-medium text-gray-600 dark:text-gray-200 cursor-pointer select-none bg-white dark:bg-gray-800"
                 onClick={() => handleSort('mission')}
               >
-                <div className="flex items-center gap-1 sm:gap-2">
+                <div className="flex items-center gap-1">
                   Intitulé Mission
                   {getSortIcon('mission')}
                 </div>
               </th>
-              <th 
-                className="p-2 sm:p-4 font-medium text-gray-600 dark:text-gray-200 cursor-pointer select-none min-w-[80px] bg-white dark:bg-gray-800"
+              <th
+                className="w-[10%] font-medium text-gray-600 dark:text-gray-200 cursor-pointer select-none bg-white dark:bg-gray-800"
                 onClick={() => handleSort('location')}
               >
-                <div className="flex items-center gap-1 sm:gap-2">
+                <div className="flex items-center gap-1">
                   Localisation
                   {getSortIcon('location')}
                 </div>
               </th>
-              <th 
-                className="p-2 sm:p-4 font-medium text-gray-600 dark:text-gray-200 cursor-pointer select-none min-w-[70px] bg-white dark:bg-gray-800"
+              <th
+                className="w-[8%] font-medium text-gray-600 dark:text-gray-200 cursor-pointer select-none bg-white dark:bg-gray-800"
                 onClick={() => handleSort('maxRate')}
               >
-                <div className="flex items-center gap-1 sm:gap-2">
+                <div className="flex items-center gap-1">
                   TJM Max
                   {getSortIcon('maxRate')}
                 </div>
               </th>
               <th
-                className="p-2 sm:p-4 font-medium text-gray-600 dark:text-gray-200 cursor-pointer select-none min-w-[90px] bg-white dark:bg-gray-800"
+                className="w-[11%] font-medium text-gray-600 dark:text-gray-200 cursor-pointer select-none bg-white dark:bg-gray-800"
                 onClick={() => handleSort('createdAt')}
               >
-                <div className="flex items-center gap-1 sm:gap-2">
+                <div className="flex items-center gap-1">
                   Date Création
                   {getSortIcon('createdAt')}
                 </div>
               </th>
               <th
-                className="p-2 sm:p-4 font-medium text-gray-600 dark:text-gray-200 cursor-pointer select-none min-w-[90px] bg-white dark:bg-gray-800"
+                className="w-[12%] font-medium text-gray-600 dark:text-gray-200 cursor-pointer select-none bg-white dark:bg-gray-800"
                 onClick={() => handleSort('startDate')}
               >
-                <div className="flex items-center gap-1 sm:gap-2">
+                <div className="flex items-center gap-1">
                   Date Démarrage
                   {getSortIcon('startDate')}
                 </div>
               </th>
-              <th className="p-2 sm:p-4 font-medium text-gray-600 dark:text-gray-200 min-w-[90px] bg-white dark:bg-gray-800">Statut</th>
-              <th className="p-2 sm:p-4 font-medium text-gray-600 dark:text-gray-200 min-w-[80px] bg-white dark:bg-gray-800">Commercial</th>
-              <th className="p-2 sm:p-4 font-medium text-gray-600 dark:text-gray-200 min-w-[100px] bg-white dark:bg-gray-800">Actions</th>
+              <th className="w-[10%] font-medium text-gray-600 dark:text-gray-200 bg-white dark:bg-gray-800">Statut</th>
+              <th className="w-[10%] font-medium text-gray-600 dark:text-gray-200 bg-white dark:bg-gray-800">Commercial</th>
+              <th className="w-[10%] font-medium text-gray-600 dark:text-gray-200 bg-white dark:bg-gray-800">Actions</th>
             </tr>
           </thead>
           <tbody>
