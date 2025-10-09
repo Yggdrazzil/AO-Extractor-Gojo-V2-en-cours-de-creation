@@ -489,10 +489,12 @@ export function ClientNeedsTable({
                 </tr>
               ) : (
                 sortedProspects.map((prospect) => (
-                  <tr 
-                    key={prospect.id} 
-                    className={`border-t border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 group ${
-                      prospect.status === 'Traité' ? 'bg-gray-200 dark:bg-gray-900' : 'bg-white dark:bg-gray-800'
+                  <tr
+                    key={prospect.id}
+                    className={`border-t hover:bg-gray-50 dark:hover:bg-gray-700 group ${
+                      prospect.status === 'Traité'
+                        ? 'bg-gray-200 dark:bg-gray-900 border-gray-300 dark:border-gray-800'
+                        : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700'
                     }`}
                   >
                     <td className="p-2 sm:p-4">
