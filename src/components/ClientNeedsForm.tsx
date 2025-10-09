@@ -113,16 +113,12 @@ export function ClientNeedsForm({ salesReps, onSubmit, isLoading = false }: Clie
     setError(null);
 
     try {
-      if (!textContent.trim() && !selectedFile) {
-        setError("Veuillez saisir du texte ou joindre un fichier");
+      if (!selectedFile) {
+        setError("Veuillez joindre un fichier CV");
         return;
       }
       if (!besoin.trim()) {
-        setError("Veuillez saisir un besoin");
-        return;
-      }
-      if (!assignedTo) {
-        setError("Veuillez sélectionner un commercial");
+        setError("Veuillez saisir le besoin client");
         return;
       }
 
@@ -134,7 +130,6 @@ export function ClientNeedsForm({ salesReps, onSubmit, isLoading = false }: Clie
           console.log('File content extracted:', cvContent ? 'Success' : 'Failed');
         } catch (fileError) {
           console.error('Error extracting file content:', fileError);
-          // Continuer sans le contenu du fichier
         }
       }
 
@@ -143,9 +138,7 @@ export function ClientNeedsForm({ salesReps, onSubmit, isLoading = false }: Clie
         try {
           const analysisResult = await analyzeProspect(textContent.trim(), cvContent);
           console.log('Client needs analysis result:', analysisResult);
-          
-          // Mettre à jour les données du prospect avec les résultats de l'analyse
-          // Ces données seront utilisées par la fonction onSubmit
+
           const enrichedTextContent = textContent + '\n\n--- Analyse automatique ---\n' +
             `Disponibilité: ${analysisResult.availability || '-'}\n` +
             `TJM: ${analysisResult.dailyRate || 'Non spécifié'}\n` +
@@ -153,17 +146,16 @@ export function ClientNeedsForm({ salesReps, onSubmit, isLoading = false }: Clie
             `Mobilité: ${analysisResult.mobility || '-'}\n` +
             `Téléphone: ${analysisResult.phone || '-'}\n` +
             `Email: ${analysisResult.email || '-'}`;
-          
+
           await onSubmit(enrichedTextContent, besoin, selectedFile, assignedTo);
         } catch (analysisError) {
           console.error('Error analyzing client needs:', analysisError);
-          // En cas d'erreur d'analyse, on continue avec les données brutes
           await onSubmit(textContent, besoin, selectedFile, assignedTo);
         }
       } else {
-      await onSubmit(textContent, besoin, selectedFile, assignedTo);
+        await onSubmit(textContent, besoin, selectedFile, assignedTo);
       }
-      
+
       setTextContent('');
       setBesoin('');
       setSelectedFile(null);
@@ -199,39 +191,40 @@ export function ClientNeedsForm({ salesReps, onSubmit, isLoading = false }: Clie
       <div className={`p-6 space-y-6 transition-all duration-200 ease-in-out ${
         isExpanded ? 'block' : 'hidden'
       }`}>
-        {/* Champ texte */}
-        <div className="space-y-2">
-          <label htmlFor="text-content" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-            Informations textuelles
-          </label>
-          <textarea
-            id="text-content"
-            value={textContent}
-            onChange={(e) => setTextContent(e.target.value)}
-            className="w-full h-32 px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none transition-colors"
-            placeholder="Collez ici les informations sur les profils à analyser..."
-          />
-        </div>
-
-        {/* Champ Besoin */}
+        {/* Champ Besoin Client - OBLIGATOIRE */}
         <div className="space-y-2">
           <label htmlFor="besoin" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-            Besoin
+            Besoin Client <span className="text-red-500">*</span>
           </label>
           <input
             id="besoin"
             type="text"
             value={besoin}
             onChange={(e) => setBesoin(e.target.value)}
+            required
             className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
             placeholder="Besoin client"
           />
         </div>
 
-        {/* Zone de dépôt de fichier */}
+        {/* Champ texte - OPTIONNEL */}
+        <div className="space-y-2">
+          <label htmlFor="text-content" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            Informations textuelles <span className="text-gray-400 text-xs">(optionnel)</span>
+          </label>
+          <textarea
+            id="text-content"
+            value={textContent}
+            onChange={(e) => setTextContent(e.target.value)}
+            className="w-full h-32 px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none transition-colors"
+            placeholder="Informations complémentaires (optionnel)..."
+          />
+        </div>
+
+        {/* Zone de dépôt de fichier - OBLIGATOIRE */}
         <div className="space-y-2">
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-            Pièce jointe (PDF ou Word)
+            CV (PDF ou Word) <span className="text-red-500">*</span>
           </label>
           <div
             className={`relative border-2 border-dashed rounded-lg p-6 transition-colors ${
@@ -292,7 +285,7 @@ export function ClientNeedsForm({ salesReps, onSubmit, isLoading = false }: Clie
           </div>
         )}
 
-        {/* Sélection du commercial et bouton d'analyse */}
+        {/* Sélection du commercial et bouton de création */}
         <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
           <select
             value={assignedTo}
@@ -303,7 +296,7 @@ export function ClientNeedsForm({ salesReps, onSubmit, isLoading = false }: Clie
             className="w-full sm:w-64 px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none"
           >
             <option value="">
-              {salesReps?.length ? 'Sélectionner un commercial' : 'Aucun commercial disponible'}
+              {salesReps?.length ? 'Non assigné (optionnel)' : 'Aucun commercial disponible'}
             </option>
             {[...salesReps].sort((a, b) => {
               const order = ['EPO', 'IKH', 'BVI', 'GMA', 'TSA', 'BCI', 'VIE', 'JVO'];
@@ -314,13 +307,13 @@ export function ClientNeedsForm({ salesReps, onSubmit, isLoading = false }: Clie
               </option>
             ))}
           </select>
-        
+
           <button
             type="submit"
-            disabled={isLoading || (!textContent.trim() && !selectedFile) || !besoin.trim() || !assignedTo}
+            disabled={isLoading || !selectedFile || !besoin.trim()}
             className="w-full sm:w-auto px-6 py-2 bg-[#1651EE] hover:bg-[#1651EE]/90 text-white font-medium rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
-            {isLoading ? 'Analyse...' : 'Analyser'}
+            {isLoading ? 'Création...' : 'Créer le profil'}
           </button>
         </div>
       </div>
