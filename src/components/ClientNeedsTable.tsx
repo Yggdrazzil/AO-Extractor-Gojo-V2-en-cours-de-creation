@@ -825,9 +825,12 @@ export function ClientNeedsTable({
                             )}
                           </button>
                           {prospect.comments && prospect.comments.trim() && (
-                            <div className="absolute bottom-full right-0 mb-2 hidden group-hover:block z-[9999] pointer-events-none">
-                              <div className="bg-[#4a4f57]/95 backdrop-blur-md text-white text-sm rounded-lg shadow-xl border border-gray-600/50 p-3 max-w-sm w-max max-h-60 overflow-y-auto whitespace-pre-wrap break-words">
-                                {prospect.comments}
+                            <div className="absolute bottom-full right-0 mb-1 hidden group-hover:block z-[9999] pointer-events-none">
+                              <div className="relative">
+                                <div className="bg-[#4a4f57]/95 backdrop-blur-md text-white text-sm rounded-lg shadow-xl border border-gray-600/50 p-3 max-w-sm w-max max-h-60 overflow-y-auto whitespace-pre-wrap break-words">
+                                  {prospect.comments}
+                                </div>
+                                <div className="absolute -bottom-1 right-4 w-0 h-0 border-l-[8px] border-l-transparent border-r-[8px] border-r-transparent border-t-[8px] border-t-[#4a4f57]/95"></div>
                               </div>
                             </div>
                           )}
