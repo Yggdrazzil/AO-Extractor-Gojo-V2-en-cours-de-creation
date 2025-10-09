@@ -380,12 +380,12 @@ function App() {
     try {
       setIsAnalyzingProspect(true);
       console.log('🔍 Analyzing prospect...');
-      
+
       // Gestion du fichier
       let fileUrl: string | undefined;
       let fileName: string | undefined;
       let fileContent: string | undefined;
-      
+
       if (file) {
         try {
           const uploadResult = await uploadFile(file, 'cvs');
@@ -396,13 +396,17 @@ function App() {
           console.error('File upload failed:', uploadError);
         }
       }
-      
+
       // Analyser le contenu
       let analysisResult;
       try {
+        console.log('🔍 Starting prospect analysis...');
+        console.log('📝 Text content length:', textContent.length);
+        console.log('📄 File content length:', fileContent?.length || 0);
         analysisResult = await analyzeProspect(textContent, fileContent);
+        console.log('✅ Analysis completed successfully:', analysisResult);
       } catch (analysisError) {
-        console.warn('Analysis failed, using default values:', analysisError);
+        console.error('❌ Analysis failed, using default values:', analysisError);
         analysisResult = {
           name: '-',
           availability: '-',
@@ -448,21 +452,21 @@ function App() {
 
   // Handler pour analyser un besoin client
   const handleAnalyzeBoondmanagerProspect = async (
-    textContent: string, 
-    selectedNeedId: string, 
-    selectedNeedTitle: string, 
-    file: File | null, 
+    textContent: string,
+    selectedNeedId: string,
+    selectedNeedTitle: string,
+    file: File | null,
     assignedTo: string
   ) => {
     try {
       setIsAnalyzingBoondmanagerProspect(true);
       console.log('🔍 Analyzing client need...');
-      
+
       // Gestion du fichier
       let fileUrl: string | undefined;
       let fileName: string | undefined;
       let fileContent: string | undefined;
-      
+
       if (file) {
         try {
           const uploadResult = await uploadFile(file, 'cvs');
@@ -473,13 +477,17 @@ function App() {
           console.error('File upload failed:', uploadError);
         }
       }
-      
+
       // Analyser le contenu
       let analysisResult;
       try {
+        console.log('🔍 Starting client need analysis...');
+        console.log('📝 Text content length:', textContent.length);
+        console.log('📄 File content length:', fileContent?.length || 0);
         analysisResult = await analyzeProspect(textContent, fileContent);
+        console.log('✅ Analysis completed successfully:', analysisResult);
       } catch (analysisError) {
-        console.warn('Analysis failed, using default values:', analysisError);
+        console.error('❌ Analysis failed, using default values:', analysisError);
         analysisResult = {
           name: '-',
           availability: '-',

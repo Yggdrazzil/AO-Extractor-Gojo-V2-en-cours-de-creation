@@ -234,17 +234,20 @@ ${cvContent}` : content;
     }
 
     const data = await response.json();
+    console.log('✅ OpenAI API response received');
     let result;
     try {
       const content = data.choices[0].message.content.replace(/``\`json\n|\n```/g, '');
+      console.log('📄 Raw OpenAI response content:', content);
       result = JSON.parse(content);
+      console.log('📊 Parsed result:', result);
     } catch (error) {
-      console.error('Erreur de parsing JSON:', data.choices[0].message.content);
+      console.error('❌ Erreur de parsing JSON:', data.choices[0].message.content);
       throw new Error("Erreur lors de l'analyse de la réponse");
     }
 
     // Traiter les valeurs spéciales pour les coordonnées
-    return {
+    const finalResult = {
       name: result.name || '-',
       availability: result.availability || '-',
       dailyRate: result.dailyRate || null,
@@ -254,6 +257,8 @@ ${cvContent}` : content;
       phone: result.phone || '-',
       email: result.email || '-'
     };
+    console.log('🎯 Final result to return:', finalResult);
+    return finalResult;
   } catch (error) {
     console.error('Erreur OpenAI:', error);
     if (error instanceof Error) {
