@@ -643,17 +643,22 @@ function App() {
     return <LoginForm onLoginSuccess={setSession} />;
   }
 
+  const currentUserEmail = session.user?.email;
+  const currentSalesRep = salesReps.find(rep => rep.email === currentUserEmail);
+  const isAdmin = currentSalesRep?.isAdmin || false;
+
   // Application principale
   return (
     <ErrorBoundary>
       <ThemeProvider>
         <div className="flex h-screen bg-gray-100 dark:bg-gray-900">
-          <Sidebar 
-            activeTab={activeTab} 
+          <Sidebar
+            activeTab={activeTab}
             onTabChange={setActiveTab}
             rfps={rfps}
             prospects={prospects}
             boondmanagerProspects={boondmanagerProspects}
+            isAdmin={isAdmin}
           />
           <div className="flex-1 flex flex-col">
             <Header activeTab={activeTab} />

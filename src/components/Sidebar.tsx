@@ -8,6 +8,7 @@ interface SidebarProps {
   rfps?: any[];
   prospects?: any[];
   boondmanagerProspects?: any[];
+  isAdmin?: boolean;
 }
 
 const tabs = [
@@ -15,35 +16,42 @@ const tabs = [
     id: 'rfp-extractor',
     label: 'Extracteur AO',
     icon: FileText,
-    description: 'Analyse d\'appels d\'offres'
+    description: 'Analyse d\'appels d\'offres',
+    adminOnly: false
   },
   {
     id: 'prospects',
     label: 'Prises de Référence',
     icon: Users,
-    description: 'Prise de références'
+    description: 'Prise de références',
+    adminOnly: false
   },
   {
     id: 'boondmanager-prospects',
     label: 'Profils pour Besoins Clients',
     icon: Target,
-    description: 'Analyse de profils pour Besoins Clients'
+    description: 'Analyse de profils pour Besoins Clients',
+    adminOnly: false
   },
   {
     id: 'analytics',
     label: 'A Venir',
     icon: BarChart3,
-    description: 'Tableaux de bord'
+    description: 'Tableaux de bord',
+    adminOnly: false
   },
   {
     id: 'tools',
     label: 'Back Office',
     icon: Settings,
-    description: 'Outils additionnels'
+    description: 'Outils additionnels',
+    adminOnly: true
   }
 ];
 
-export function Sidebar({ activeTab, onTabChange, rfps = [], prospects = [], boondmanagerProspects = [] }: SidebarProps) {
+export function Sidebar({ activeTab, onTabChange, rfps = [], prospects = [], boondmanagerProspects = [], isAdmin = false }: SidebarProps) {
+  const visibleTabs = tabs.filter(tab => !tab.adminOnly || isAdmin);
+
   return (
     <div className="w-16 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col">
       {/* Header */}
@@ -54,7 +62,7 @@ export function Sidebar({ activeTab, onTabChange, rfps = [], prospects = [], boo
       {/* Navigation */}
       <nav className="flex-1 p-2">
         <div className="space-y-2">
-          {tabs.map((tab) => {
+          {visibleTabs.map((tab) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
             
