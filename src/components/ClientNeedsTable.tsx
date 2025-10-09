@@ -508,16 +508,20 @@ export function ClientNeedsTable({
                   </td>
                 </tr>
               ) : (
-                sortedProspects.map((prospect) => (
+                sortedProspects.map((prospect) => {
+                  const rowBgClass = prospect.status === 'Traité'
+                    ? 'bg-gray-200 dark:bg-gray-900'
+                    : 'bg-white dark:bg-gray-800';
+                  const borderClass = prospect.status === 'Traité'
+                    ? 'border-gray-300 dark:border-gray-800'
+                    : 'border-gray-200 dark:border-gray-700';
+
+                  return (
                   <tr
                     key={prospect.id}
-                    className={`border-t hover:bg-gray-50 dark:hover:bg-gray-700 group ${
-                      prospect.status === 'Traité'
-                        ? 'bg-gray-200 dark:bg-gray-900 border-gray-300 dark:border-gray-800'
-                        : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700'
-                    }`}
+                    className={`border-t hover:bg-gray-50 dark:hover:bg-gray-700 group ${rowBgClass} ${borderClass}`}
                   >
-                    <td className="p-2 sm:p-4">
+                    <td className={`p-2 sm:p-4 ${rowBgClass}`}>
                       <div className="flex items-center justify-center h-full">
                         <button
                           onClick={() => onView(prospect)}
@@ -534,7 +538,7 @@ export function ClientNeedsTable({
                     </td>
                     
                     {/* Besoin */}
-                    <td className="p-2 sm:p-4 text-gray-900 dark:text-gray-100">
+                    <td className={`p-2 sm:p-4 text-gray-900 dark:text-gray-100 ${rowBgClass}`}>
                       {editingField?.id === prospect.id && editingField.field === 'besoin' ? (
                         <div className="flex items-center space-x-2">
                           <input
@@ -561,7 +565,7 @@ export function ClientNeedsTable({
                     </td>
 
                     {/* Prénom & Nom */}
-                    <td className="p-2 sm:p-4 text-gray-900 dark:text-gray-100">
+                    <td className={`p-2 sm:p-4 text-gray-900 dark:text-gray-100 ${rowBgClass}`}>
                       {editingField?.id === prospect.id && editingField.field === 'name' ? (
                         <div className="flex items-center space-x-2">
                           <input
@@ -588,7 +592,7 @@ export function ClientNeedsTable({
                     </td>
 
                     {/* Disponibilité */}
-                    <td className="p-2 sm:p-4 text-gray-900 dark:text-gray-100">
+                    <td className={`p-2 sm:p-4 text-gray-900 dark:text-gray-100 ${rowBgClass}`}>
                       {editingField?.id === prospect.id && editingField.field === 'availability' ? (
                         <div className="flex items-center space-x-2">
                           <input
@@ -614,7 +618,7 @@ export function ClientNeedsTable({
                     </td>
 
                     {/* TJM / Salaire */}
-                    <td className="p-2 sm:p-4 text-gray-900 dark:text-gray-100">
+                    <td className={`p-2 sm:p-4 text-gray-900 dark:text-gray-100 ${rowBgClass}`}>
                       {editingField?.id === prospect.id && editingField.field === 'dailyRate' ? (
                         <div className="flex items-center space-x-2">
                           <input
@@ -647,7 +651,7 @@ export function ClientNeedsTable({
                     </td>
 
                     {/* Résidence */}
-                    <td className="p-2 sm:p-4 text-gray-900 dark:text-gray-100">
+                    <td className={`p-2 sm:p-4 text-gray-900 dark:text-gray-100 ${rowBgClass}`}>
                       {editingField?.id === prospect.id && editingField.field === 'residence' ? (
                         <div className="flex items-center space-x-2">
                           <input
@@ -677,7 +681,7 @@ export function ClientNeedsTable({
                     </td>
 
                     {/* Mobilité */}
-                    <td className="p-2 sm:p-4 text-gray-900 dark:text-gray-100">
+                    <td className={`p-2 sm:p-4 text-gray-900 dark:text-gray-100 ${rowBgClass}`}>
                       {editingField?.id === prospect.id && editingField.field === 'mobility' ? (
                         <div className="flex items-center space-x-2">
                           <input
@@ -707,7 +711,7 @@ export function ClientNeedsTable({
                     </td>
 
                     {/* Contact (Email + Téléphone) */}
-                    <td className="p-2 sm:p-4 text-gray-900 dark:text-gray-100">
+                    <td className={`p-2 sm:p-4 text-gray-900 dark:text-gray-100 ${rowBgClass}`}>
                       <div className="space-y-1">
                         {editingField?.id === prospect.id && editingField.field === 'email' ? (
                           <div className="flex items-center space-x-2">
@@ -766,7 +770,7 @@ export function ClientNeedsTable({
                     </td>
 
                     {/* Statut */}
-                    <td className="p-2 sm:p-4">
+                    <td className={`p-2 sm:p-4 ${rowBgClass}`}>
                       <select
                         value={prospect.status}
                         onChange={(e) => {
@@ -784,14 +788,14 @@ export function ClientNeedsTable({
                     </td>
 
                     {/* Commercial */}
-                    <td className="p-2 sm:p-4">
+                    <td className={`p-2 sm:p-4 ${rowBgClass}`}>
                       <span className="inline-flex items-center px-2 py-1 rounded-full text-xs sm:text-sm font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
                         {salesRepsMap.get(prospect.assignedTo) || '---'}
                       </span>
                     </td>
 
                     {/* Actions */}
-                    <td className="p-2 sm:p-4">
+                    <td className={`p-2 sm:p-4 ${rowBgClass}`}>
                       <div className="flex space-x-1 sm:space-x-2">
                         <button
                           onClick={() => {
@@ -850,7 +854,8 @@ export function ClientNeedsTable({
                       </div>
                     </td>
                   </tr>
-                ))
+                  );
+                })
               )}
             </tbody>
           </table>

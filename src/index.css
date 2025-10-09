@@ -51,8 +51,14 @@ thead[class*="sticky"] {
 }
 
 /* Assurer que les cellules de tableau héritent du fond de la ligne */
-tbody tr > td {
-  background-color: inherit;
+.table-scroll-container tbody tr.bg-gray-200 > td,
+.table-scroll-container tbody tr.dark\\:bg-gray-900 > td {
+  background-color: inherit !important;
+}
+
+.table-scroll-container tbody tr.bg-white > td,
+.table-scroll-container tbody tr.dark\\:bg-gray-800 > td {
+  background-color: inherit !important;
 }
 
 thead[class*="sticky"] th {
@@ -135,6 +141,7 @@ thead[class*="sticky"] th {
   font-size: 0.813rem;
   table-layout: fixed;
   width: 100%;
+  min-width: 100%;
 }
 
 .table-scroll-container table th,
