@@ -46,6 +46,7 @@ interface TabContentProps {
   onProspectStatusChange?: (id: string, status: Prospect['status']) => Promise<void>;
   onProspectAssigneeChange?: (id: string, assignedTo: string) => Promise<void>;
   onProspectTargetAccountChange?: (id: string, targetAccount: string) => Promise<void>;
+  onProspectNameChange?: (id: string, name: string) => Promise<void>;
   onProspectAvailabilityChange?: (id: string, availability: string) => Promise<void>;
   onProspectDailyRateChange?: (id: string, dailyRate: string) => Promise<void>;
   onProspectResidenceChange?: (id: string, residence: string) => Promise<void>;
@@ -60,6 +61,7 @@ interface TabContentProps {
   onBoondmanagerProspectStatusChange?: (id: string, status: 'À traiter' | 'Traité') => Promise<void>;
   onBoondmanagerProspectAssigneeChange?: (id: string, assignedTo: string) => Promise<void>;
   onBoondmanagerProspectSelectedNeedChange?: (id: string, besoin: string) => Promise<void>;
+  onBoondmanagerProspectNameChange?: (id: string, name: string) => Promise<void>;
   onBoondmanagerProspectAvailabilityChange?: (id: string, availability: string) => Promise<void>;
   onBoondmanagerProspectDailyRateChange?: (id: string, dailyRate: string) => Promise<void>;
   onBoondmanagerProspectResidenceChange?: (id: string, residence: string) => Promise<void>;
@@ -115,6 +117,7 @@ export function TabContent({
   onProspectStatusChange,
   onProspectAssigneeChange,
   onProspectTargetAccountChange,
+  onProspectNameChange,
   onProspectAvailabilityChange,
   onProspectDailyRateChange,
   onProspectResidenceChange,
@@ -127,6 +130,7 @@ export function TabContent({
   onBoondmanagerProspectStatusChange,
   onBoondmanagerProspectAssigneeChange,
   onBoondmanagerProspectSelectedNeedChange,
+  onBoondmanagerProspectNameChange,
   onBoondmanagerProspectAvailabilityChange,
   onBoondmanagerProspectDailyRateChange,
   onBoondmanagerProspectResidenceChange,
@@ -182,6 +186,7 @@ export function TabContent({
             onStatusChange={onProspectStatusChange || (() => Promise.resolve())}
             onAssigneeChange={onProspectAssigneeChange || (() => Promise.resolve())}
             onTargetAccountChange={onProspectTargetAccountChange || (() => Promise.resolve())}
+            onNameChange={onProspectNameChange || (() => Promise.resolve())}
             onAvailabilityChange={onProspectAvailabilityChange || (() => Promise.resolve())}
             onDailyRateChange={onProspectDailyRateChange || (() => Promise.resolve())}
             onResidenceChange={onProspectResidenceChange || (() => Promise.resolve())}
@@ -213,6 +218,7 @@ export function TabContent({
             onStatusChange={onBoondmanagerProspectStatusChange!}
             onAssigneeChange={onBoondmanagerProspectAssigneeChange || (() => Promise.resolve())}
             onSelectedNeedChange={onBoondmanagerProspectSelectedNeedChange || (() => Promise.resolve())}
+            onNameChange={onBoondmanagerProspectNameChange || (() => Promise.resolve())}
             onAvailabilityChange={onBoondmanagerProspectAvailabilityChange || (() => Promise.resolve())}
             onDailyRateChange={onBoondmanagerProspectDailyRateChange || (() => Promise.resolve())}
             onResidenceChange={onBoondmanagerProspectResidenceChange || (() => Promise.resolve())}

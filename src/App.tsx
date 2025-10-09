@@ -404,6 +404,7 @@ function App() {
       } catch (analysisError) {
         console.warn('Analysis failed, using default values:', analysisError);
         analysisResult = {
+          name: '-',
           availability: '-',
           dailyRate: null,
           salaryExpectations: null,
@@ -413,10 +414,11 @@ function App() {
           email: '-'
         };
       }
-      
+
       const newProspect = await createProspect({
         textContent,
         targetAccount,
+        name: analysisResult.name || '-',
         fileName,
         fileUrl,
         fileContent,
@@ -479,6 +481,7 @@ function App() {
       } catch (analysisError) {
         console.warn('Analysis failed, using default values:', analysisError);
         analysisResult = {
+          name: '-',
           availability: '-',
           dailyRate: null,
           salaryExpectations: null,
@@ -488,12 +491,13 @@ function App() {
           email: '-'
         };
       }
-      
+
       const newClientNeed = await addClientNeed({
         id: '', // Sera généré
         textContent,
         selectedNeedId,
         selectedNeedTitle,
+        name: analysisResult.name || '-',
         fileName,
         fileUrl,
         fileContent,
@@ -883,7 +887,7 @@ function App() {
                 
                 // Handlers pour l'édition inline des prospects
                 onProspectTargetAccountChange={async (id, targetAccount) => {
-                  setProspects(prev => prev.map(prospect => 
+                  setProspects(prev => prev.map(prospect =>
                     prospect.id === id ? { ...prospect, targetAccount } : prospect
                   ));
                   try {
@@ -894,7 +898,20 @@ function App() {
                     loadProspects();
                   }
                 }}
-                
+
+                onProspectNameChange={async (id, name) => {
+                  setProspects(prev => prev.map(prospect =>
+                    prospect.id === id ? { ...prospect, name } : prospect
+                  ));
+                  try {
+                    const { updateProspectName } = await import('./services/prospects');
+                    await updateProspectName(id, name);
+                  } catch (error) {
+                    console.error('Error updating prospect name:', error);
+                    loadProspects();
+                  }
+                }}
+
                 onProspectAvailabilityChange={async (id, availability) => {
                   setProspects(prev => prev.map(prospect => 
                     prospect.id === id ? { ...prospect, availability } : prospect
@@ -1038,7 +1055,7 @@ function App() {
                 
                 // Handlers pour l'édition inline des besoins clients
                 onBoondmanagerProspectSelectedNeedChange={async (id, selectedNeedTitle) => {
-                  setBoondmanagerProspects(prev => prev.map(prospect => 
+                  setBoondmanagerProspects(prev => prev.map(prospect =>
                     prospect.id === id ? { ...prospect, selectedNeedTitle } : prospect
                   ));
                   try {
@@ -1049,7 +1066,20 @@ function App() {
                     loadClientNeeds();
                   }
                 }}
-                
+
+                onBoondmanagerProspectNameChange={async (id, name) => {
+                  setBoondmanagerProspects(prev => prev.map(prospect =>
+                    prospect.id === id ? { ...prospect, name } : prospect
+                  ));
+                  try {
+                    const { updateClientNeedName } = await import('./services/clientNeeds');
+                    await updateClientNeedName(id, name);
+                  } catch (error) {
+                    console.error('Error updating client need name:', error);
+                    loadClientNeeds();
+                  }
+                }}
+
                 onBoondmanagerProspectAvailabilityChange={async (id, availability) => {
                   setBoondmanagerProspects(prev => prev.map(prospect => 
                     prospect.id === id ? { ...prospect, availability } : prospect
