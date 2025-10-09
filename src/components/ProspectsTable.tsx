@@ -481,17 +481,19 @@ export function ProspectsTable({
                   }`}
                 >
                   <td className="p-2 sm:p-4">
-                    <button
-                      onClick={() => onView(prospect)}
-                      className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium cursor-pointer transition-all hover:scale-105 hover:shadow-md ${
-                        prospect.isRead
-                          ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 hover:bg-green-200 dark:hover:bg-green-800'
-                          : 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200 hover:bg-orange-200 dark:hover:bg-orange-800'
-                      }`}
-                      title={prospect.isRead ? 'Cliquer pour marquer comme non lu' : 'Cliquer pour marquer comme lu'}
-                    >
-                      {prospect.isRead ? 'Lu' : 'NEW'}
-                    </button>
+                    <div className="flex items-center justify-center h-full">
+                      <button
+                        onClick={() => onView(prospect)}
+                        className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium cursor-pointer transition-all hover:scale-105 hover:shadow-md ${
+                          prospect.isRead
+                            ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 hover:bg-green-200 dark:hover:bg-green-800'
+                            : 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200 hover:bg-orange-200 dark:hover:bg-orange-800'
+                        }`}
+                        title={prospect.isRead ? 'Cliquer pour marquer comme non lu' : 'Cliquer pour marquer comme lu'}
+                      >
+                        {prospect.isRead ? 'Lu' : 'NEW'}
+                      </button>
+                    </div>
                   </td>
                   
                   {/* Compte Ciblé */}

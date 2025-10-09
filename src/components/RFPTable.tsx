@@ -510,17 +510,19 @@ export function RFPTable({
                 }`}
               >
                 <td className="p-2 sm:p-4">
-                  <button
-                    onClick={() => onView(rfp)}
-                    className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium cursor-pointer transition-all hover:scale-105 hover:shadow-md ${
-                      rfp.isRead
-                        ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 hover:bg-green-200 dark:hover:bg-green-800'
-                        : 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200 hover:bg-orange-200 dark:hover:bg-orange-800'
-                    }`}
-                    title={rfp.isRead ? 'Cliquer pour marquer comme non lu' : 'Cliquer pour marquer comme lu'}
-                  >
-                    {rfp.isRead ? 'Lu' : 'NEW'}
-                  </button>
+                  <div className="flex items-center justify-center h-full">
+                    <button
+                      onClick={() => onView(rfp)}
+                      className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium cursor-pointer transition-all hover:scale-105 hover:shadow-md ${
+                        rfp.isRead
+                          ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 hover:bg-green-200 dark:hover:bg-green-800'
+                          : 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200 hover:bg-orange-200 dark:hover:bg-orange-800'
+                      }`}
+                      title={rfp.isRead ? 'Cliquer pour marquer comme non lu' : 'Cliquer pour marquer comme lu'}
+                    >
+                      {rfp.isRead ? 'Lu' : 'NEW'}
+                    </button>
+                  </div>
                 </td>
                 <td className="p-2 sm:p-4 text-gray-900 dark:text-gray-100">
                   {editingField?.id === rfp.id && editingField.field === 'client' ? (
