@@ -1168,7 +1168,7 @@ function App() {
                 }}
                 
                 onBoondmanagerProspectAssigneeChange={async (id, assignedTo) => {
-                  setBoondmanagerProspects(prev => prev.map(prospect => 
+                  setBoondmanagerProspects(prev => prev.map(prospect =>
                     prospect.id === id ? { ...prospect, assignedTo } : prospect
                   ));
                   try {
@@ -1176,6 +1176,19 @@ function App() {
                     await updateClientNeedAssignee(id, assignedTo);
                   } catch (error) {
                     console.error('Error updating client need assignee:', error);
+                    loadClientNeeds();
+                  }
+                }}
+
+                onBoondmanagerProspectFavoriteChange={async (id, isFavorite) => {
+                  setBoondmanagerProspects(prev => prev.map(prospect =>
+                    prospect.id === id ? { ...prospect, isFavorite } : prospect
+                  ));
+                  try {
+                    const { updateClientNeedFavorite } = await import('./services/clientNeeds');
+                    await updateClientNeedFavorite(id, isFavorite);
+                  } catch (error) {
+                    console.error('Error updating client need favorite:', error);
                     loadClientNeeds();
                   }
                 }}

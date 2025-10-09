@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import type { BoondmanagerProspect, SalesRep } from '../types';
-import { Eye, Trash2, ArrowUpDown, ArrowUp, ArrowDown, Check, X, Download, MessageSquare } from 'lucide-react';
+import { Eye, Trash2, ArrowUpDown, ArrowUp, ArrowDown, Check, X, Download, MessageSquare, Star } from 'lucide-react';
 import { ProspectContentModal } from './ProspectContentModal';
 import { ClientNeedCommentsModal } from './ClientNeedCommentsModal';
 import { ConfirmDialog } from './common/ConfirmDialog';
@@ -58,6 +58,7 @@ interface ClientNeedsTableProps {
   onView: (prospect: BoondmanagerProspect) => Promise<void>;
   onDelete: (id: string) => Promise<void>;
   onCommentsChange: (id: string, comments: string) => Promise<void>;
+  onFavoriteChange: (id: string, isFavorite: boolean) => Promise<void>;
 }
 
 export function ClientNeedsTable({
@@ -76,6 +77,7 @@ export function ClientNeedsTable({
   onView,
   onDelete,
   onCommentsChange,
+  onFavoriteChange,
 }: ClientNeedsTableProps) {
   const statusOptions: BoondmanagerProspect['status'][] = ['À traiter', 'Traité'];
   const [sort, setSort] = useState<SortState>({ field: null, direction: null });
@@ -86,6 +88,7 @@ export function ClientNeedsTable({
   const tableRef = useRef<HTMLDivElement>(null);
   const [isScrolling, setIsScrolling] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState<{ isOpen: boolean; prospectId: string; prospectTitle: string }>({
     isOpen: false,
     prospectId: '',
@@ -151,25 +154,30 @@ export function ClientNeedsTable({
 
   const filteredProspects = useMemo(() => {
     let filtered = prospects;
-    
+
     // Filtrage par commercial
     if (selectedSalesRep) {
       filtered = prospects.filter(prospect => prospect.assignedTo === selectedSalesRep);
     }
-    
+
+    // Filtrage par favoris
+    if (showFavoritesOnly) {
+      filtered = filtered.filter(prospect => prospect.isFavorite === true);
+    }
+
     // Filtrage par recherche textuelle
     if (searchTerm.trim()) {
       const searchLower = searchTerm.toLowerCase();
-      filtered = filtered.filter(prospect => 
+      filtered = filtered.filter(prospect =>
         prospect.selectedNeedTitle.toLowerCase().includes(searchLower) ||
         prospect.residence.toLowerCase().includes(searchLower) ||
         prospect.email.toLowerCase().includes(searchLower) ||
         prospect.phone.toLowerCase().includes(searchLower)
       );
     }
-    
+
     return filtered;
-  }, [prospects, selectedSalesRep, searchTerm]);
+  }, [prospects, selectedSalesRep, showFavoritesOnly, searchTerm]);
 
   const handleSort = (field: SortField) => {
     setSort(prev => ({
@@ -398,6 +406,18 @@ export function ClientNeedsTable({
                   <X className="w-4 h-4" />
                 </button>
               )}
+              <div className="flex items-center space-x-2 ml-4">
+                <input
+                  id="favorites-filter-client-needs"
+                  type="checkbox"
+                  checked={showFavoritesOnly}
+                  onChange={(e) => setShowFavoritesOnly(e.target.checked)}
+                  className="w-4 h-4 text-yellow-500 bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded focus:ring-yellow-500"
+                />
+                <label htmlFor="favorites-filter-client-needs" className="text-sm font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap cursor-pointer">
+                  Favoris uniquement
+                </label>
+              </div>
             </div>
           </div>
         </div>
@@ -809,6 +829,17 @@ export function ClientNeedsTable({
                             </div>
                           )}
                         </div>
+                        <button
+                          onClick={() => onFavoriteChange(prospect.id, !prospect.isFavorite)}
+                          title={prospect.isFavorite ? "Retirer des favoris" : "Ajouter aux favoris"}
+                          className={`p-1 ${
+                            prospect.isFavorite
+                              ? 'text-yellow-500 hover:text-yellow-600 dark:text-yellow-400'
+                              : 'text-gray-400 hover:text-yellow-500 dark:text-gray-500 dark:hover:text-yellow-400'
+                          }`}
+                        >
+                          <Star className={`w-4 h-4 sm:w-5 sm:h-5 ${prospect.isFavorite ? 'fill-current' : ''}`} />
+                        </button>
                         <button
                           onClick={() => handleDeleteClick(prospect)}
                           title="Supprimer"

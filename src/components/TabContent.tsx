@@ -60,6 +60,7 @@ interface TabContentProps {
   // Props pour les besoins clients
   onBoondmanagerProspectStatusChange?: (id: string, status: 'À traiter' | 'Traité') => Promise<void>;
   onBoondmanagerProspectAssigneeChange?: (id: string, assignedTo: string) => Promise<void>;
+  onBoondmanagerProspectFavoriteChange?: (id: string, isFavorite: boolean) => Promise<void>;
   onBoondmanagerProspectSelectedNeedChange?: (id: string, besoin: string) => Promise<void>;
   onBoondmanagerProspectNameChange?: (id: string, name: string) => Promise<void>;
   onBoondmanagerProspectAvailabilityChange?: (id: string, availability: string) => Promise<void>;
@@ -129,6 +130,7 @@ export function TabContent({
   onProspectCommentsChange,
   onBoondmanagerProspectStatusChange,
   onBoondmanagerProspectAssigneeChange,
+  onBoondmanagerProspectFavoriteChange,
   onBoondmanagerProspectSelectedNeedChange,
   onBoondmanagerProspectNameChange,
   onBoondmanagerProspectAvailabilityChange,
@@ -217,6 +219,7 @@ export function TabContent({
             salesReps={salesReps}
             onStatusChange={onBoondmanagerProspectStatusChange!}
             onAssigneeChange={onBoondmanagerProspectAssigneeChange || (() => Promise.resolve())}
+            onFavoriteChange={onBoondmanagerProspectFavoriteChange || (() => Promise.resolve())}
             onSelectedNeedChange={onBoondmanagerProspectSelectedNeedChange || (() => Promise.resolve())}
             onNameChange={onBoondmanagerProspectNameChange || (() => Promise.resolve())}
             onAvailabilityChange={onBoondmanagerProspectAvailabilityChange || (() => Promise.resolve())}
