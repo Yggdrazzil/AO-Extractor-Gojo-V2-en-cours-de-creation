@@ -137,11 +137,12 @@ thead[class*="sticky"] th {
   padding: 0.5rem 0.4rem;
   word-wrap: break-word;
   overflow-wrap: break-word;
-  vertical-align: top;
+  vertical-align: middle;
 }
 
 .table-scroll-container table th {
   line-height: 1.2;
+  vertical-align: top;
 }
 
 .table-scroll-container select,
