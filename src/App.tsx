@@ -10,25 +10,28 @@ import type { Session } from '@supabase/supabase-js';
 import type { RFP, SalesRep, Prospect, BoondmanagerProspect } from './types';
 import { analyzeRFP } from './services/openai';
 import { analyzeProspect } from './services/openai';
-import { 
-  createRFP, 
-  updateRFPStatus, 
+import {
+  createRFP,
+  updateRFPStatus,
   updateRFPComments,
   markRFPAsRead,
-  deleteRFP 
+  toggleRFPReadStatus,
+  deleteRFP
 } from './services/rfp';
-import { 
+import {
   createProspect,
   updateProspectStatus,
   updateProspectComments,
   markProspectAsRead,
+  toggleProspectReadStatus,
   deleteProspect
 } from './services/prospects';
-import { 
+import {
   addClientNeed,
   updateClientNeedStatus,
   updateClientNeedComments,
   markClientNeedAsRead,
+  toggleClientNeedReadStatus,
   deleteClientNeed
 } from './services/clientNeeds';
 import { uploadFile } from './services/fileUpload';
@@ -645,7 +648,7 @@ function App() {
 
   const currentUserEmail = session.user?.email;
   const currentSalesRep = salesReps.find(rep => rep.email === currentUserEmail);
-  const isAdmin = currentSalesRep?.isAdmin || false;
+  const isAdmin = currentSalesRep?.is_admin || false;
 
   // Application principale
   return (
@@ -705,13 +708,15 @@ function App() {
                 }}
                 
                 onView={async (rfp) => {
-                  setRfps(prev => prev.map(r => 
-                    r.id === rfp.id ? { ...r, isRead: true } : r
+                  const newReadStatus = !rfp.isRead;
+                  setRfps(prev => prev.map(r =>
+                    r.id === rfp.id ? { ...r, isRead: newReadStatus } : r
                   ));
                   try {
-                    await markRFPAsRead(rfp.id);
+                    await toggleRFPReadStatus(rfp.id, rfp.isRead);
                   } catch (error) {
-                    console.error('Error marking RFP as read:', error);
+                    console.error('Error toggling RFP read status:', error);
+                    loadRFPs();
                   }
                 }}
                 
@@ -846,13 +851,15 @@ function App() {
                 }}
                 
                 onProspectView={async (prospect) => {
-                  setProspects(prev => prev.map(p => 
-                    p.id === prospect.id ? { ...p, isRead: true } : p
+                  const newReadStatus = !prospect.isRead;
+                  setProspects(prev => prev.map(p =>
+                    p.id === prospect.id ? { ...p, isRead: newReadStatus } : p
                   ));
                   try {
-                    await markProspectAsRead(prospect.id);
+                    await toggleProspectReadStatus(prospect.id, prospect.isRead);
                   } catch (error) {
-                    console.error('Error marking prospect as read:', error);
+                    console.error('Error toggling prospect read status:', error);
+                    loadProspects();
                   }
                 }}
                 
@@ -999,13 +1006,15 @@ function App() {
                 }}
                 
                 onBoondmanagerProspectView={async (prospect) => {
-                  setBoondmanagerProspects(prev => prev.map(p => 
-                    p.id === prospect.id ? { ...p, isRead: true } : p
+                  const newReadStatus = !prospect.isRead;
+                  setBoondmanagerProspects(prev => prev.map(p =>
+                    p.id === prospect.id ? { ...p, isRead: newReadStatus } : p
                   ));
                   try {
-                    await markClientNeedAsRead(prospect.id);
+                    await toggleClientNeedReadStatus(prospect.id, prospect.isRead);
                   } catch (error) {
-                    console.error('Error marking client need as read:', error);
+                    console.error('Error toggling client need read status:', error);
+                    loadClientNeeds();
                   }
                 }}
                 

@@ -367,3 +367,20 @@ export async function markRFPAsRead(id: string): Promise<void> {
     throw error;
   }
 }
+
+export async function toggleRFPReadStatus(id: string, currentStatus: boolean): Promise<void> {
+  try {
+    const { error } = await supabase
+      .from('rfps')
+      .update({ is_read: !currentStatus })
+      .eq('id', id);
+
+    if (error) {
+      console.error('Failed to toggle RFP read status:', error);
+      throw error;
+    }
+  } catch (error) {
+    console.error('Error in toggleRFPReadStatus:', error);
+    throw error;
+  }
+}

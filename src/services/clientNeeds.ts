@@ -331,6 +331,15 @@ export async function markClientNeedAsRead(id: string): Promise<void> {
   if (error) throw error;
 }
 
+export async function toggleClientNeedReadStatus(id: string, currentStatus: boolean): Promise<void> {
+  const { error } = await supabase
+    .from('client_needs')
+    .update({ is_read: !currentStatus })
+    .eq('id', id);
+
+  if (error) throw error;
+}
+
 /**
  * Supprime un profil
  */

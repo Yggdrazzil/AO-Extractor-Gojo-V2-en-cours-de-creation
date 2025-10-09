@@ -388,3 +388,20 @@ export async function markProspectAsRead(id: string): Promise<void> {
     throw error;
   }
 }
+
+export async function toggleProspectReadStatus(id: string, currentStatus: boolean): Promise<void> {
+  try {
+    const { error } = await supabase
+      .from('prospects')
+      .update({ is_read: !currentStatus })
+      .eq('id', id);
+
+    if (error) {
+      console.error('Failed to toggle prospect read status:', error);
+      throw error;
+    }
+  } catch (error) {
+    console.error('Error in toggleProspectReadStatus:', error);
+    throw error;
+  }
+}
