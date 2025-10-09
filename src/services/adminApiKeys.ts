@@ -11,13 +11,7 @@ export async function isAdmin(): Promise<boolean> {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user?.email) return false;
 
-    const { data: salesRep } = await supabase
-      .from('sales_reps')
-      .select('email')
-      .eq('id', user.id)
-      .single();
-
-    return salesRep ? ADMIN_EMAILS.includes(salesRep.email) : false;
+    return ADMIN_EMAILS.includes(user.email);
   } catch (error) {
     console.error('Error checking admin status:', error);
     return false;
