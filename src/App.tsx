@@ -49,7 +49,9 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [loadingMessage, setLoadingMessage] = useState('Initialisation...');
   const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState('rfp-extractor');
+  const [activeTab, setActiveTab] = useState(() => {
+    return localStorage.getItem('activeTab') || 'rfp-extractor';
+  });
   
   // États pour les données
   const [rfps, setRfps] = useState<RFP[]>([]);
@@ -61,6 +63,10 @@ function App() {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isAnalyzingProspect, setIsAnalyzingProspect] = useState(false);
   const [isAnalyzingBoondmanagerProspect, setIsAnalyzingBoondmanagerProspect] = useState(false);
+
+  useEffect(() => {
+    localStorage.setItem('activeTab', activeTab);
+  }, [activeTab]);
 
   // Chargement des commerciaux avec timeout
   const loadSalesReps = async () => {
