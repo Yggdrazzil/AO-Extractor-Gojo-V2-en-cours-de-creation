@@ -51,6 +51,8 @@ export function RealTimeNotifications() {
   useEffect(() => {
     if (!currentUserId) return;
 
+    console.log('Setting up realtime channel for user:', currentUserId);
+
     const channel = supabase
       .channel('new-record-notifications')
       .on(
@@ -62,9 +64,16 @@ export function RealTimeNotifications() {
           filter: `assigned_to=eq.${currentUserId}`
         },
         (payload) => {
+          console.log('New notification received:', payload);
           const newNotif = payload.new as NewRecordNotification;
-          setNotifications(prev => [newNotif, ...prev]);
-          setUnreadCount(prev => prev + 1);
+          setNotifications(prev => {
+            console.log('Adding notification to list, prev count:', prev.length);
+            return [newNotif, ...prev];
+          });
+          setUnreadCount(prev => {
+            console.log('Incrementing unread count from:', prev);
+            return prev + 1;
+          });
 
           showBrowserNotification(newNotif);
         }
@@ -78,25 +87,31 @@ export function RealTimeNotifications() {
           filter: `assigned_to=eq.${currentUserId}`
         },
         (payload) => {
+          console.log('Notification updated:', payload);
           const updatedNotif = payload.new as NewRecordNotification;
+          const oldNotif = payload.old as NewRecordNotification;
+
           setNotifications(prev =>
             prev.map(n => n.id === updatedNotif.id ? updatedNotif : n)
           );
-          setUnreadCount(prev => {
-            const oldNotif = notifications.find(n => n.id === updatedNotif.id);
-            if (oldNotif && !oldNotif.is_read && updatedNotif.is_read) {
+
+          if (oldNotif && !oldNotif.is_read && updatedNotif.is_read) {
+            setUnreadCount(prev => {
+              console.log('Decrementing unread count from:', prev);
               return Math.max(0, prev - 1);
-            }
-            return prev;
-          });
+            });
+          }
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        console.log('Realtime subscription status:', status);
+      });
 
     return () => {
+      console.log('Cleaning up realtime channel');
       supabase.removeChannel(channel);
     };
-  }, [currentUserId, notifications]);
+  }, [currentUserId]);
 
   const loadNotifications = async (salesRepId?: string) => {
     const userId = salesRepId || currentUserId;
