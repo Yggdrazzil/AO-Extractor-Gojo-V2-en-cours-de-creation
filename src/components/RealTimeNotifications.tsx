@@ -2,51 +2,59 @@ import { useEffect, useState } from 'react';
 import { Bell, X, Check } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
-interface StatusNotification {
+interface NewRecordNotification {
   id: string;
   table_name: 'prospects' | 'rfps' | 'client_needs';
   record_id: string;
-  change_type: 'status_to_traite' | 'marked_as_read';
-  old_value: string;
-  new_value: string;
-  changed_by: string;
-  sales_rep_name: string;
-  sales_rep_code: string;
-  record_summary: string;
+  notification_type: 'new_rfp' | 'new_prospect' | 'new_client_need';
+  assigned_to: string;
+  created_by: string;
+  creator_trigram: string;
+  creator_name: string;
+  message: string;
   created_at: string;
   is_read: boolean;
 }
 
-const TABLE_LABELS = {
-  prospects: 'Profil',
-  rfps: 'AO',
-  client_needs: 'Besoin client'
-};
-
-const CHANGE_TYPE_LABELS = {
-  status_to_traite: 'marqué comme Traité',
-  marked_as_read: 'marqué comme Lu'
+const NOTIFICATION_TYPE_ICONS = {
+  new_rfp: '📋',
+  new_prospect: '👤',
+  new_client_need: '💼'
 };
 
 export function RealTimeNotifications() {
-  const [notifications, setNotifications] = useState<StatusNotification[]>([]);
+  const [notifications, setNotifications] = useState<NewRecordNotification[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
   useEffect(() => {
-    loadNotifications();
+    const initializeNotifications = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        setCurrentUserId(user.id);
+        loadNotifications();
+      }
+    };
+
+    initializeNotifications();
+  }, []);
+
+  useEffect(() => {
+    if (!currentUserId) return;
 
     const channel = supabase
-      .channel('status-changes')
+      .channel('new-record-notifications')
       .on(
         'postgres_changes',
         {
           event: 'INSERT',
           schema: 'public',
-          table: 'status_change_notifications'
+          table: 'new_record_notifications',
+          filter: `assigned_to=eq.${currentUserId}`
         },
         (payload) => {
-          const newNotif = payload.new as StatusNotification;
+          const newNotif = payload.new as NewRecordNotification;
           setNotifications(prev => [newNotif, ...prev]);
           setUnreadCount(prev => prev + 1);
 
@@ -58,11 +66,11 @@ export function RealTimeNotifications() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, []);
+  }, [currentUserId]);
 
   const loadNotifications = async () => {
     const { data, error } = await supabase
-      .from('status_change_notifications')
+      .from('new_record_notifications')
       .select('*')
       .order('created_at', { ascending: false })
       .limit(50);
@@ -78,10 +86,10 @@ export function RealTimeNotifications() {
     }
   };
 
-  const showBrowserNotification = (notif: StatusNotification) => {
+  const showBrowserNotification = (notif: NewRecordNotification) => {
     if ('Notification' in window && Notification.permission === 'granted') {
-      new Notification(`${notif.sales_rep_code} - ${TABLE_LABELS[notif.table_name]}`, {
-        body: `${notif.record_summary} ${CHANGE_TYPE_LABELS[notif.change_type]}`,
+      new Notification(`Nouvelle attribution`, {
+        body: notif.message,
         icon: '/logo.png'
       });
     }
@@ -99,7 +107,7 @@ export function RealTimeNotifications() {
 
   const markAsRead = async (id: string) => {
     const { error } = await supabase
-      .from('status_change_notifications')
+      .from('new_record_notifications')
       .update({ is_read: true })
       .eq('id', id);
 
@@ -117,7 +125,7 @@ export function RealTimeNotifications() {
     if (unreadIds.length === 0) return;
 
     const { error } = await supabase
-      .from('status_change_notifications')
+      .from('new_record_notifications')
       .update({ is_read: true })
       .in('id', unreadIds);
 
@@ -218,22 +226,14 @@ export function RealTimeNotifications() {
                       }`}
                     >
                       <div className="flex items-start gap-3">
+                        <div className="text-2xl flex-shrink-0">
+                          {NOTIFICATION_TYPE_ICONS[notif.notification_type]}
+                        </div>
                         <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 mb-1">
-                            <span className="font-semibold text-blue-600 dark:text-blue-400">
-                              {notif.sales_rep_code}
-                            </span>
-                            <span className="text-xs text-gray-500 dark:text-gray-400">
-                              {TABLE_LABELS[notif.table_name]}
-                            </span>
-                          </div>
                           <p className="text-sm text-gray-900 dark:text-white mb-1">
-                            <span className="font-medium">{notif.record_summary}</span>
+                            {notif.message}
                           </p>
-                          <p className="text-xs text-gray-600 dark:text-gray-400">
-                            {CHANGE_TYPE_LABELS[notif.change_type]}
-                          </p>
-                          <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
+                          <p className="text-xs text-gray-500 dark:text-gray-500">
                             {formatTime(notif.created_at)}
                           </p>
                         </div>
