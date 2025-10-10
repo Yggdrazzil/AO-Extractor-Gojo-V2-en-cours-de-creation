@@ -32,8 +32,16 @@ export function RealTimeNotifications() {
     const initializeNotifications = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
-        setCurrentUserId(user.id);
-        loadNotifications();
+        const { data: salesRep } = await supabase
+          .from('sales_reps')
+          .select('id')
+          .eq('email', user.email)
+          .single();
+
+        if (salesRep) {
+          setCurrentUserId(salesRep.id);
+          loadNotifications(salesRep.id);
+        }
       }
     };
 
@@ -68,10 +76,14 @@ export function RealTimeNotifications() {
     };
   }, [currentUserId]);
 
-  const loadNotifications = async () => {
+  const loadNotifications = async (salesRepId?: string) => {
+    const userId = salesRepId || currentUserId;
+    if (!userId) return;
+
     const { data, error } = await supabase
       .from('new_record_notifications')
       .select('*')
+      .eq('assigned_to', userId)
       .order('created_at', { ascending: false })
       .limit(50);
 
