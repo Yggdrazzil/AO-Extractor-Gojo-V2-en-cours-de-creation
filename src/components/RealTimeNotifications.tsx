@@ -69,12 +69,34 @@ export function RealTimeNotifications() {
           showBrowserNotification(newNotif);
         }
       )
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'new_record_notifications',
+          filter: `assigned_to=eq.${currentUserId}`
+        },
+        (payload) => {
+          const updatedNotif = payload.new as NewRecordNotification;
+          setNotifications(prev =>
+            prev.map(n => n.id === updatedNotif.id ? updatedNotif : n)
+          );
+          setUnreadCount(prev => {
+            const oldNotif = notifications.find(n => n.id === updatedNotif.id);
+            if (oldNotif && !oldNotif.is_read && updatedNotif.is_read) {
+              return Math.max(0, prev - 1);
+            }
+            return prev;
+          });
+        }
+      )
       .subscribe();
 
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [currentUserId]);
+  }, [currentUserId, notifications]);
 
   const loadNotifications = async (salesRepId?: string) => {
     const userId = salesRepId || currentUserId;
@@ -176,7 +198,12 @@ export function RealTimeNotifications() {
   return (
     <div className="relative">
       <button
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={() => {
+          setIsOpen(!isOpen);
+          if (!isOpen && unreadCount > 0) {
+            markAllAsRead();
+          }
+        }}
         className="relative p-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
         title="Notifications"
       >
