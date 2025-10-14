@@ -35,54 +35,143 @@ export interface Database {
           text_content: string | null
           file_name: string | null
           file_url: string | null
+          file_content: string | null
+          target_account: string | null
+          name: string | null
           availability: string | null
           daily_rate: number | null
+          salary_expectations: number | null
+          rate_expectations: number | null
           residence: string | null
           mobility: string | null
           phone: string | null
           email: string | null
           status: 'À traiter' | 'Traité' | null
           assigned_to: string
+          created_by: string
           is_read: boolean
           created_at: string | null
-          target_account: string | null
-          file_content: string | null
+          comments: string
         }
         Insert: {
           id?: string
           text_content?: string | null
           file_name?: string | null
           file_url?: string | null
+          file_content?: string | null
+          target_account?: string | null
+          name?: string | null
           availability?: string | null
           daily_rate?: number | null
+          salary_expectations?: number | null
+          rate_expectations?: number | null
           residence?: string | null
           mobility?: string | null
           phone?: string | null
           email?: string | null
           status?: 'À traiter' | 'Traité' | null
           assigned_to: string
+          created_by?: string
           is_read?: boolean
           created_at?: string
-          target_account?: string | null
-          file_content?: string | null
+          comments?: string
         }
         Update: {
           id?: string
           text_content?: string | null
           file_name?: string | null
           file_url?: string | null
+          file_content?: string | null
+          target_account?: string | null
+          name?: string | null
           availability?: string | null
           daily_rate?: number | null
+          salary_expectations?: number | null
+          rate_expectations?: number | null
           residence?: string | null
           mobility?: string | null
           phone?: string | null
           email?: string | null
           status?: 'À traiter' | 'Traité' | null
           assigned_to?: string
+          created_by?: string
           is_read?: boolean
           created_at?: string
-          target_account?: string | null
+          comments?: string
+        }
+      }
+      client_needs: {
+        Row: {
+          id: string
+          text_content: string | null
+          file_name: string | null
+          file_url: string | null
+          file_content: string | null
+          selected_need_id: string | null
+          selected_need_title: string
+          name: string | null
+          availability: string | null
+          daily_rate: number | null
+          salary_expectations: number | null
+          residence: string | null
+          mobility: string | null
+          phone: string | null
+          email: string | null
+          status: string | null
+          assigned_to: string
+          created_by: string
+          is_read: boolean | null
+          is_favorite: boolean
+          created_at: string | null
+          comments: string
+        }
+        Insert: {
+          id?: string
+          text_content?: string | null
+          file_name?: string | null
+          file_url?: string | null
           file_content?: string | null
+          selected_need_id?: string | null
+          selected_need_title: string
+          name?: string | null
+          availability?: string | null
+          daily_rate?: number | null
+          salary_expectations?: number | null
+          residence?: string | null
+          mobility?: string | null
+          phone?: string | null
+          email?: string | null
+          status?: string | null
+          assigned_to: string
+          created_by?: string
+          is_read?: boolean | null
+          is_favorite?: boolean
+          created_at?: string
+          comments?: string
+        }
+        Update: {
+          id?: string
+          text_content?: string | null
+          file_name?: string | null
+          file_url?: string | null
+          file_content?: string | null
+          selected_need_id?: string | null
+          selected_need_title?: string
+          name?: string | null
+          availability?: string | null
+          daily_rate?: number | null
+          salary_expectations?: number | null
+          residence?: string | null
+          mobility?: string | null
+          phone?: string | null
+          email?: string | null
+          status?: string | null
+          assigned_to?: string
+          created_by?: string
+          is_read?: boolean | null
+          is_favorite?: boolean
+          created_at?: string
+          comments?: string
         }
       }
       sales_reps: {

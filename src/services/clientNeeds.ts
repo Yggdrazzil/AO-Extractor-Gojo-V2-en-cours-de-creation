@@ -52,7 +52,7 @@ export async function fetchClientNeeds(): Promise<BoondmanagerProspect[]> {
       fileContent: need.file_content,
       selectedNeedId: need.selected_need_id,
       selectedNeedTitle: need.selected_need_title,
-      name: (need as any).name || '-',
+      name: need.name || '-',
       availability: need.availability || '-',
       dailyRate: need.daily_rate,
       salaryExpectations: need.salary_expectations,
@@ -63,8 +63,8 @@ export async function fetchClientNeeds(): Promise<BoondmanagerProspect[]> {
       status: need.status,
       assignedTo: need.assigned_to,
       isRead: need.is_read || false,
-      isFavorite: (need as any).is_favorite || false,
-      comments: (need as any).comments || ''
+      isFavorite: need.is_favorite || false,
+      comments: need.comments || ''
     }));
   } catch (error) {
     console.error('Failed to fetch client needs:', error);

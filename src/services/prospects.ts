@@ -49,7 +49,7 @@ export async function fetchProspects(): Promise<Prospect[]> {
 
     const { data, error } = await supabase
       .from('prospects')
-      .select('id, text_content, file_name, file_url, file_content, target_account, name, availability, daily_rate, residence, mobility, phone, email, status, assigned_to, is_read, created_at, comments')
+      .select('id, text_content, file_name, file_url, file_content, target_account, name, availability, daily_rate, salary_expectations, residence, mobility, phone, email, status, assigned_to, created_by, is_read, created_at, comments')
       .order('created_at', { ascending: false });
 
     if (error) {
@@ -78,9 +78,10 @@ export async function fetchProspects(): Promise<Prospect[]> {
       fileUrl: prospect.file_url,
       fileContent: prospect.file_content,
       targetAccount: prospect.target_account || '',
-      name: (prospect as any).name || '-',
+      name: prospect.name || '-',
       availability: prospect.availability || '-',
       dailyRate: prospect.daily_rate,
+      salaryExpectations: prospect.salary_expectations,
       residence: prospect.residence || '-',
       mobility: prospect.mobility || '-',
       phone: prospect.phone || '-',
@@ -88,7 +89,7 @@ export async function fetchProspects(): Promise<Prospect[]> {
       status: prospect.status,
       assignedTo: prospect.assigned_to,
       isRead: prospect.is_read || false,
-      comments: (prospect as any).comments || ''
+      comments: prospect.comments || ''
     }));
   } catch (error) {
     console.error('Failed to fetch prospects:', error);
