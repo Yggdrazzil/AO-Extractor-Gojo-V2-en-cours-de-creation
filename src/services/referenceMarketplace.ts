@@ -1,5 +1,5 @@
 import { supabase } from '../lib/supabase';
-import type { ReferenceMarketplace, ReferenceMarketplaceComment } from '../types';
+import type { ReferenceMarketplace } from '../types';
 
 export async function fetchReferenceMarketplace(): Promise<ReferenceMarketplace[]> {
   const { data, error } = await supabase
@@ -56,47 +56,6 @@ export async function deleteReferenceMarketplace(id: string): Promise<void> {
     .from('reference_marketplace')
     .delete()
     .eq('id', id);
-
-  if (error) throw error;
-}
-
-export async function fetchReferenceComments(referenceId: string): Promise<ReferenceMarketplaceComment[]> {
-  const { data, error } = await supabase
-    .from('reference_marketplace_comments')
-    .select('*')
-    .eq('reference_id', referenceId)
-    .order('created_at', { ascending: false });
-
-  if (error) throw error;
-  return data || [];
-}
-
-export async function addReferenceComment(
-  referenceId: string,
-  comment: string
-): Promise<ReferenceMarketplaceComment> {
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user?.email) throw new Error('User not authenticated');
-
-  const { data, error } = await supabase
-    .from('reference_marketplace_comments')
-    .insert([{
-      reference_id: referenceId,
-      user_email: user.email,
-      comment
-    }])
-    .select()
-    .single();
-
-  if (error) throw error;
-  return data;
-}
-
-export async function deleteReferenceComment(commentId: string): Promise<void> {
-  const { error } = await supabase
-    .from('reference_marketplace_comments')
-    .delete()
-    .eq('id', commentId);
 
   if (error) throw error;
 }

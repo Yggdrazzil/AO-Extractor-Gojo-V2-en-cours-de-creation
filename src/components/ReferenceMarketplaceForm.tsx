@@ -70,12 +70,6 @@ export function ReferenceMarketplaceForm({ isOpen, onClose, onSubmit }: Referenc
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!formData.client || !formData.operational_contact || !formData.phone ||
-        !formData.email || !formData.tech_name || !formData.sales_rep_id) {
-      alert('Veuillez remplir tous les champs obligatoires');
-      return;
-    }
-
     setIsSubmitting(true);
 
     try {
@@ -136,80 +130,74 @@ export function ReferenceMarketplaceForm({ isOpen, onClose, onSubmit }: Referenc
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Client *
+              Client
             </label>
             <input
               type="text"
               value={formData.client}
               onChange={(e) => setFormData({ ...formData, client: e.target.value })}
               className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-              required
             />
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Opérationnel à Contacter *
+              Opérationnel à Contacter
             </label>
             <input
               type="text"
               value={formData.operational_contact}
               onChange={(e) => setFormData({ ...formData, operational_contact: e.target.value })}
               className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-              required
             />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Téléphone *
+                Téléphone
               </label>
               <input
                 type="tel"
                 value={formData.phone}
                 onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-                required
               />
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Mail *
+                Mail
               </label>
               <input
                 type="email"
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-                required
               />
             </div>
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Nom du Tech *
+              Nom du Tech
             </label>
             <input
               type="text"
               value={formData.tech_name}
               onChange={(e) => setFormData({ ...formData, tech_name: e.target.value })}
               className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-              required
             />
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Commercial *
+              Commercial
             </label>
             <select
               value={formData.sales_rep_id}
               onChange={(e) => setFormData({ ...formData, sales_rep_id: e.target.value })}
               className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-              required
             >
               <option value="">Sélectionner un commercial</option>
               {salesReps.map((rep) => (

@@ -94,12 +94,5 @@ export interface ReferenceMarketplace {
   pdf_name: string | null;
   created_by: string;
   created_at: string;
-}
-
-export interface ReferenceMarketplaceComment {
-  id: string;
-  reference_id: string;
-  user_email: string;
-  comment: string;
-  created_at: string;
+  comments?: string;
 }

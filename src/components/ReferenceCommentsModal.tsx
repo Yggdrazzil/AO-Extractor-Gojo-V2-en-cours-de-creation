@@ -1,172 +1,137 @@
-import React, { useState, useEffect } from 'react';
-import { X, Send, Trash2 } from 'lucide-react';
-import type { ReferenceMarketplace, ReferenceMarketplaceComment } from '../types';
-import { fetchReferenceComments, addReferenceComment, deleteReferenceComment } from '../services/referenceMarketplace';
-import { supabase } from '../lib/supabase';
+import React, { useState, useRef, useEffect } from 'react';
+import { X, MessageSquare, Save } from 'lucide-react';
+import type { ReferenceMarketplace } from '../types';
 
 interface ReferenceCommentsModalProps {
   isOpen: boolean;
   onClose: () => void;
-  reference: ReferenceMarketplace | null;
+  reference: ReferenceMarketplace;
+  onSave: (referenceId: string, comments: string) => Promise<void>;
 }
 
-export function ReferenceCommentsModal({ isOpen, onClose, reference }: ReferenceCommentsModalProps) {
-  const [comments, setComments] = useState<ReferenceMarketplaceComment[]>([]);
-  const [newComment, setNewComment] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [userEmail, setUserEmail] = useState<string>('');
+export function ReferenceCommentsModal({ isOpen, onClose, reference, onSave }: ReferenceCommentsModalProps) {
+  const [comments, setComments] = useState(reference.comments || '');
+  const [isSaving, setIsSaving] = useState(false);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
-    if (isOpen && reference) {
-      loadComments();
-      loadUserEmail();
+    if (isOpen) {
+      setComments(reference.comments || '');
+      setTimeout(() => {
+        textareaRef.current?.focus();
+      }, 0);
     }
-  }, [isOpen, reference]);
+  }, [isOpen, reference.comments]);
 
-  const loadUserEmail = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (user?.email) {
-      setUserEmail(user.email);
-    }
-  };
+  if (!isOpen) return null;
 
-  const loadComments = async () => {
-    if (!reference) return;
+  const handleSave = async () => {
     try {
-      const data = await fetchReferenceComments(reference.id);
-      setComments(data);
+      setIsSaving(true);
+      await onSave(reference.id, comments);
+      onClose();
     } catch (error) {
-      console.error('Error loading comments:', error);
-    }
-  };
-
-  const handleAddComment = async () => {
-    if (!reference || !newComment.trim()) return;
-
-    setIsLoading(true);
-    try {
-      const comment = await addReferenceComment(reference.id, newComment.trim());
-      setComments([comment, ...comments]);
-      setNewComment('');
-    } catch (error) {
-      console.error('Error adding comment:', error);
-      alert('Erreur lors de l\'ajout du commentaire');
+      console.error('Error saving comments:', error);
+      alert('Erreur lors de la sauvegarde des commentaires');
     } finally {
-      setIsLoading(false);
+      setIsSaving(false);
     }
   };
 
-  const handleDeleteComment = async (commentId: string) => {
-    if (!confirm('Êtes-vous sûr de vouloir supprimer ce commentaire ?')) return;
-
-    try {
-      await deleteReferenceComment(commentId);
-      setComments(comments.filter(c => c.id !== commentId));
-    } catch (error) {
-      console.error('Error deleting comment:', error);
-      alert('Erreur lors de la suppression du commentaire');
+  const handleClickOutside = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (e.target === e.currentTarget) {
+      onClose();
     }
   };
-
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('fr-FR', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  };
-
-  if (!isOpen || !reference) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white dark:bg-gray-800 rounded-lg w-full max-w-2xl max-h-[80vh] flex flex-col">
-        <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
-          <div>
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
-              Commentaires
-            </h2>
-            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-              {reference.client} - {reference.tech_name}
-            </p>
-          </div>
+    <div
+      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
+      onClick={handleClickOutside}
+    >
+      <div className="bg-white dark:bg-gray-800 rounded-lg w-full max-w-md overflow-hidden">
+        <div className="p-6 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+            <MessageSquare className="w-5 h-5" />
+            Commentaires
+          </h2>
           <button
             onClick={onClose}
             className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
+            disabled={isSaving}
           >
             <X className="w-5 h-5 text-gray-500 dark:text-gray-400" />
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-6 space-y-4">
-          {comments.length === 0 ? (
-            <p className="text-center text-gray-500 dark:text-gray-400 py-8">
-              Aucun commentaire pour le moment
+        <div className="p-6">
+          <div className="mb-4">
+            <h3 className="font-medium text-gray-900 dark:text-gray-100 mb-1">
+              {reference.client}
+            </h3>
+            <p className="text-sm text-gray-600 dark:text-gray-400">
+              {reference.tech_name}
             </p>
-          ) : (
-            comments.map((comment) => (
-              <div
-                key={comment.id}
-                className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4"
-              >
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-2">
-                      <span className="font-medium text-gray-900 dark:text-gray-100">
-                        {comment.user_email}
-                      </span>
-                      <span className="text-xs text-gray-500 dark:text-gray-400">
-                        {formatDate(comment.created_at)}
-                      </span>
-                    </div>
-                    <p className="text-gray-700 dark:text-gray-300 whitespace-pre-wrap">
-                      {comment.comment}
-                    </p>
-                  </div>
-                  {comment.user_email === userEmail && (
-                    <button
-                      onClick={() => handleDeleteComment(comment.id)}
-                      className="p-1.5 text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-gray-200 dark:hover:bg-gray-600 rounded transition-colors"
-                      title="Supprimer"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  )}
-                </div>
-              </div>
-            ))
-          )}
-        </div>
+          </div>
 
-        <div className="p-6 border-t border-gray-200 dark:border-gray-700">
-          <div className="flex gap-3">
+          <div className="mb-6">
+            <label htmlFor="comments" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Commentaires
+            </label>
             <textarea
-              value={newComment}
-              onChange={(e) => setNewComment(e.target.value)}
-              placeholder="Ajouter un commentaire..."
-              className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 resize-none"
-              rows={3}
+              ref={textareaRef}
+              id="comments"
+              value={comments}
+              onChange={(e) => setComments(e.target.value)}
               onKeyDown={(e) => {
-                if (e.key === 'Enter' && e.ctrlKey) {
-                  handleAddComment();
+                if (e.key === 'Enter' && !(e.ctrlKey || e.metaKey)) {
+                  e.preventDefault();
+                  handleSave();
+                } else if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+                  e.preventDefault();
+                  const textarea = e.target as HTMLTextAreaElement;
+                  const start = textarea.selectionStart;
+                  const end = textarea.selectionEnd;
+                  const value = textarea.value;
+                  const newValue = value.substring(0, start) + '\n' + value.substring(end);
+                  setComments(newValue);
+                  setTimeout(() => {
+                    textarea.selectionStart = textarea.selectionEnd = start + 1;
+                  }, 0);
                 }
               }}
+              className="w-full h-32 px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+              placeholder="Ajoutez vos commentaires pour cette référence... (Entrée pour sauvegarder, Ctrl+Entrée pour nouvelle ligne)"
+              disabled={isSaving}
             />
+          </div>
+
+          <div className="flex justify-end space-x-3">
             <button
-              onClick={handleAddComment}
-              disabled={!newComment.trim() || isLoading}
-              className="px-4 py-2 bg-[#1651EE] text-white rounded-lg hover:bg-[#1651EE]/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              onClick={onClose}
+              className="px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+              disabled={isSaving}
             >
-              <Send className="w-4 h-4" />
-              Envoyer
+              Annuler
+            </button>
+            <button
+              onClick={handleSave}
+              disabled={isSaving}
+              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+            >
+              {isSaving ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                  Sauvegarde...
+                </>
+              ) : (
+                <>
+                  <Save className="w-4 h-4" />
+                  Sauvegarder
+                </>
+              )}
             </button>
           </div>
-          <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-            Appuyez sur Ctrl+Entrée pour envoyer
-          </p>
         </div>
       </div>
     </div>

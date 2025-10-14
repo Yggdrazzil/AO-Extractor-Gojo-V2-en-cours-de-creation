@@ -73,6 +73,10 @@ export function ReferenceMarketplaceComponent({ salesReps }: ReferenceMarketplac
     setIsCommentsModalOpen(true);
   };
 
+  const handleSaveComments = async (referenceId: string, comments: string) => {
+    await handleUpdateReference(referenceId, { comments });
+  };
+
   const handleOpenPdf = (reference: ReferenceMarketplace) => {
     setSelectedReference(reference);
     setIsPdfModalOpen(true);
@@ -122,14 +126,17 @@ export function ReferenceMarketplaceComponent({ salesReps }: ReferenceMarketplac
         onSubmit={handleAddReference}
       />
 
-      <ReferenceCommentsModal
-        isOpen={isCommentsModalOpen}
-        onClose={() => {
-          setIsCommentsModalOpen(false);
-          setSelectedReference(null);
-        }}
-        reference={selectedReference}
-      />
+      {selectedReference && (
+        <ReferenceCommentsModal
+          isOpen={isCommentsModalOpen}
+          onClose={() => {
+            setIsCommentsModalOpen(false);
+            setSelectedReference(null);
+          }}
+          reference={selectedReference}
+          onSave={handleSaveComments}
+        />
+      )}
 
       <ReferencePdfModal
         isOpen={isPdfModalOpen}

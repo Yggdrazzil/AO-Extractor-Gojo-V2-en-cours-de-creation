@@ -174,10 +174,20 @@ export function ReferenceMarketplaceTable({
                   <div className="flex items-center justify-end gap-2">
                     <button
                       onClick={() => onOpenComments(reference)}
-                      className="p-1.5 text-gray-600 dark:text-gray-400 hover:text-[#1651EE] dark:hover:text-[#1651EE] hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
+                      className="group relative p-1.5 text-gray-600 dark:text-gray-400 hover:text-[#1651EE] dark:hover:text-[#1651EE] hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
                       title="Commentaires"
                     >
                       <MessageSquare className="w-4 h-4" />
+                      {reference.comments && reference.comments.trim() && (
+                        <>
+                          <span className="absolute -top-1 -right-1 w-2 h-2 bg-blue-500 rounded-full"></span>
+                          <div className="absolute right-0 top-full mt-2 w-64 p-2 bg-gray-900 dark:bg-gray-700 text-white text-xs rounded shadow-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10 whitespace-pre-wrap">
+                            {reference.comments.length > 100
+                              ? reference.comments.substring(0, 100) + '...'
+                              : reference.comments}
+                          </div>
+                        </>
+                      )}
                     </button>
                     <button
                       onClick={() => {
