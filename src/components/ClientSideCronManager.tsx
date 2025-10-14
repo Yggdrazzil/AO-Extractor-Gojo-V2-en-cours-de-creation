@@ -1,11 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Clock, Power, PowerOff, CheckCircle, AlertCircle, Bell, RefreshCw, Zap, Calendar } from 'lucide-react';
-import { 
-  initializeClientSideCron, 
-  checkCronStatus, 
-  toggleCronTasks, 
-  getLastExecutionResult, 
-  requestNotificationPermission 
+import { CheckCircle, AlertCircle, RefreshCw, Zap, Calendar } from 'lucide-react';
+import {
+  initializeClientSideCron,
+  checkCronStatus,
+  getLastExecutionResult
 } from '../services/clientSideCron';
 
 export function ClientSideCronManager() {
@@ -17,21 +15,15 @@ export function ClientSideCronManager() {
     serviceWorkerActive: boolean;
   } | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [isInitializing, setIsInitializing] = useState(false);
   const [lastExecution, setLastExecution] = useState<any>(null);
-  const [notificationPermission, setNotificationPermission] = useState(false);
 
   const loadStatus = async () => {
     try {
       const status = await checkCronStatus();
       setCronStatus(status);
-      
+
       const lastResult = getLastExecutionResult();
       setLastExecution(lastResult);
-      
-      // Vérifier les permissions de notification
-      const hasPermission = 'Notification' in window && Notification.permission === 'granted';
-      setNotificationPermission(hasPermission);
     } catch (error) {
       console.error('Error loading cron status:', error);
     } finally {
@@ -39,57 +31,24 @@ export function ClientSideCronManager() {
     }
   };
 
-  const handleInitialize = async () => {
-    try {
-      setIsInitializing(true);
-      const success = await initializeClientSideCron();
-      
-      if (success) {
-        await loadStatus();
-        alert('✅ Système automatique initialisé ! Les récapitulatifs seront envoyés du lundi au vendredi à 9h00.');
-      } else {
-        alert('❌ Erreur lors de l\'initialisation du système automatique.');
-      }
-    } catch (error) {
-      console.error('Error initializing cron:', error);
-      alert('❌ Erreur lors de l\'initialisation.');
-    } finally {
-      setIsInitializing(false);
-    }
-  };
-
-  const handleToggle = async () => {
-    if (!cronStatus) return;
-    
-    try {
-      const newState = !cronStatus.enabled;
-      const success = await toggleCronTasks(newState);
-      
-      if (success) {
-        setCronStatus(prev => prev ? { ...prev, enabled: newState } : null);
-        alert(newState ? '✅ Tâches automatiques activées !' : '⏸️ Tâches automatiques désactivées.');
-      } else {
-        alert('❌ Erreur lors du changement d\'état.');
-      }
-    } catch (error) {
-      console.error('Error toggling cron:', error);
-    }
-  };
-
-  const handleRequestNotifications = async () => {
-    const granted = await requestNotificationPermission();
-    setNotificationPermission(granted);
-    
-    if (granted) {
-      alert('✅ Notifications autorisées ! Vous serez informé quand les emails sont envoyés.');
-    } else {
-      alert('❌ Notifications refusées. Vous pouvez les activer dans les paramètres du navigateur.');
-    }
-  };
-
   useEffect(() => {
-    loadStatus();
-    
+    const initializeSystem = async () => {
+      // Initialiser automatiquement le système au chargement
+      try {
+        const success = await initializeClientSideCron();
+        if (success) {
+          console.log('✅ Système automatique initialisé avec succès');
+        }
+      } catch (error) {
+        console.error('❌ Erreur lors de l\'initialisation automatique:', error);
+      }
+
+      // Charger le statut après l'initialisation
+      await loadStatus();
+    };
+
+    initializeSystem();
+
     // Actualiser le statut toutes les 30 secondes
     const interval = setInterval(loadStatus, 30000);
     return () => clearInterval(interval);
@@ -135,44 +94,27 @@ export function ClientSideCronManager() {
         </div>
       ) : !cronStatus?.serviceWorkerActive ? (
         <div className="text-center py-8 space-y-4">
-          <AlertCircle className="w-12 h-12 text-orange-500 mx-auto" />
+          <RefreshCw className="w-12 h-12 text-blue-500 mx-auto animate-spin" />
           <h4 className="text-lg font-medium text-gray-900 dark:text-gray-100">
-            Système automatique non configuré
+            Initialisation du système automatique...
           </h4>
-          <p className="text-gray-600 dark:text-gray-400 mb-6">
-            Le système d'envoi automatique doit être initialisé pour fonctionner.
+          <p className="text-gray-600 dark:text-gray-400">
+            Le système se configure automatiquement. Veuillez patienter quelques secondes.
           </p>
-          <button
-            onClick={handleInitialize}
-            disabled={isInitializing}
-            className="flex items-center gap-2 px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 transition-colors font-medium"
-          >
-            {isInitializing ? (
-              <>
-                <RefreshCw className="w-5 h-5 animate-spin" />
-                Initialisation...
-              </>
-            ) : (
-              <>
-                <Power className="w-5 h-5" />
-                Activer le système automatique
-              </>
-            )}
-          </button>
         </div>
       ) : (
         <div className="space-y-6">
           {/* Statut principal */}
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
             <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg text-center">
-              <div className={`text-2xl font-bold mb-2 ${cronStatus.enabled ? 'text-green-600' : 'text-red-600'}`}>
-                {cronStatus.enabled ? '🟢' : '🔴'}
+              <div className="text-2xl font-bold mb-2 text-green-600">
+                🟢
               </div>
               <div className="text-sm text-gray-600 dark:text-gray-400">
-                {cronStatus.enabled ? 'Actif' : 'Inactif'}
+                Actif
               </div>
             </div>
-            
+
             <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg text-center">
               <div className="text-2xl font-bold text-blue-600 mb-2">
                 9h00
@@ -181,7 +123,7 @@ export function ClientSideCronManager() {
                 Heure française
               </div>
             </div>
-            
+
             <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg text-center">
               <div className="text-2xl font-bold text-purple-600 mb-2">
                 Lun-Ven
@@ -190,7 +132,7 @@ export function ClientSideCronManager() {
                 Jours ouvrés
               </div>
             </div>
-            
+
             <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg text-center">
               <div className="text-2xl font-bold text-yellow-600 mb-2">
                 ⚡
@@ -201,69 +143,21 @@ export function ClientSideCronManager() {
             </div>
           </div>
 
-          {/* Contrôles */}
-          <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-            <div>
-              <h4 className="font-medium text-gray-900 dark:text-gray-100 mb-1">
-                Envois automatiques du lundi au vendredi
-              </h4>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                Les récapitulatifs seront envoyés chaque matin à 9h00 (heure française)
-              </p>
-            </div>
-            <button
-              onClick={handleToggle}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors font-medium ${
-                cronStatus.enabled
-                  ? 'bg-red-600 hover:bg-red-700 text-white'
-                  : 'bg-green-600 hover:bg-green-700 text-white'
-              }`}
-            >
-              {cronStatus.enabled ? (
-                <>
-                  <PowerOff className="w-4 h-4" />
-                  Désactiver
-                </>
-              ) : (
-                <>
-                  <Power className="w-4 h-4" />
-                  Activer
-                </>
-              )}
-            </button>
-          </div>
-
-          {/* Notifications */}
-          {cronStatus.enabled && (
-            <div className="p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <Bell className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-                  <div>
-                    <h4 className="font-medium text-blue-800 dark:text-blue-200">
-                      Notifications d'exécution
-                    </h4>
-                    <p className="text-sm text-blue-700 dark:text-blue-300">
-                      Soyez notifié quand les emails sont envoyés automatiquement
-                    </p>
-                  </div>
-                </div>
-                {!notificationPermission ? (
-                  <button
-                    onClick={handleRequestNotifications}
-                    className="px-3 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-colors"
-                  >
-                    Activer
-                  </button>
-                ) : (
-                  <div className="flex items-center gap-2 text-green-600 dark:text-green-400">
-                    <CheckCircle className="w-4 h-4" />
-                    <span className="text-sm font-medium">Activées</span>
-                  </div>
-                )}
+          {/* Informations d'envois */}
+          <div className="p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+            <div className="flex items-start gap-3">
+              <CheckCircle className="w-6 h-6 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" />
+              <div>
+                <h4 className="font-medium text-green-800 dark:text-green-200 mb-1">
+                  Envois automatiques du lundi au vendredi
+                </h4>
+                <p className="text-sm text-green-700 dark:text-green-300">
+                  Les récapitulatifs seront envoyés automatiquement chaque matin à 9h00 (heure française)
+                </p>
               </div>
             </div>
-          )}
+          </div>
+
 
           {/* Dernière exécution */}
           {lastExecution && (
@@ -320,7 +214,7 @@ export function ClientSideCronManager() {
             </h4>
             <div className="text-sm text-yellow-700 dark:text-yellow-300 space-y-1">
               <div>🤖 **Service Worker** : Fonctionne en arrière-plan dans votre navigateur</div>
-              <div>⏰ **Vérification** : Toutes les heures pour détecter 9h00</div>
+              <div>⏰ **Vérification** : Toutes les minutes pour détecter 9h00</div>
               <div>📅 **Planning** : Lundi à vendredi uniquement (pas de week-end)</div>
               <div>📧 **Appel direct** : Utilise les mêmes fonctions Edge que les tests manuels</div>
               <div>💾 **Persistant** : Continue à fonctionner même si vous fermez l'onglet</div>
