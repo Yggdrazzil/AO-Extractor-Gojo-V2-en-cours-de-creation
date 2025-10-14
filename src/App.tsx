@@ -177,6 +177,7 @@ function App() {
         fileUrl: prospect.file_url,
         fileContent: prospect.file_content,
         targetAccount: prospect.target_account || '',
+        name: prospect.name || '-',
         availability: prospect.availability || '-',
         dailyRate: prospect.daily_rate,
         salaryExpectations: prospect.salary_expectations,
@@ -226,6 +227,7 @@ function App() {
         fileContent: need.file_content,
         selectedNeedId: need.selected_need_id,
         selectedNeedTitle: need.selected_need_title,
+        name: need.name || '-',
         availability: need.availability || '-',
         dailyRate: need.daily_rate,
         salaryExpectations: need.salary_expectations,
@@ -236,6 +238,7 @@ function App() {
         status: need.status,
         assignedTo: need.assigned_to,
         isRead: need.is_read || false,
+        isFavorite: need.is_favorite || false,
         comments: need.comments || ''
       }));
       
