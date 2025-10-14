@@ -1,5 +1,5 @@
 import React from 'react';
-import { FileText, Users, Target, Store, Settings } from 'lucide-react';
+import { FileText, Users, Target, Store, BarChart3 } from 'lucide-react';
 import { Logo } from './Logo';
 
 interface SidebarProps {
@@ -43,7 +43,7 @@ const tabs = [
   {
     id: 'tools',
     label: 'Back Office',
-    icon: Settings,
+    icon: BarChart3,
     description: 'Outils additionnels',
     adminOnly: true
   }
