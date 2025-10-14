@@ -92,12 +92,6 @@ export function ReferenceMarketplaceComponent({ salesReps }: ReferenceMarketplac
 
   return (
     <div className="p-6 space-y-6 h-full overflow-auto">
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-          Marketplace des Références
-        </h2>
-      </div>
-
       <div className="flex flex-col sm:flex-row sm:items-center gap-4 bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
         <div className="flex items-center gap-2">
           <label className="text-sm font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">
