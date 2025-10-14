@@ -20,28 +20,35 @@ const LAST_EXECUTION_KEY = 'gojo_last_email_execution';
 function shouldExecuteToday(task) {
   const now = new Date();
   const dayOfWeek = now.getDay(); // 0=dimanche, 1=lundi, ..., 6=samedi
-  const currentTime = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
-  
+  const currentHour = now.getHours();
+  const currentMinute = now.getMinutes();
+
   // Vérifier si c'est un jour de semaine (lundi-vendredi)
   if (!task.days.includes(dayOfWeek)) {
-    console.log(`📅 Today is ${dayOfWeek} (weekend), skipping email task`);
+    console.log(`📅 Today is day ${dayOfWeek} (weekend), skipping email task`);
     return false;
   }
-  
-  // Vérifier si c'est l'heure
-  if (currentTime !== task.time) {
+
+  // Parser l'heure de la tâche (format HH:MM)
+  const [targetHour, targetMinute] = task.time.split(':').map(Number);
+
+  // Vérifier si on est dans la fenêtre d'exécution (heure exacte ou dans les 5 minutes qui suivent)
+  const isTargetHour = currentHour === targetHour;
+  const isWithinWindow = currentMinute >= targetMinute && currentMinute < targetMinute + 5;
+
+  if (!isTargetHour || !isWithinWindow) {
     return false;
   }
-  
+
   // Vérifier si on a déjà exécuté aujourd'hui
   const today = now.toDateString();
   const lastExecution = localStorage.getItem(LAST_EXECUTION_KEY);
-  
+
   if (lastExecution === today) {
     console.log(`✅ Already executed today (${today}), skipping`);
     return false;
   }
-  
+
   return true;
 }
 
@@ -165,20 +172,34 @@ async function executeDailyEmailTasks() {
  * Timer principal - vérifie toutes les minutes
  */
 function startCronTimer() {
-  console.log('⏰ Starting cron timer (checks every hour)');
-  
-  setInterval(async () => {
-    const now = new Date();
-    const task = TASKS.dailyEmailSummary;
-    
-    // Log à chaque vérification horaire
-    console.log(`⏰ Cron check at ${now.toLocaleTimeString('fr-FR')} - Next execution: ${task.time} on weekdays`);
-    
-    if (task.enabled && shouldExecuteToday(task)) {
-      console.log(`🎯 Time to execute daily email tasks! (${now.toLocaleTimeString('fr-FR')})`);
-      await executeDailyEmailTasks();
-    }
-  }, 3600000); // Vérifier toutes les heures
+  console.log('⏰ Starting cron timer (checks every minute)');
+
+  // Exécuter une première vérification immédiatement
+  checkAndExecute();
+
+  // Puis vérifier toutes les minutes
+  setInterval(checkAndExecute, 60000); // 60000ms = 1 minute
+}
+
+/**
+ * Vérifie et exécute les tâches si nécessaire
+ */
+async function checkAndExecute() {
+  const now = new Date();
+  const task = TASKS.dailyEmailSummary;
+
+  // Log uniquement si on est proche de l'heure d'exécution (pour éviter trop de logs)
+  const currentHour = now.getHours();
+  const [targetHour] = task.time.split(':').map(Number);
+
+  if (currentHour === targetHour || currentHour === targetHour - 1) {
+    console.log(`⏰ Cron check at ${now.toLocaleTimeString('fr-FR')} - Target: ${task.time} on weekdays`);
+  }
+
+  if (task.enabled && shouldExecuteToday(task)) {
+    console.log(`🎯 Time to execute daily email tasks! (${now.toLocaleTimeString('fr-FR')})`);
+    await executeDailyEmailTasks();
+  }
 }
 
 // Événements du Service Worker
