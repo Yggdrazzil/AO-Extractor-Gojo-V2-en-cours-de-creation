@@ -103,15 +103,17 @@ export async function fetchProspects(): Promise<Prospect[]> {
 
 export async function createProspect(prospect: Omit<Prospect, 'id'>, file?: File): Promise<Prospect> {
   try {
-    const { data: salesRep, error: salesRepError } = await supabase
-      .from('sales_reps')
-      .select('id, code')
-      .eq('id', prospect.assignedTo)
-      .single();
+    if (prospect.assignedTo) {
+      const { data: salesRep, error: salesRepError } = await supabase
+        .from('sales_reps')
+        .select('id, code')
+        .eq('id', prospect.assignedTo)
+        .single();
 
-    if (salesRepError || !salesRep) {
-      console.error('Sales rep not found:', prospect.assignedTo);
-      throw new Error('Commercial non trouvé');
+      if (salesRepError || !salesRep) {
+        console.error('Sales rep not found:', prospect.assignedTo);
+        throw new Error('Commercial non trouvé');
+      }
     }
 
     let fileUrl = prospect.fileUrl;

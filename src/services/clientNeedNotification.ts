@@ -59,6 +59,10 @@ export async function sendClientNeedNotification(data: ClientNeedNotificationDat
  */
 export async function getSalesRepCode(salesRepId: string): Promise<string | null> {
   try {
+    if (!salesRepId) {
+      return null;
+    }
+
     const { data, error } = await supabase
       .from('sales_reps')
       .select('code')

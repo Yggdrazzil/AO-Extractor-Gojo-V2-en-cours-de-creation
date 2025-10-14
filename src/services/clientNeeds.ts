@@ -82,15 +82,17 @@ export async function fetchClientNeeds(): Promise<BoondmanagerProspect[]> {
  */
 export async function addClientNeed(newProspect: BoondmanagerProspect): Promise<BoondmanagerProspect> {
   try {
-    const { data: salesRep, error: salesRepError } = await supabase
-      .from('sales_reps')
-      .select('id, code')
-      .eq('id', newProspect.assignedTo)
-      .single();
+    if (newProspect.assignedTo) {
+      const { data: salesRep, error: salesRepError } = await supabase
+        .from('sales_reps')
+        .select('id, code')
+        .eq('id', newProspect.assignedTo)
+        .single();
 
-    if (salesRepError || !salesRep) {
-      console.error('Sales rep not found:', newProspect.assignedTo);
-      throw new Error('Commercial non trouvé');
+      if (salesRepError || !salesRep) {
+        console.error('Sales rep not found:', newProspect.assignedTo);
+        throw new Error('Commercial non trouvé');
+      }
     }
 
     let fileUrl = newProspect.fileUrl;

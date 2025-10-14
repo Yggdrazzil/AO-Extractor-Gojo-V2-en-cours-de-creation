@@ -94,6 +94,10 @@ export async function testProspectEmailNotification(salesRepId: string, targetAc
  */
 export async function getSalesRepCode(salesRepId: string): Promise<string | null> {
   try {
+    if (!salesRepId) {
+      return null;
+    }
+
     const { data, error } = await supabase
       .from('sales_reps')
       .select('code')
