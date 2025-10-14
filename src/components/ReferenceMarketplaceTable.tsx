@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Eye, Trash2, MessageSquare, FileText } from 'lucide-react';
 import type { ReferenceMarketplace, SalesRep } from '../types';
 import { supabase } from '../lib/supabase';
+import { ConfirmDialog } from './common/ConfirmDialog';
 
 interface ReferenceMarketplaceTableProps {
   references: ReferenceMarketplace[];
@@ -23,6 +24,11 @@ export function ReferenceMarketplaceTable({
     field: string;
   } | null>(null);
   const [editValue, setEditValue] = useState('');
+  const [deleteConfirm, setDeleteConfirm] = useState<{ isOpen: boolean; referenceId: string; referenceTitle: string }>({
+    isOpen: false,
+    referenceId: '',
+    referenceTitle: ''
+  });
 
   const handleEdit = (id: string, field: string, currentValue: string) => {
     setEditingField({ id, field });
@@ -47,6 +53,21 @@ export function ReferenceMarketplaceTable({
     } else if (e.key === 'Escape') {
       setEditingField(null);
       setEditValue('');
+    }
+  };
+
+  const handleDeleteClick = (reference: ReferenceMarketplace) => {
+    setDeleteConfirm({
+      isOpen: true,
+      referenceId: reference.id,
+      referenceTitle: `${reference.tech_name} - ${reference.client}`
+    });
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (deleteConfirm.referenceId) {
+      await onDelete(deleteConfirm.referenceId);
+      setDeleteConfirm({ isOpen: false, referenceId: '', referenceTitle: '' });
     }
   };
 
@@ -197,12 +218,8 @@ export function ReferenceMarketplaceTable({
                       )}
                     </div>
                     <button
-                      onClick={() => {
-                        if (confirm('Êtes-vous sûr de vouloir supprimer cette référence ?')) {
-                          onDelete(reference.id);
-                        }
-                      }}
-                      className="p-1.5 text-gray-600 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
+                      onClick={() => handleDeleteClick(reference)}
+                      className="p-1.5 text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
                       title="Supprimer"
                     >
                       <Trash2 className="w-4 h-4" />
@@ -214,6 +231,17 @@ export function ReferenceMarketplaceTable({
           )}
         </tbody>
       </table>
+
+      <ConfirmDialog
+        isOpen={deleteConfirm.isOpen}
+        onClose={() => setDeleteConfirm({ isOpen: false, referenceId: '', referenceTitle: '' })}
+        onConfirm={handleDeleteConfirm}
+        title="Confirmer la suppression"
+        message={`Êtes-vous sûr de vouloir supprimer cette référence ?\n\n"${deleteConfirm.referenceTitle}"\n\nCette action est irréversible.`}
+        confirmText="Supprimer"
+        cancelText="Annuler"
+        isDestructive={true}
+      />
     </div>
   );
 }

@@ -78,8 +78,8 @@ export function ReferenceMarketplaceForm({ isOpen, onClose, onSubmit }: Referenc
 
       if (pdfFile) {
         setIsUploading(true);
-        const uploadedUrl = await uploadFile(pdfFile, 'reference-pdfs');
-        pdfUrl = uploadedUrl;
+        const uploadResult = await uploadFile(pdfFile, 'reference-pdfs');
+        pdfUrl = uploadResult.url;
         pdfName = pdfFile.name;
         setIsUploading(false);
       }
