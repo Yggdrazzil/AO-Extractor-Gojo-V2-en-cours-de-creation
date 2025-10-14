@@ -20,16 +20,29 @@ export async function addReferenceMarketplace(
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) throw new Error('User not authenticated');
 
+  // Clean up empty strings to null
+  const cleanedReference = {
+    ...reference,
+    phone: reference.phone || null,
+    email: reference.email || null,
+    tech_name: reference.tech_name || null,
+    created_by: user.id
+  };
+
   const { data, error } = await supabase
     .from('reference_marketplace')
-    .insert([{ ...reference, created_by: user.id }])
+    .insert([cleanedReference])
     .select(`
       *,
       sales_rep:sales_reps(id, name, email, code)
     `)
     .single();
 
-  if (error) throw error;
+  if (error) {
+    console.error('Database error:', error);
+    throw new Error(error.message || 'Failed to create reference');
+  }
+
   return data;
 }
 

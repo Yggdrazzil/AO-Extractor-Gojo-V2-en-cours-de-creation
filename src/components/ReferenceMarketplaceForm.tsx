@@ -50,21 +50,41 @@ export function ReferenceMarketplaceForm({ isOpen, onClose, onSubmit }: Referenc
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file && file.type === 'application/pdf') {
-      setPdfFile(file);
-    } else {
+    if (!file) return;
+
+    if (file.type !== 'application/pdf') {
       alert('Veuillez sélectionner un fichier PDF');
+      return;
     }
+
+    // Limit file size to 10MB
+    const maxSize = 10 * 1024 * 1024; // 10MB in bytes
+    if (file.size > maxSize) {
+      alert('Le fichier est trop volumineux. Taille maximale : 10 Mo');
+      return;
+    }
+
+    setPdfFile(file);
   };
 
   const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     const file = e.dataTransfer.files[0];
-    if (file && file.type === 'application/pdf') {
-      setPdfFile(file);
-    } else {
+    if (!file) return;
+
+    if (file.type !== 'application/pdf') {
       alert('Veuillez déposer un fichier PDF');
+      return;
     }
+
+    // Limit file size to 10MB
+    const maxSize = 10 * 1024 * 1024; // 10MB in bytes
+    if (file.size > maxSize) {
+      alert('Le fichier est trop volumineux. Taille maximale : 10 Mo');
+      return;
+    }
+
+    setPdfFile(file);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -85,7 +105,11 @@ export function ReferenceMarketplaceForm({ isOpen, onClose, onSubmit }: Referenc
       }
 
       await onSubmit({
-        ...formData,
+        client: formData.client,
+        operational_contact: formData.operational_contact,
+        phone: formData.phone || null,
+        email: formData.email || null,
+        tech_name: formData.tech_name || null,
         sales_rep_id: formData.sales_rep_id || null,
         pdf_url: pdfUrl,
         pdf_name: pdfName
@@ -101,9 +125,10 @@ export function ReferenceMarketplaceForm({ isOpen, onClose, onSubmit }: Referenc
       });
       setPdfFile(null);
       onClose();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error submitting form:', error);
-      alert('Erreur lors de l\'enregistrement');
+      const errorMessage = error?.message || 'Erreur lors de l\'enregistrement';
+      alert(errorMessage);
     } finally {
       setIsSubmitting(false);
       setIsUploading(false);
@@ -213,7 +238,7 @@ export function ReferenceMarketplaceForm({ isOpen, onClose, onSubmit }: Referenc
 
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Document PDF (optionnel)
+              Document PDF (optionnel, max 10 Mo)
             </label>
             <div
               onDrop={handleDrop}
@@ -231,13 +256,16 @@ export function ReferenceMarketplaceForm({ isOpen, onClose, onSubmit }: Referenc
               {pdfFile ? (
                 <div className="flex items-center justify-center gap-2 text-green-600 dark:text-green-400">
                   <FileText className="w-5 h-5" />
-                  <span>{pdfFile.name}</span>
+                  <span>{pdfFile.name} ({(pdfFile.size / 1024 / 1024).toFixed(2)} Mo)</span>
                 </div>
               ) : (
                 <div className="space-y-2">
                   <Upload className="w-8 h-8 mx-auto text-gray-400" />
                   <p className="text-sm text-gray-600 dark:text-gray-400">
                     Glissez-déposez un PDF ou cliquez pour sélectionner
+                  </p>
+                  <p className="text-xs text-gray-500 dark:text-gray-500">
+                    Taille maximale : 10 Mo
                   </p>
                 </div>
               )}
