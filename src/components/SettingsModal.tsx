@@ -72,9 +72,10 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
         setShowSuccess(false);
         onClose();
       }, 1500);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error saving API key:', error);
-      alert('Erreur lors de la sauvegarde de la clé API');
+      const errorMessage = error?.message || error?.error_description || error?.hint || 'Erreur inconnue';
+      alert(`Erreur lors de la sauvegarde de la clé API:\n\n${errorMessage}\n\nConsultez la console pour plus de détails.`);
     }
   };
 
