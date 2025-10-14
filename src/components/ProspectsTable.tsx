@@ -747,21 +747,9 @@ export function ProspectsTable({
 
                   {/* Commercial */}
                   <td className="p-2 sm:p-4">
-                    <select
-                      value={prospect.assignedTo || ''}
-                      onChange={(e) => onAssigneeChange(prospect.id, e.target.value)}
-                      className="w-full p-1 sm:p-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-xs sm:text-sm"
-                    >
-                      <option value="">Non assigné</option>
-                      {[...salesReps].sort((a, b) => {
-                        const order = ['EPO', 'IKH', 'BVI', 'GMA', 'TSA', 'BCI', 'VIE', 'JVO'];
-                        return order.indexOf(a.code) - order.indexOf(b.code);
-                      }).map((rep) => (
-                        <option key={rep.id} value={rep.id}>
-                          {rep.code} - {rep.name}
-                        </option>
-                      ))}
-                    </select>
+                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs sm:text-sm font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                      {salesRepsMap.get(prospect.assignedTo) || '---'}
+                    </span>
                   </td>
 
                   {/* Actions */}

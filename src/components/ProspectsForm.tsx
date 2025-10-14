@@ -261,7 +261,7 @@ export function ProspectsForm({ salesReps, onSubmit, isLoading = false }: Prospe
             className="w-full sm:w-64 px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none"
           >
             <option value="">
-              {salesReps?.length ? 'Sélectionner un commercial' : 'Aucun commercial disponible'}
+              {salesReps?.length ? 'Non assigné (optionnel)' : 'Aucun commercial disponible'}
             </option>
             {[...salesReps].sort((a, b) => {
               const order = ['EPO', 'IKH', 'BVI', 'GMA', 'TSA', 'BCI', 'VIE', 'JVO'];
