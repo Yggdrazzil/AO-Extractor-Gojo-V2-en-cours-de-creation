@@ -172,23 +172,30 @@ export function ReferenceMarketplaceTable({
                 </td>
                 <td className="px-4 py-3 text-sm text-right">
                   <div className="flex items-center justify-end gap-2">
-                    <button
-                      onClick={() => onOpenComments(reference)}
-                      className="group relative p-1.5 text-gray-600 dark:text-gray-400 hover:text-[#1651EE] dark:hover:text-[#1651EE] hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
-                      title="Commentaires"
-                    >
-                      <MessageSquare className="w-4 h-4" />
+                    <div className="group relative">
+                      <button
+                        onClick={() => onOpenComments(reference)}
+                        className="p-1.5 text-gray-600 dark:text-gray-400 hover:text-[#1651EE] dark:hover:text-[#1651EE] hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
+                        title="Commentaires"
+                      >
+                        <MessageSquare className="w-4 h-4" />
+                        {reference.comments && reference.comments.trim() && (
+                          <span className="absolute -top-1 -right-1 bg-orange-500 text-white text-xs font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1">
+                            !
+                          </span>
+                        )}
+                      </button>
                       {reference.comments && reference.comments.trim() && (
-                        <>
-                          <span className="absolute -top-1 -right-1 w-2 h-2 bg-blue-500 rounded-full"></span>
-                          <div className="absolute right-0 top-full mt-2 w-64 p-2 bg-gray-900 dark:bg-gray-700 text-white text-xs rounded shadow-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10 whitespace-pre-wrap">
-                            {reference.comments.length > 100
-                              ? reference.comments.substring(0, 100) + '...'
-                              : reference.comments}
+                        <div className="absolute bottom-full right-0 mb-1 hidden group-hover:block z-[9999] pointer-events-none">
+                          <div className="relative">
+                            <div className="bg-[#4a4f57]/95 backdrop-blur-md text-white text-sm rounded-lg shadow-xl border border-gray-600/50 p-3 max-w-sm w-max max-h-60 overflow-y-auto whitespace-pre-wrap break-words">
+                              {reference.comments}
+                            </div>
+                            <div className="absolute -bottom-1 right-4 w-0 h-0 border-l-[8px] border-l-transparent border-r-[8px] border-r-transparent border-t-[8px] border-t-[#4a4f57]/95"></div>
                           </div>
-                        </>
+                        </div>
                       )}
-                    </button>
+                    </div>
                     <button
                       onClick={() => {
                         if (confirm('Êtes-vous sûr de vouloir supprimer cette référence ?')) {
