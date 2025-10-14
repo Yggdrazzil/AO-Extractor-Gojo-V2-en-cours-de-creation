@@ -119,6 +119,10 @@ export function ProspectsForm({ salesReps, onSubmit, isLoading = false }: Prospe
         setError("Veuillez saisir le compte ciblé");
         return;
       }
+      if (!assignedTo) {
+        setError("Veuillez sélectionner un commercial");
+        return;
+      }
 
       await onSubmit(textContent, targetAccount, selectedFile, assignedTo);
       setTextContent('');
@@ -258,10 +262,11 @@ export function ProspectsForm({ salesReps, onSubmit, isLoading = false }: Prospe
               setAssignedTo(e.target.value);
               setError(null);
             }}
+            required
             className="w-full sm:w-64 px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none"
           >
             <option value="">
-              {salesReps?.length ? 'Non assigné (optionnel)' : 'Aucun commercial disponible'}
+              Sélectionner un commercial *
             </option>
             {[...salesReps].sort((a, b) => {
               const order = ['EPO', 'IKH', 'BVI', 'GMA', 'TSA', 'BCI', 'VIE', 'JVO'];
@@ -275,7 +280,7 @@ export function ProspectsForm({ salesReps, onSubmit, isLoading = false }: Prospe
 
           <button
             type="submit"
-            disabled={isLoading || !selectedFile || !targetAccount.trim()}
+            disabled={isLoading || !selectedFile || !targetAccount.trim() || !assignedTo}
             className="w-full sm:w-auto px-6 py-2 bg-[#1651EE] hover:bg-[#1651EE]/90 text-white font-medium rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             {isLoading ? 'Création...' : 'Créer le profil'}

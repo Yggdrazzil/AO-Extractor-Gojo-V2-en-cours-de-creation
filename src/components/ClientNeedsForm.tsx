@@ -121,6 +121,10 @@ export function ClientNeedsForm({ salesReps, onSubmit, isLoading = false }: Clie
         setError("Veuillez saisir le besoin client");
         return;
       }
+      if (!assignedTo) {
+        setError("Veuillez sélectionner un commercial");
+        return;
+      }
 
       // Extraire le contenu du fichier si présent
       let cvContent = undefined;
@@ -293,10 +297,11 @@ export function ClientNeedsForm({ salesReps, onSubmit, isLoading = false }: Clie
               setAssignedTo(e.target.value);
               setError(null);
             }}
+            required
             className="w-full sm:w-64 px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none"
           >
             <option value="">
-              {salesReps?.length ? 'Non assigné (optionnel)' : 'Aucun commercial disponible'}
+              Sélectionner un commercial *
             </option>
             {[...salesReps].sort((a, b) => {
               const order = ['EPO', 'IKH', 'BVI', 'GMA', 'TSA', 'BCI', 'VIE', 'JVO'];
@@ -310,7 +315,7 @@ export function ClientNeedsForm({ salesReps, onSubmit, isLoading = false }: Clie
 
           <button
             type="submit"
-            disabled={isLoading || !selectedFile || !besoin.trim()}
+            disabled={isLoading || !selectedFile || !besoin.trim() || !assignedTo}
             className="w-full sm:w-auto px-6 py-2 bg-[#1651EE] hover:bg-[#1651EE]/90 text-white font-medium rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             {isLoading ? 'Création...' : 'Créer le profil'}

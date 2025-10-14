@@ -103,18 +103,24 @@ export async function fetchProspects(): Promise<Prospect[]> {
 
 export async function createProspect(prospect: Omit<Prospect, 'id'>, file?: File): Promise<Prospect> {
   try {
-    if (prospect.assignedTo) {
-      const { data: salesRep, error: salesRepError } = await supabase
-        .from('sales_reps')
-        .select('id, code')
-        .eq('id', prospect.assignedTo)
-        .single();
+    console.log('🔍 createProspect called with assignedTo:', prospect.assignedTo);
 
-      if (salesRepError || !salesRep) {
-        console.error('Sales rep not found:', prospect.assignedTo);
-        throw new Error('Commercial non trouvé');
-      }
+    if (!prospect.assignedTo) {
+      throw new Error('Un commercial doit être assigné');
     }
+
+    const { data: salesRep, error: salesRepError } = await supabase
+      .from('sales_reps')
+      .select('id, code')
+      .eq('id', prospect.assignedTo)
+      .single();
+
+    if (salesRepError || !salesRep) {
+      console.error('Sales rep not found:', prospect.assignedTo, salesRepError);
+      throw new Error('Commercial non trouvé');
+    }
+
+    console.log('✅ Sales rep validated:', salesRep);
 
     let fileUrl = prospect.fileUrl;
     let fileName = prospect.fileName;
@@ -159,7 +165,7 @@ export async function createProspect(prospect: Omit<Prospect, 'id'>, file?: File
     const { data, error } = await supabase
       .from('prospects')
       .insert([{ ...insertData, comments: '' }])
-      .select('id, text_content, file_name, file_url, file_content, target_account, name, availability, daily_rate, salary_expectations, residence, mobility, phone, email, status, assigned_to, is_read, comments')
+      .select('id, text_content, file_name, file_url, file_content, target_account, name, availability, daily_rate, salary_expectations, residence, mobility, phone, email, status, assigned_to, created_by, is_read, comments')
       .single();
 
     if (error) {
