@@ -3,7 +3,6 @@ import { Plus } from 'lucide-react';
 import { ReferenceMarketplaceForm } from './ReferenceMarketplaceForm';
 import { ReferenceMarketplaceTable } from './ReferenceMarketplaceTable';
 import { ReferenceCommentsModal } from './ReferenceCommentsModal';
-import { ReferencePdfModal } from './ReferencePdfModal';
 import type { ReferenceMarketplace, SalesRep } from '../types';
 import {
   fetchReferenceMarketplace,
@@ -21,7 +20,6 @@ export function ReferenceMarketplaceComponent({ salesReps }: ReferenceMarketplac
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [selectedReference, setSelectedReference] = useState<ReferenceMarketplace | null>(null);
   const [isCommentsModalOpen, setIsCommentsModalOpen] = useState(false);
-  const [isPdfModalOpen, setIsPdfModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -77,11 +75,6 @@ export function ReferenceMarketplaceComponent({ salesReps }: ReferenceMarketplac
     await handleUpdateReference(referenceId, { comments });
   };
 
-  const handleOpenPdf = (reference: ReferenceMarketplace) => {
-    setSelectedReference(reference);
-    setIsPdfModalOpen(true);
-  };
-
   return (
     <div className="p-6 space-y-6 h-full overflow-auto">
       <div className="flex justify-between items-center">
@@ -107,7 +100,6 @@ export function ReferenceMarketplaceComponent({ salesReps }: ReferenceMarketplac
             onUpdate={handleUpdateReference}
             onDelete={handleDeleteReference}
             onOpenComments={handleOpenComments}
-            onOpenPdf={handleOpenPdf}
           />
         </div>
       )}
@@ -137,15 +129,6 @@ export function ReferenceMarketplaceComponent({ salesReps }: ReferenceMarketplac
           onSave={handleSaveComments}
         />
       )}
-
-      <ReferencePdfModal
-        isOpen={isPdfModalOpen}
-        onClose={() => {
-          setIsPdfModalOpen(false);
-          setSelectedReference(null);
-        }}
-        reference={selectedReference}
-      />
     </div>
   );
 }

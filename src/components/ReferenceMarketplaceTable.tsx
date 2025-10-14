@@ -9,7 +9,6 @@ interface ReferenceMarketplaceTableProps {
   onUpdate: (id: string, updates: Partial<ReferenceMarketplace>) => Promise<void>;
   onDelete: (id: string) => Promise<void>;
   onOpenComments: (reference: ReferenceMarketplace) => void;
-  onOpenPdf: (reference: ReferenceMarketplace) => void;
 }
 
 export function ReferenceMarketplaceTable({
@@ -17,8 +16,7 @@ export function ReferenceMarketplaceTable({
   salesReps,
   onUpdate,
   onDelete,
-  onOpenComments,
-  onOpenPdf
+  onOpenComments
 }: ReferenceMarketplaceTableProps) {
   const [editingField, setEditingField] = useState<{
     id: string;
@@ -108,7 +106,7 @@ export function ReferenceMarketplaceTable({
               Commercial
             </th>
             <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">
-              PDF
+              CV Tech
             </th>
             <th className="px-4 py-3 text-right text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">
               Actions
@@ -159,13 +157,15 @@ export function ReferenceMarketplaceTable({
                 </td>
                 <td className="px-4 py-3 text-sm text-center">
                   {reference.pdf_url ? (
-                    <button
-                      onClick={() => onOpenPdf(reference)}
-                      className="inline-flex items-center gap-1 text-[#1651EE] hover:text-[#1651EE]/80"
-                      title="Voir le PDF"
+                    <a
+                      href={reference.pdf_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 text-[#1651EE] hover:text-[#1651EE]/80 transition-colors"
+                      title="Voir le CV"
                     >
-                      <FileText className="w-4 h-4" />
-                    </button>
+                      <Eye className="w-4 h-4" />
+                    </a>
                   ) : (
                     <span className="text-gray-400">-</span>
                   )}
