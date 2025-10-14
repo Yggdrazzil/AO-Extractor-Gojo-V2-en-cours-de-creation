@@ -1,9 +1,9 @@
 import { supabase } from '../lib/supabase';
 
 const ADMIN_EMAILS = [
-  'etienne.poulain@hito.digital',
-  'benoit.civel@hito.digital',
-  'vincent.ientile@hito.digital'
+  'etienne.poulain@hito-digital.com',
+  'benoit.civel@hito-digital.com',
+  'vincent.ientile@hito-digital.com'
 ];
 
 export async function isAdmin(): Promise<boolean> {
