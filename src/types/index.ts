@@ -80,3 +80,26 @@ export interface Need {
   createdAt: string;
   updatedAt: string;
 }
+
+export interface ReferenceMarketplace {
+  id: string;
+  client: string;
+  operational_contact: string;
+  phone: string;
+  email: string;
+  tech_name: string;
+  sales_rep_id: string | null;
+  sales_rep?: SalesRep;
+  pdf_url: string | null;
+  pdf_name: string | null;
+  created_by: string;
+  created_at: string;
+}
+
+export interface ReferenceMarketplaceComment {
+  id: string;
+  reference_id: string;
+  user_email: string;
+  comment: string;
+  created_at: string;
+}

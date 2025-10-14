@@ -1,5 +1,5 @@
 import React from 'react';
-import { FileText, Users, Target, BarChart3, Settings } from 'lucide-react';
+import { FileText, Users, Target, Store, Settings } from 'lucide-react';
 import { Logo } from './Logo';
 
 interface SidebarProps {
@@ -34,10 +34,10 @@ const tabs = [
     adminOnly: false
   },
   {
-    id: 'analytics',
-    label: 'A Venir',
-    icon: BarChart3,
-    description: 'Tableaux de bord',
+    id: 'marketplace',
+    label: 'Marketplace des Références',
+    icon: Store,
+    description: 'Marketplace des références',
     adminOnly: false
   },
   {

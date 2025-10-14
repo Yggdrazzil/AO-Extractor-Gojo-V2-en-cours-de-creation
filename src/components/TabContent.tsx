@@ -7,6 +7,7 @@ import { ClientNeedsForm } from './BoondmanagerProspectsForm';
 import { ClientNeedsTable } from './ClientNeedsTable';
 import { NotificationSystemStatus } from './NotificationSystemStatus';
 import { ClientSideCronManager } from './ClientSideCronManager';
+import { ReferenceMarketplaceComponent } from './ReferenceMarketplace';
 import type { RFP, SalesRep } from '../types';
 import type { Prospect } from '../types';
 import type { BoondmanagerProspect } from '../types';
@@ -228,6 +229,9 @@ export function TabContent({
           />
         </div>
       );
+
+    case 'marketplace':
+      return <ReferenceMarketplaceComponent salesReps={salesReps} />;
 
     case 'analytics':
       return (
