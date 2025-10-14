@@ -2,7 +2,14 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 interface ProspectNotificationData {
   prospectId: string
-  targetAccount: string
+  targetAccount?: string
+  name?: string
+  availability?: string
+  dailyRate?: number
+  residence?: string
+  mobility?: string
+  phone?: string
+  email?: string
   salesRepCode: string
   assignedTo: string
   hasCV: boolean
@@ -13,6 +20,34 @@ const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
+}
+
+/**
+ * Récupère les informations complètes du prospect depuis la base de données
+ */
+async function getProspectDetails(prospectId: string) {
+  try {
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+
+    const supabase = createClient(supabaseUrl, supabaseServiceKey)
+
+    const { data, error } = await supabase
+      .from('prospects')
+      .select('target_account, name, availability, daily_rate, residence, mobility, phone, email, file_name')
+      .eq('id', prospectId)
+      .single()
+
+    if (error || !data) {
+      console.error('Error fetching prospect details:', error)
+      return null
+    }
+
+    return data
+  } catch (error) {
+    console.error('Failed to get prospect details:', error)
+    return null
+  }
 }
 
 /**
@@ -254,12 +289,19 @@ function generateEmailHTML(data: ProspectNotificationData, salesRepName: string,
           </div>
           
           <p class="intro-text">Une nouvelle opportunité de prise de références vient d'être identifiée et vous a été assignée :</p>
-          
+
           <div class="prospect-card">
-            <div class="prospect-title">🎯 Compte ciblé : ${data.targetAccount}</div>
+            <div class="prospect-title">🎯 ${data.name && data.name !== '-' ? data.name : 'Profil candidat'}</div>
             <div class="prospect-details">
-              ${data.hasCV ? '<div><strong>Type :</strong> CV disponible pour analyse</div>' : '<div><strong>Type :</strong> Informations textuelles uniquement</div>'}
-              <div><strong>Objectif :</strong> Prise de références client</div>
+              ${data.targetAccount ? `<div><strong>•</strong> <strong>Compte ciblé :</strong> ${data.targetAccount}</div>` : ''}
+              ${data.availability && data.availability !== '-' ? `<div><strong>•</strong> <strong>Disponibilité :</strong> ${data.availability}</div>` : ''}
+              ${data.dailyRate ? `<div><strong>•</strong> <strong>TJM :</strong> ${data.dailyRate}€</div>` : ''}
+              ${data.residence && data.residence !== '-' ? `<div><strong>•</strong> <strong>Résidence :</strong> ${data.residence}</div>` : ''}
+              ${data.mobility && data.mobility !== '-' ? `<div><strong>•</strong> <strong>Mobilité :</strong> ${data.mobility}</div>` : ''}
+              ${data.phone && data.phone !== '-' ? `<div><strong>•</strong> <strong>Téléphone :</strong> ${data.phone}</div>` : ''}
+              ${data.email && data.email !== '-' ? `<div><strong>•</strong> <strong>Email :</strong> ${data.email}</div>` : ''}
+              ${data.hasCV ? '<div><strong>•</strong> <strong>CV :</strong> Disponible pour analyse</div>' : ''}
+              <div><strong>•</strong> <strong>Objectif :</strong> Prise de références client</div>
             </div>
           </div>
           
@@ -301,9 +343,16 @@ Bonjour ${salesRepName},
 
 Une nouvelle opportunité de prise de références vient d'être identifiée et vous a été assignée :
 
-🎯 Compte ciblé : ${data.targetAccount}
-${data.hasCV ? 'Type : CV disponible pour analyse' : 'Type : Informations textuelles uniquement'}
-Objectif : Prise de références client
+🎯 ${data.name && data.name !== '-' ? data.name : 'Profil candidat'}
+${data.targetAccount ? `• Compte ciblé : ${data.targetAccount}` : ''}
+${data.availability && data.availability !== '-' ? `• Disponibilité : ${data.availability}` : ''}
+${data.dailyRate ? `• TJM : ${data.dailyRate}€` : ''}
+${data.residence && data.residence !== '-' ? `• Résidence : ${data.residence}` : ''}
+${data.mobility && data.mobility !== '-' ? `• Mobilité : ${data.mobility}` : ''}
+${data.phone && data.phone !== '-' ? `• Téléphone : ${data.phone}` : ''}
+${data.email && data.email !== '-' ? `• Email : ${data.email}` : ''}
+${data.hasCV ? '• CV : Disponible pour analyse' : ''}
+• Objectif : Prise de références client
 
 Action requise :
 Connectez-vous à la plateforme pour consulter tous les détails du profil et planifier votre approche.
@@ -450,19 +499,38 @@ Deno.serve(async (req) => {
     })
     
     // Validation des données
-    if (!data.prospectId || !data.salesRepCode || !data.targetAccount || !data.assignedTo) {
-      const errorMsg = 'Missing required fields: prospectId, salesRepCode, targetAccount, and assignedTo are required'
+    if (!data.prospectId || !data.salesRepCode || !data.assignedTo) {
+      const errorMsg = 'Missing required fields: prospectId, salesRepCode, and assignedTo are required'
       console.error(errorMsg)
       return new Response(
-        JSON.stringify({ 
+        JSON.stringify({
           error: 'Missing required fields',
           details: errorMsg
         }),
-        { 
-          status: 400, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         }
       )
+    }
+
+    // Récupération des détails complets du prospect
+    console.log('📋 Fetching prospect details from database...')
+    const prospectDetails = await getProspectDetails(data.prospectId)
+
+    if (prospectDetails) {
+      // Enrichir les données avec les informations complètes de la DB
+      data.targetAccount = prospectDetails.target_account
+      data.name = prospectDetails.name
+      data.availability = prospectDetails.availability
+      data.dailyRate = prospectDetails.daily_rate
+      data.residence = prospectDetails.residence
+      data.mobility = prospectDetails.mobility
+      data.phone = prospectDetails.phone
+      data.email = prospectDetails.email
+      data.fileName = prospectDetails.file_name
+      data.hasCV = !!prospectDetails.file_name
+      console.log('✅ Prospect details enriched from database')
     }
 
     // Récupération des informations du commercial

@@ -3,11 +3,47 @@ import { corsHeaders } from '../_shared/cors.ts'
 
 interface ClientNeedNotificationData {
   prospectId: string
-  besoin: string
+  besoin?: string
+  name?: string
+  availability?: string
+  dailyRate?: number
+  salaryExpectations?: number
+  residence?: string
+  mobility?: string
+  phone?: string
+  email?: string
   salesRepCode: string
   assignedTo: string
   hasCV: boolean
   fileName?: string
+}
+
+/**
+ * Récupère les informations complètes du besoin client depuis la base de données
+ */
+async function getClientNeedDetails(prospectId: string) {
+  try {
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+
+    const supabase = createClient(supabaseUrl, supabaseServiceKey)
+
+    const { data, error } = await supabase
+      .from('client_needs')
+      .select('selected_need_title, name, availability, daily_rate, salary_expectations, residence, mobility, phone, email, file_name')
+      .eq('id', prospectId)
+      .single()
+
+    if (error || !data) {
+      console.error('Error fetching client need details:', error)
+      return null
+    }
+
+    return data
+  } catch (error) {
+    console.error('Failed to get client need details:', error)
+    return null
+  }
 }
 
 /**
@@ -249,12 +285,20 @@ function generateEmailHTML(data: ClientNeedNotificationData, salesRepName: strin
           </div>
           
           <p class="intro-text">Un nouveau profil pour besoin client vient d'être ajouté et vous a été assigné :</p>
-          
+
           <div class="prospect-card">
-            <div class="prospect-title">🔍 Besoin : ${data.besoin}</div>
+            <div class="prospect-title">🔍 ${data.name && data.name !== '-' ? data.name : 'Profil candidat'}</div>
             <div class="prospect-details">
-              ${data.hasCV ? '<div><strong>Type :</strong> CV disponible pour analyse</div>' : '<div><strong>Type :</strong> Informations textuelles uniquement</div>'}
-              <div><strong>Objectif :</strong> Staffing sur besoin client</div>
+              ${data.besoin ? `<div><strong>•</strong> <strong>Besoin :</strong> ${data.besoin}</div>` : ''}
+              ${data.availability && data.availability !== '-' ? `<div><strong>•</strong> <strong>Disponibilité :</strong> ${data.availability}</div>` : ''}
+              ${data.dailyRate ? `<div><strong>•</strong> <strong>TJM :</strong> ${data.dailyRate}€</div>` : ''}
+              ${data.salaryExpectations ? `<div><strong>•</strong> <strong>Prétentions salariales :</strong> ${data.salaryExpectations}€</div>` : ''}
+              ${data.residence && data.residence !== '-' ? `<div><strong>•</strong> <strong>Résidence :</strong> ${data.residence}</div>` : ''}
+              ${data.mobility && data.mobility !== '-' ? `<div><strong>•</strong> <strong>Mobilité :</strong> ${data.mobility}</div>` : ''}
+              ${data.phone && data.phone !== '-' ? `<div><strong>•</strong> <strong>Téléphone :</strong> ${data.phone}</div>` : ''}
+              ${data.email && data.email !== '-' ? `<div><strong>•</strong> <strong>Email :</strong> ${data.email}</div>` : ''}
+              ${data.hasCV ? '<div><strong>•</strong> <strong>CV :</strong> Disponible pour analyse</div>' : ''}
+              <div><strong>•</strong> <strong>Objectif :</strong> Staffing sur besoin client</div>
             </div>
           </div>
           
@@ -296,9 +340,17 @@ Bonjour ${salesRepName},
 
 Un nouveau profil pour besoin client vient d'être ajouté et vous a été assigné :
 
-🎯 Besoin : ${data.besoin}
-${data.hasCV ? 'Type : CV disponible pour analyse' : 'Type : Informations textuelles uniquement'}
-Objectif : Staffing sur besoin client
+🔍 ${data.name && data.name !== '-' ? data.name : 'Profil candidat'}
+${data.besoin ? `• Besoin : ${data.besoin}` : ''}
+${data.availability && data.availability !== '-' ? `• Disponibilité : ${data.availability}` : ''}
+${data.dailyRate ? `• TJM : ${data.dailyRate}€` : ''}
+${data.salaryExpectations ? `• Prétentions salariales : ${data.salaryExpectations}€` : ''}
+${data.residence && data.residence !== '-' ? `• Résidence : ${data.residence}` : ''}
+${data.mobility && data.mobility !== '-' ? `• Mobilité : ${data.mobility}` : ''}
+${data.phone && data.phone !== '-' ? `• Téléphone : ${data.phone}` : ''}
+${data.email && data.email !== '-' ? `• Email : ${data.email}` : ''}
+${data.hasCV ? '• CV : Disponible pour analyse' : ''}
+• Objectif : Staffing sur besoin client
 
 Action requise :
 Connectez-vous à la plateforme pour consulter tous les détails du profil et évaluer son adéquation avec le besoin.
@@ -445,19 +497,39 @@ Deno.serve(async (req) => {
     })
     
     // Validation des données
-    if (!data.prospectId || !data.salesRepCode || !data.besoin || !data.assignedTo) {
-      const errorMsg = 'Missing required fields: prospectId, salesRepCode, besoin, and assignedTo are required'
+    if (!data.prospectId || !data.salesRepCode || !data.assignedTo) {
+      const errorMsg = 'Missing required fields: prospectId, salesRepCode, and assignedTo are required'
       console.error(errorMsg)
       return new Response(
-        JSON.stringify({ 
+        JSON.stringify({
           error: 'Missing required fields',
           details: errorMsg
         }),
-        { 
-          status: 400, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         }
       )
+    }
+
+    // Récupération des détails complets du besoin client
+    console.log('📋 Fetching client need details from database...')
+    const clientNeedDetails = await getClientNeedDetails(data.prospectId)
+
+    if (clientNeedDetails) {
+      // Enrichir les données avec les informations complètes de la DB
+      data.besoin = clientNeedDetails.selected_need_title
+      data.name = clientNeedDetails.name
+      data.availability = clientNeedDetails.availability
+      data.dailyRate = clientNeedDetails.daily_rate
+      data.salaryExpectations = clientNeedDetails.salary_expectations
+      data.residence = clientNeedDetails.residence
+      data.mobility = clientNeedDetails.mobility
+      data.phone = clientNeedDetails.phone
+      data.email = clientNeedDetails.email
+      data.fileName = clientNeedDetails.file_name
+      data.hasCV = !!clientNeedDetails.file_name
+      console.log('✅ Client need details enriched from database')
     }
 
     // Récupération des informations du commercial

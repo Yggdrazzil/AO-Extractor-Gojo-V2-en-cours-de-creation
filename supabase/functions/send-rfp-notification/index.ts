@@ -5,14 +5,45 @@ interface RFPNotificationData {
   client: string
   mission: string
   location?: string
+  maxRate?: number
+  startDate?: string
   salesRepCode: string
   assignedTo: string
+  rawContent?: string
 }
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
+}
+
+/**
+ * Récupère les informations complètes de l'AO depuis la base de données
+ */
+async function getRFPDetails(rfpId: string) {
+  try {
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+
+    const supabase = createClient(supabaseUrl, supabaseServiceKey)
+
+    const { data, error } = await supabase
+      .from('rfps')
+      .select('client, mission, location, max_rate, start_date, raw_content')
+      .eq('id', rfpId)
+      .single()
+
+    if (error || !data) {
+      console.error('Error fetching RFP details:', error)
+      return null
+    }
+
+    return data
+  } catch (error) {
+    console.error('Failed to get RFP details:', error)
+    return null
+  }
 }
 
 /**
@@ -255,15 +286,23 @@ function generateEmailHTML(data: RFPNotificationData, salesRepName: string, plat
           </div>
           
           <p class="intro-text">Un nouvel appel d'offres vient d'être ajouté et vous a été assigné :</p>
-          
+
           <div class="rfp-card">
             <div class="rfp-title">🎯 ${data.mission}</div>
             <div class="rfp-details">
-              <div><strong>Client :</strong> ${data.client}</div>
-              <div><strong>Localisation :</strong> ${data.location || 'Non spécifiée'}</div>
-              <div><strong>Status :</strong> À traiter</div>
+              <div><strong>•</strong> <strong>Client :</strong> ${data.client}</div>
+              ${data.location ? `<div><strong>•</strong> <strong>Localisation :</strong> ${data.location}</div>` : ''}
+              ${data.maxRate ? `<div><strong>•</strong> <strong>TJM Max :</strong> ${data.maxRate}€</div>` : ''}
+              ${data.startDate ? `<div><strong>•</strong> <strong>Démarrage :</strong> ${new Date(data.startDate).toLocaleDateString('fr-FR')}</div>` : ''}
+              <div><strong>•</strong> <strong>Status :</strong> À traiter</div>
             </div>
           </div>
+
+          ${data.rawContent ? `
+          <div class="rfp-card">
+            <div style="font-weight: 600; color: #1d1d1f; font-size: 19px; margin-bottom: 16px;">📄 Détails de la mission</div>
+            <div style="color: #6e6e73; font-size: 15px; line-height: 1.6; white-space: pre-wrap;">${data.rawContent.substring(0, 500)}${data.rawContent.length > 500 ? '...' : ''}</div>
+          </div>` : ''}
           
           <div class="action-section">
             <div class="action-title">Action requise</div>
@@ -304,9 +343,14 @@ Bonjour ${salesRepName},
 Un nouvel appel d'offres vient d'être ajouté et vous a été assigné :
 
 🎯 Mission : ${data.mission}
-Client : ${data.client}
-Localisation : ${data.location || 'Non spécifiée'}
-Status : À traiter
+• Client : ${data.client}
+${data.location ? `• Localisation : ${data.location}` : ''}
+${data.maxRate ? `• TJM Max : ${data.maxRate}€` : ''}
+${data.startDate ? `• Démarrage : ${new Date(data.startDate).toLocaleDateString('fr-FR')}` : ''}
+• Status : À traiter
+
+${data.rawContent ? `Détails de la mission :
+${data.rawContent.substring(0, 300)}${data.rawContent.length > 300 ? '...' : ''}` : ''}
 
 Action requise :
 Connectez-vous à la plateforme pour consulter tous les détails de l'AO et planifier votre approche commerciale.
@@ -462,20 +506,35 @@ Deno.serve(async (req) => {
     })
     
     // Validation des données
-    if (!data.rfpId || !data.salesRepCode || !data.client || !data.mission || !data.assignedTo) {
-      const errorMsg = '❌ Missing required fields: rfpId, salesRepCode, client, mission, and assignedTo are required'
+    if (!data.rfpId || !data.salesRepCode || !data.assignedTo) {
+      const errorMsg = '❌ Missing required fields: rfpId, salesRepCode, and assignedTo are required'
       console.error(errorMsg)
       return new Response(
-        JSON.stringify({ 
+        JSON.stringify({
           error: 'Missing required fields',
           details: errorMsg,
           receivedData: data
         }),
-        { 
-          status: 400, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         }
       )
+    }
+
+    // Récupération des détails complets de l'AO
+    console.log('📋 Fetching RFP details from database...')
+    const rfpDetails = await getRFPDetails(data.rfpId)
+
+    if (rfpDetails) {
+      // Enrichir les données avec les informations complètes de la DB
+      data.client = rfpDetails.client
+      data.mission = rfpDetails.mission
+      data.location = rfpDetails.location
+      data.maxRate = rfpDetails.max_rate
+      data.startDate = rfpDetails.start_date
+      data.rawContent = rfpDetails.raw_content
+      console.log('✅ RFP details enriched from database')
     }
 
     // Récupération des informations du commercial
