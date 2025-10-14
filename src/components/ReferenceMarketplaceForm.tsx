@@ -130,25 +130,27 @@ export function ReferenceMarketplaceForm({ isOpen, onClose, onSubmit }: Referenc
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Client
+              Client <span className="text-red-500">*</span>
             </label>
             <input
               type="text"
               value={formData.client}
               onChange={(e) => setFormData({ ...formData, client: e.target.value })}
               className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+              required
             />
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Opérationnel à Contacter
+              Opérationnel à Contacter <span className="text-red-500">*</span>
             </label>
             <input
               type="text"
               value={formData.operational_contact}
               onChange={(e) => setFormData({ ...formData, operational_contact: e.target.value })}
               className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+              required
             />
           </div>
 
@@ -192,12 +194,13 @@ export function ReferenceMarketplaceForm({ isOpen, onClose, onSubmit }: Referenc
 
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Commercial
+              Commercial <span className="text-red-500">*</span>
             </label>
             <select
               value={formData.sales_rep_id}
               onChange={(e) => setFormData({ ...formData, sales_rep_id: e.target.value })}
               className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+              required
             >
               <option value="">Sélectionner un commercial</option>
               {salesReps.map((rep) => (
