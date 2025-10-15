@@ -109,22 +109,17 @@ Exemple de réponse JSON:
 `;
 
 export async function analyzeRFP(content: string): Promise<Partial<RFP>> {
-  // Essayer d'abord la clé spécifique à l'utilisateur, puis la clé globale
-  let apiKey = localStorage.getItem('openai-api-key');
-  
+  // Charger la clé API (admin ou utilisateur)
+  let apiKey: string | null = null;
+
   try {
-    const { supabase } = await import('../lib/supabase');
-    const { data: { session } } = await supabase.auth.getSession();
-    if (session?.user?.email) {
-      const userApiKey = localStorage.getItem(`openai-api-key_${session.user.email}`);
-      if (userApiKey) {
-        apiKey = userApiKey;
-      }
-    }
+    const { loadAdminApiKey } = await import('./adminApiKeys');
+    apiKey = await loadAdminApiKey();
+    console.log('🔑 API key loaded:', apiKey ? 'Yes' : 'No');
   } catch (error) {
-    console.warn('Could not get user session for API key:', error);
+    console.error('❌ Error loading API key:', error);
   }
-  
+
   if (!apiKey) {
     throw new Error('Veuillez configurer votre clé API OpenAI dans les paramètres');
   }
@@ -182,22 +177,17 @@ export async function analyzeRFP(content: string): Promise<Partial<RFP>> {
 }
 
 export async function analyzeProspect(content: string, cvContent?: string): Promise<Partial<Prospect>> {
-  // Essayer d'abord la clé spécifique à l'utilisateur, puis la clé globale
-  let apiKey = localStorage.getItem('openai-api-key') || '';
-  
+  // Charger la clé API (admin ou utilisateur)
+  let apiKey: string | null = null;
+
   try {
-    const { supabase } = await import('../lib/supabase');
-    const { data: { session } } = await supabase.auth.getSession();
-    if (session?.user?.email) {
-      const userApiKey = localStorage.getItem(`openai-api-key_${session.user.email}`);
-      if (userApiKey) {
-        apiKey = userApiKey;
-      }
-    }
+    const { loadAdminApiKey } = await import('./adminApiKeys');
+    apiKey = await loadAdminApiKey();
+    console.log('🔑 API key loaded:', apiKey ? 'Yes' : 'No');
   } catch (error) {
-    console.warn('Could not get user session for API key:', error);
+    console.error('❌ Error loading API key:', error);
   }
-  
+
   if (!apiKey) {
     throw new Error('Veuillez configurer votre clé API OpenAI dans les paramètres');
   }
