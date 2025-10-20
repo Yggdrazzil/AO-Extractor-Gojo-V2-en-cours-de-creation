@@ -151,7 +151,7 @@ export function ReferenceMarketplaceTable({
             references.map((reference) => (
               <tr
                 key={reference.id}
-                className={`hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors ${
+                className={`border-t hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors ${
                   reference.status === 'Traité'
                     ? 'bg-gray-200 dark:bg-gray-900 border-gray-300 dark:border-gray-800'
                     : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700'
