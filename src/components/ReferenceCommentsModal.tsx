@@ -89,25 +89,8 @@ export function ReferenceCommentsModal({ isOpen, onClose, reference, onSave }: R
               id="comments"
               value={comments}
               onChange={(e) => setComments(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && !(e.ctrlKey || e.metaKey)) {
-                  e.preventDefault();
-                  handleSave();
-                } else if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
-                  e.preventDefault();
-                  const textarea = e.target as HTMLTextAreaElement;
-                  const start = textarea.selectionStart;
-                  const end = textarea.selectionEnd;
-                  const value = textarea.value;
-                  const newValue = value.substring(0, start) + '\n' + value.substring(end);
-                  setComments(newValue);
-                  setTimeout(() => {
-                    textarea.selectionStart = textarea.selectionEnd = start + 1;
-                  }, 0);
-                }
-              }}
-              className="w-full h-32 px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
-              placeholder="Décrivez la mission présentée au Tech... (Entrée pour sauvegarder, Ctrl+Entrée pour nouvelle ligne)"
+              className="w-full h-32 px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none whitespace-pre-wrap"
+              placeholder="Décrivez la mission présentée au Tech..."
               disabled={isSaving}
             />
           </div>
