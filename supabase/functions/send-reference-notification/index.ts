@@ -11,6 +11,7 @@ interface ReferenceNotificationData {
   assignedTo: string
   hasPDF: boolean
   pdfName?: string
+  createdByName?: string
 }
 
 const corsHeaders = {
@@ -31,7 +32,15 @@ async function getReferenceDetails(referenceId: string) {
 
     const { data, error } = await supabase
       .from('reference_marketplace')
-      .select('client, operational_contact, phone, email, tech_name, pdf_name')
+      .select(`
+        client,
+        operational_contact,
+        phone,
+        email,
+        tech_name,
+        pdf_name,
+        created_by
+      `)
       .eq('id', referenceId)
       .single()
 
@@ -40,7 +49,28 @@ async function getReferenceDetails(referenceId: string) {
       return null
     }
 
-    return data
+    // Récupérer le nom du créateur depuis sales_reps via l'email de auth.users
+    let createdByName = null
+    if (data.created_by) {
+      const { data: userData, error: userError } = await supabase.auth.admin.getUserById(data.created_by)
+
+      if (!userError && userData?.user?.email) {
+        const { data: salesRepData, error: salesRepError } = await supabase
+          .from('sales_reps')
+          .select('name')
+          .eq('email', userData.user.email)
+          .single()
+
+        if (!salesRepError && salesRepData) {
+          createdByName = salesRepData.name
+        }
+      }
+    }
+
+    return {
+      ...data,
+      createdByName
+    }
   } catch (error) {
     console.error('Failed to get reference details:', error)
     return null
@@ -285,7 +315,7 @@ function generateEmailHTML(data: ReferenceNotificationData, salesRepName: string
             Bonjour <strong>${salesRepName}</strong>,
           </div>
 
-          <p class="intro-text">Une nouvelle référence client vient d'être ajoutée à la marketplace et vous a été assignée :</p>
+          <p class="intro-text">${data.createdByName ? `<strong>${data.createdByName}</strong> vous a attribué une prise de référence à réaliser auprès d'un de vos client / prospect :` : 'Une nouvelle référence client vient d\'être ajoutée à la marketplace et vous a été assignée :'}</p>
 
           <div class="reference-card">
             <div class="reference-title">📚 ${data.client || 'Client'}</div>
@@ -335,7 +365,7 @@ Nouvelle référence disponible
 
 Bonjour ${salesRepName},
 
-Une nouvelle référence client vient d'être ajoutée à la marketplace et vous a été assignée :
+${data.createdByName ? `${data.createdByName} vous a attribué une prise de référence à réaliser auprès d'un de vos client / prospect :` : 'Une nouvelle référence client vient d\'être ajoutée à la marketplace et vous a été assignée :'}
 
 📚 ${data.client || 'Client'}
 ${data.client ? `• Client : ${data.client}` : ''}
@@ -514,6 +544,7 @@ Deno.serve(async (req) => {
       data.tech_name = referenceDetails.tech_name
       data.pdfName = referenceDetails.pdf_name
       data.hasPDF = !!referenceDetails.pdf_name
+      data.createdByName = referenceDetails.createdByName
       console.log('✅ Reference details enriched from database')
     }
 
