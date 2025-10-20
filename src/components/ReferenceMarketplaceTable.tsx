@@ -148,14 +148,18 @@ export function ReferenceMarketplaceTable({
               </td>
             </tr>
           ) : (
-            references.map((reference) => (
+            references.map((reference) => {
+              const rowBgClass = reference.status === 'Traité'
+                ? 'bg-gray-200 dark:bg-gray-900'
+                : 'bg-white dark:bg-gray-800';
+              const borderClass = reference.status === 'Traité'
+                ? 'border-gray-300 dark:border-gray-800'
+                : 'border-gray-200 dark:border-gray-700';
+
+              return (
               <tr
                 key={reference.id}
-                className={`border-t hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors ${
-                  reference.status === 'Traité'
-                    ? 'bg-gray-200 dark:bg-gray-900 border-gray-300 dark:border-gray-800'
-                    : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700'
-                }`}
+                className={`border-t hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors ${rowBgClass} ${borderClass}`}
               >
                 <td className="px-4 py-3 text-sm text-gray-900 dark:text-gray-100">
                   {renderEditableField(reference, 'client', reference.client)}
@@ -260,7 +264,8 @@ export function ReferenceMarketplaceTable({
                   </div>
                 </td>
               </tr>
-            ))
+              );
+            })
           )}
         </tbody>
       </table>
