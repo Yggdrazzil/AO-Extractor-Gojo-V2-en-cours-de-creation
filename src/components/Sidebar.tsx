@@ -35,9 +35,9 @@ const tabs = [
   },
   {
     id: 'marketplace',
-    label: 'Marketplace des Références',
+    label: 'Hub des Références',
     icon: Store,
-    description: 'Marketplace des références',
+    description: 'Hub des références',
     adminOnly: false
   },
   {

@@ -11,7 +11,7 @@ const tabTitles = {
   'rfp-extractor': 'Appels d\'Offres',
   'prospects': 'Prises de Références',
   'boondmanager-prospects': 'Besoins Clients',
-  'marketplace': 'Marketplace des Références',
+  'marketplace': 'Hub des Références',
   'analytics': 'Analytics',
   'tools': 'Outils'
 };
