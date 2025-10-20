@@ -66,9 +66,15 @@ export function ReferenceCommentsModal({ isOpen, onClose, reference, onSave }: R
 
         <div className="p-6">
           <div className="mb-4">
-            <h3 className="font-medium text-gray-900 dark:text-gray-100 mb-1">
+            <p className="text-xs text-gray-500 dark:text-gray-500 mb-1">
+              Compte ciblé
+            </p>
+            <h3 className="font-medium text-gray-900 dark:text-gray-100 mb-3">
               {reference.client}
             </h3>
+            <p className="text-xs text-gray-500 dark:text-gray-500 mb-1">
+              Nom du Tech
+            </p>
             <p className="text-sm text-gray-600 dark:text-gray-400">
               {reference.tech_name}
             </p>
