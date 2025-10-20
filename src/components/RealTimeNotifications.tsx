@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react';
-import { Bell, X, Check } from 'lucide-react';
+import { Bell, X, Check, Store } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
 interface NewRecordNotification {
   id: string;
-  table_name: 'prospects' | 'rfps' | 'client_needs';
+  table_name: 'prospects' | 'rfps' | 'client_needs' | 'reference_marketplace';
   record_id: string;
-  notification_type: 'new_rfp' | 'new_prospect' | 'new_client_need';
+  notification_type: 'new_rfp' | 'new_prospect' | 'new_client_need' | 'new_reference';
   assigned_to: string;
   created_by: string;
   creator_trigram: string;
@@ -19,7 +19,8 @@ interface NewRecordNotification {
 const NOTIFICATION_TYPE_ICONS = {
   new_rfp: '📋',
   new_prospect: '👤',
-  new_client_need: '💼'
+  new_client_need: '💼',
+  new_reference: '🏪'
 };
 
 export function RealTimeNotifications() {
