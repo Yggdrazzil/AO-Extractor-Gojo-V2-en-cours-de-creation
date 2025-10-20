@@ -177,7 +177,7 @@ export function ReferenceMarketplaceTable({
                 </td>
                 <td className="px-4 py-3 text-sm">
                   {reference.sales_rep_id ? (
-                    <span className="text-gray-900 dark:text-gray-100">
+                    <span className="inline-flex items-center px-2 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
                       {reference.sales_rep?.code || '-'}
                     </span>
                   ) : (
