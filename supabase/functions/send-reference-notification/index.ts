@@ -117,7 +117,7 @@ function generateEmailHTML(data: ReferenceNotificationData, salesRepName: string
         }
 
         .header {
-          background: #063970;
+          background: #7C1C3A;
           color: #ffffff;
           padding: 48px 32px;
           text-align: center;
@@ -206,7 +206,7 @@ function generateEmailHTML(data: ReferenceNotificationData, salesRepName: string
 
         .cta-button {
           display: inline-block;
-          background: #063970 !important;
+          background: #7C1C3A !important;
           color: #ffffff !important;
           padding: 16px 32px;
           text-decoration: none;
@@ -217,14 +217,14 @@ function generateEmailHTML(data: ReferenceNotificationData, salesRepName: string
           transition: all 0.2s ease;
           border: none;
           cursor: pointer;
-          box-shadow: 0 2px 8px rgba(6, 57, 112, 0.3);
+          box-shadow: 0 2px 8px rgba(124, 28, 58, 0.3);
         }
 
         .cta-button:hover {
-          background: #0a4a8a !important;
+          background: #5C1429 !important;
           color: #ffffff !important;
           transform: translateY(-1px);
-          box-shadow: 0 4px 12px rgba(6, 57, 112, 0.4);
+          box-shadow: 0 4px 12px rgba(124, 28, 58, 0.4);
         }
 
         .cta-button:visited {
@@ -306,8 +306,8 @@ function generateEmailHTML(data: ReferenceNotificationData, salesRepName: string
     <body>
       <div class="email-container">
         <div class="header">
-          <h1>Nouvelle référence</h1>
-          <p>Marketplace des références</p>
+          <h1>Nouvelle Prise de Référence</h1>
+          <p>Hub des Références</p>
         </div>
 
         <div class="content">
@@ -341,14 +341,14 @@ function generateEmailHTML(data: ReferenceNotificationData, salesRepName: string
 
           <div class="reminder-section">
             <p class="reminder-text">
-              <strong>💡</strong> Cette référence est maintenant visible dans votre marketplace des références.
+              <strong>💡</strong> Cette référence est maintenant visible dans votre Hub des Références.
             </p>
           </div>
         </div>
 
         <div class="footer">
           <div>Email automatique • Ne pas répondre</div>
-          <div>GOJO • Plateforme de gestion des références</div>
+          <div>GOJO • Hub des Références</div>
         </div>
       </div>
     </body>
@@ -361,7 +361,7 @@ function generateEmailHTML(data: ReferenceNotificationData, salesRepName: string
  */
 function generateEmailText(data: ReferenceNotificationData, salesRepName: string, platformUrl: string): string {
   return `
-Nouvelle référence disponible
+Nouvelle Prise de Référence disponible
 
 Bonjour ${salesRepName},
 
@@ -381,11 +381,11 @@ Connectez-vous à la plateforme pour consulter tous les détails de cette réfé
 Lien vers la plateforme :
 ${platformUrl}
 
-💡 Cette référence est maintenant visible dans votre marketplace des références.
+💡 Cette référence est maintenant visible dans votre Hub des Références.
 
 ---
 Email automatique - Ne pas répondre
-GOJO - Plateforme de gestion des références
+GOJO - Hub des Références
   `.trim()
 }
 
