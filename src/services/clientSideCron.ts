@@ -177,7 +177,7 @@ function showExecutionNotification(results: ExecutionResult[]) {
     if ('Notification' in window && Notification.permission === 'granted') {
       new Notification('GOJO - Récapitulatifs envoyés', {
         body: `${totalEmails} email(s) de récapitulatif envoyé(s) automatiquement`,
-        icon: '/image.png'
+        icon: '/logo.png'
       });
     }
     
