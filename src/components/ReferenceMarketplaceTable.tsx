@@ -140,7 +140,7 @@ export function ReferenceMarketplaceTable({
             </th>
           </tr>
         </thead>
-        <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+        <tbody className="bg-white dark:bg-gray-800">
           {references.length === 0 ? (
             <tr>
               <td colSpan={10} className="px-4 py-8 text-center text-gray-500 dark:text-gray-400">
@@ -161,29 +161,29 @@ export function ReferenceMarketplaceTable({
                 key={reference.id}
                 className={`border-t hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors ${rowBgClass} ${borderClass}`}
               >
-                <td className="px-4 py-3 text-sm text-gray-900 dark:text-gray-100">
+                <td className={`px-4 py-3 text-sm text-gray-900 dark:text-gray-100 ${rowBgClass}`}>
                   {renderEditableField(reference, 'client', reference.client)}
                 </td>
-                <td className="px-4 py-3 text-sm text-gray-900 dark:text-gray-100">
+                <td className={`px-4 py-3 text-sm text-gray-900 dark:text-gray-100 ${rowBgClass}`}>
                   {renderEditableField(reference, 'operational_contact', reference.operational_contact)}
                 </td>
-                <td className="px-4 py-3 text-sm text-gray-900 dark:text-gray-100">
+                <td className={`px-4 py-3 text-sm text-gray-900 dark:text-gray-100 ${rowBgClass}`}>
                   {renderEditableField(reference, 'phone', reference.phone)}
                 </td>
-                <td className="px-4 py-3 text-sm text-gray-900 dark:text-gray-100">
+                <td className={`px-4 py-3 text-sm text-gray-900 dark:text-gray-100 ${rowBgClass}`}>
                   {renderEditableField(reference, 'email', reference.email)}
                 </td>
-                <td className="px-4 py-3 text-sm text-gray-900 dark:text-gray-100">
+                <td className={`px-4 py-3 text-sm text-gray-900 dark:text-gray-100 ${rowBgClass}`}>
                   {renderEditableField(reference, 'tech_name', reference.tech_name)}
                 </td>
-                <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-400">
+                <td className={`px-4 py-3 text-sm text-gray-600 dark:text-gray-400 ${rowBgClass}`}>
                   {new Date(reference.created_at).toLocaleDateString('fr-FR', {
                     day: '2-digit',
                     month: '2-digit',
                     year: 'numeric'
                   })}
                 </td>
-                <td className="px-4 py-3 text-sm">
+                <td className={`px-4 py-3 text-sm ${rowBgClass}`}>
                   {reference.sales_rep_id ? (
                     <span className="inline-flex items-center px-2 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
                       {reference.sales_rep?.code || '-'}
@@ -203,7 +203,7 @@ export function ReferenceMarketplaceTable({
                     </select>
                   )}
                 </td>
-                <td className="px-4 py-3 text-sm">
+                <td className={`px-4 py-3 text-sm ${rowBgClass}`}>
                   <select
                     value={reference.status || 'A traiter'}
                     onChange={(e) => onUpdate(reference.id, { status: e.target.value })}
@@ -213,7 +213,7 @@ export function ReferenceMarketplaceTable({
                     <option value="Traité">Traité</option>
                   </select>
                 </td>
-                <td className="px-4 py-3 text-sm text-center">
+                <td className={`px-4 py-3 text-sm text-center ${rowBgClass}`}>
                   {reference.pdf_url ? (
                     <a
                       href={reference.pdf_url}
@@ -228,7 +228,7 @@ export function ReferenceMarketplaceTable({
                     <span className="text-gray-400">-</span>
                   )}
                 </td>
-                <td className="px-4 py-3 text-sm text-right">
+                <td className={`px-4 py-3 text-sm text-right ${rowBgClass}`}>
                   <div className="flex items-center justify-end gap-2">
                     <div className="group relative">
                       <button
