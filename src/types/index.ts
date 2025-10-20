@@ -90,6 +90,7 @@ export interface ReferenceMarketplace {
   tech_name: string;
   sales_rep_id: string | null;
   sales_rep?: SalesRep;
+  status: string;
   pdf_url: string | null;
   pdf_name: string | null;
   created_by: string;

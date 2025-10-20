@@ -124,7 +124,13 @@ export function ReferenceMarketplaceTable({
               Nom du Tech
             </th>
             <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">
+              Date d'ajout
+            </th>
+            <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">
               Commercial
+            </th>
+            <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">
+              Statut
             </th>
             <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">
               CV Tech
@@ -137,7 +143,7 @@ export function ReferenceMarketplaceTable({
         <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
           {references.length === 0 ? (
             <tr>
-              <td colSpan={8} className="px-4 py-8 text-center text-gray-500 dark:text-gray-400">
+              <td colSpan={10} className="px-4 py-8 text-center text-gray-500 dark:text-gray-400">
                 Aucune référence pour le moment
               </td>
             </tr>
@@ -162,18 +168,41 @@ export function ReferenceMarketplaceTable({
                 <td className="px-4 py-3 text-sm text-gray-900 dark:text-gray-100">
                   {renderEditableField(reference, 'tech_name', reference.tech_name)}
                 </td>
+                <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-400">
+                  {new Date(reference.created_at).toLocaleDateString('fr-FR', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric'
+                  })}
+                </td>
+                <td className="px-4 py-3 text-sm">
+                  {reference.sales_rep_id ? (
+                    <span className="text-gray-900 dark:text-gray-100">
+                      {reference.sales_rep?.code || '-'}
+                    </span>
+                  ) : (
+                    <select
+                      value={reference.sales_rep_id || ''}
+                      onChange={(e) => handleSalesRepChange(reference.id, e.target.value)}
+                      className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 text-sm"
+                    >
+                      <option value="">Non assigné</option>
+                      {salesReps.map((rep) => (
+                        <option key={rep.id} value={rep.id}>
+                          {rep.name} ({rep.code})
+                        </option>
+                      ))}
+                    </select>
+                  )}
+                </td>
                 <td className="px-4 py-3 text-sm">
                   <select
-                    value={reference.sales_rep_id || ''}
-                    onChange={(e) => handleSalesRepChange(reference.id, e.target.value)}
+                    value={reference.status || 'A traiter'}
+                    onChange={(e) => onUpdate(reference.id, { status: e.target.value })}
                     className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 text-sm"
                   >
-                    <option value="">Non assigné</option>
-                    {salesReps.map((rep) => (
-                      <option key={rep.id} value={rep.id}>
-                        {rep.name} ({rep.code})
-                      </option>
-                    ))}
+                    <option value="A traiter">A traiter</option>
+                    <option value="Traité">Traité</option>
                   </select>
                 </td>
                 <td className="px-4 py-3 text-sm text-center">
